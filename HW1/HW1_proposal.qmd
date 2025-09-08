@@ -1,18 +1,68 @@
 ---
 title: HW1 Proposal
-format: html
+author: RJ Cass
+format: 
+    html:
+        code-fold: true
 ---
 
-In this homework I will...
+## 1. Understanding the Problem
+### Background: 
+Kelley Blue Book (KBB) has extensive car selling data: car conditions, mileage, packages, etc., associated with the selling price. We want to use this data to accurately guide consumers on what their car is worth, and what they could expect to sell their car for.  
 
-library(dplyr) kbb \<- read.csv('kbb.csv', header = TRUE) head(data, 10)
+### Goals:
+In this analysis, we want to address several key questions:
 
-sum \<- summary(data)
+#### 1. What factors lead to higher/lower resale values?
+- I will identify the most impactful factors by performing 
 
-library(skimr) skim \<- skim(data)
+#### 2. Are there other factors not included in this dataset that likely explain how much a car is worth? If so, what other factors do you think explain resale value?
+- I will determine what other factors may be impactful by reflecting on my own personal experience buying/selling cars. I will also consult with subject-matter experts (ie. search online) for other impactful factors. My model does not need to account for these factors as they are not included in the dataset, but I should be aware that the current dataset may not fully explain/predict price. 
+
+
+#### 3. Generally, as mileage increases, the price should decrease. But, does the amount of de-crease in value from additional mileage differ depending upon the make of the car? If so,which makes hold the value better with more miles?
+- To determine how the make of the car impacts the effect of mileage on the price of the car, I will examine the interaction between make and mileage by examining graphics of price changes by mileage, broken out by car make. This should help identify if there are any obvious trends. I will also examine this using an interaction coefficient in my model to check the significance of the make and mileage interaction. 
+
+
+#### 4. Which car (and with what characteristics) has the highest resale value at 15000 miles?
+- To see which car has the highest resale value at 15k miles, I will build a predictive model, plug in a value of 15k miles, and see what values for the other variables give the highest price. This can likely be shown in a series of graphs where I plot the different values for each variable and select the highest. 
+
+#### 5. What is a reasonable resale value for the following vehicle: Cadillac CTS 4D Sedan with 17,000 miles, 6 cylinder, 2.8 liter engine, cruise control, upgraded speakers and leather seats?
+- To identify what is a reasonable price for a car with the above values, I will create a predictive model in which I can enter the relevant values, and it will predict a price range that the car is worth. This will require that my model by able to accurately predict price given the variable inputs. 
+
+
+## 2. Exploratory Data Analysis
+In my initial exploration, the first things that stick out about the data is that price is pretty heavily skewed with a long right tail. I will need to be careful in any assumptions I make about this dataset, particularly that price is normally distributed (I believe it is in the population, just maybe not reflected well in this dataset). 
+
+I did note that none of the factors have any missing data (no NULLs or empty fields). The values of each field appear to be reasonable (ie. mileage is within normal range for cars that are 1 year old), and there don't appear to be any misspelled values (ie. values that should be the same but are currently counting as separate values). I do not believe I need to clean/perpare the data at all prior to performing analysis. 
+
+## 3. Desired Attributes
+
+
+## 4. Proposed Method
+
+
+
+```{r}
+library(dplyr)
+
+kbb <- read.csv('kbb.csv', header = TRUE)
+
+print(unique(kbb$Model))
+
+#head(data, 10)
+
+#sum <- summary(data)
+
+#library(skimr)
+#skim <- skim(data)
 
 hist(kbb$Price)
 plot(kbb$Mileage, kbb$Price)
 plot(kbb$Mileage, kbb$Price, col = factor(kbb$Make), pch = 19)
 
-mod = lm(Price \~ ., data = kbb) plot(mod)
+#mod = lm(Price ~ ., data = kbb)
+#plot(mod)
+```
+
+
