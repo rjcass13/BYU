@@ -6,6 +6,8 @@ factor_cols = c('Make', 'Model', 'Trim', 'Type', 'Cylinder', 'Liter', 'Doors', '
 
 kbb[factor_cols] <- lapply(kbb[factor_cols], factor)
 
+pairs(kbb)
+
 full_model = lm(Price ~ ., data = kbb)
 summary(full_model)
 
@@ -55,3 +57,35 @@ plot(aic_model)
 ## Plot Added Variables Plots
 library(car)
 avPlots(aic_model)
+
+
+
+library(dplyr)
+
+kbb <- read.csv('KBB.csv', header = TRUE)
+
+print(unique(kbb$Model))
+
+#head(data, 10)
+
+#sum <- summary(data)
+
+#library(skimr)
+#skim <- skim(data)
+
+hist(kbb$Price)
+plot(kbb$Mileage, kbb$Price)
+plot(kbb$Mileage, kbb$Price, col = factor(kbb$Make), pch = 19)
+
+#mod = lm(Price ~ ., data = kbb)
+#plot(mod)
+
+
+
+# THINGS TO EXPLORE
+# Pairs Plot (useful comparing continuous to continous)
+# Box Plots (useful comparing categoricals)
+# Fit a regression using the lm function
+
+
+
