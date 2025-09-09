@@ -14,7 +14,7 @@ Kelley Blue Book (KBB) has extensive car selling data: car conditions, mileage, 
 In this analysis, we want to address several key questions:
 
 #### 1. What factors lead to higher/lower resale values?
-- I will identify the most impactful factors by performing 
+- I will identify the most impactful factors by performing FINISH
 
 #### 2. Are there other factors not included in this dataset that likely explain how much a car is worth? If so, what other factors do you think explain resale value?
 - I will determine what other factors may be impactful by reflecting on my own personal experience buying/selling cars. I will also consult with subject-matter experts (ie. search online) for other impactful factors. My model does not need to account for these factors as they are not included in the dataset, but I should be aware that the current dataset may not fully explain/predict price. 
@@ -37,11 +37,22 @@ In my initial exploration, the first things that stick out about the data is tha
 I did note that none of the factors have any missing data (no NULLs or empty fields). The values of each field appear to be reasonable (ie. mileage is within normal range for cars that are 1 year old), and there don't appear to be any misspelled values (ie. values that should be the same but are currently counting as separate values). I do not believe I need to clean/perpare the data at all prior to performing analysis. 
 
 ## 3. Desired Attributes
+The model used in this analysis most function as a predictor of price: that is, given certain inputs for the other variables, it must be able to provide a range of price values that are reasonable given the condition of the car. In particular, to answer the final question, it must account for Make, Model, Type, Mileage, Cylinders, Liters, Doors, Cruise Control Speakers, and Trim (if some of these inputs is deemed not impactful on output, is may be excluded from the model itself).
 
+(b) FINISH
+
+(c) FINISH
+
+(d) FINISH
 
 ## 4. Proposed Method
+In this analysis, a linear model is appropriate. Given the continoues numerical output (price), appears to trend linearly with the only numerical input (mileage), using a linear model is a good fit.  
 
+The model I will use will have mileage as a continous input variable (ie. a 1 mile increase in mileage causes price to drop by x dollars) while the rest of the inputs will be factors (ie. having cruise control vs. not having cruise control increases price by x dollars). I will also be including interaction between mileage and make. 
 
+(c) FINISH
+
+(d) FINISH
 
 ```{r}
 library(dplyr)
