@@ -39,7 +39,7 @@ I did note that none of the factors have any missing data (no NULLs or empty fie
 ## [3. Desired Attributes]{.underline}
 The model used in this analysis most function as a predictor of price: that is, given certain inputs for the other variables, it must be able to provide a range of price values that are reasonable given the condition of the car. In particular, to answer the final question, it must account for Make, Model, Type, Mileage, Cylinders, Liters, Doors, Cruise Control Speakers, and Trim (if some of these inputs is deemed not impactful on output, is may be excluded from the model itself).
 
-The research goals require an interpretable model that gives predictions, R-Squared, and that can include mileage*make interactions
+The research goals require an interpretable model that gives predictions, $R^2$, and that can include Mileage*Make interactions
 
 (b) FINISH
 
@@ -58,7 +58,7 @@ In this analysis, a linear regression model is appropriate. Given the continoues
 
 (b)
 
-I will use OLS regression using the format Y = XBeta + epsilon, where epsilon ~ N(0, sigma-squared)
+I will use OLS regression using the format $Y = X \beta + \epsilon$, where $\epsilon \sim N(0, \sigma^2)$
 
 The model I will use will have mileage as a continous input variable (ie. a 1 mile increase in mileage causes price to drop by x dollars) while the rest of the inputs will be factors (ie. having cruise control vs. not having cruise control increases price by x dollars). I will also be including interaction between mileage and make. 
 
