@@ -57,7 +57,7 @@ The model I will use will have mileage as a continous input variable (ie. a 1 mi
 ```{r}
 library(dplyr)
 
-kbb <- read.csv('kbb.csv', header = TRUE)
+kbb <- read.csv('KBB.csv', header = TRUE)
 
 print(unique(kbb$Model))
 
@@ -74,6 +74,13 @@ plot(kbb$Mileage, kbb$Price, col = factor(kbb$Make), pch = 19)
 
 #mod = lm(Price ~ ., data = kbb)
 #plot(mod)
+
+
+
+# THINGS TO EXPLORE
+# Pairs Plot (useful comparing continuous to continous)
+# Box Plots (useful comparing categoricals)
+# Fit a regression using the lm function
 ```
 
 
