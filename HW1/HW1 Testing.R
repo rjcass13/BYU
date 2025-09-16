@@ -87,5 +87,5 @@ plot(kbb$Mileage, kbb$Price, col = factor(kbb$Make), pch = 19)
 # Box Plots (useful comparing categoricals)
 # Fit a regression using the lm function
 
-
+unique(kbb$Trim[which(kbb$Model == "CTS")])
 
