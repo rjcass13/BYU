@@ -86,7 +86,7 @@ root_selected_variables <- names(coef(aic_root))
 
 ### 2.2 Evaluation of Models
 
-In considering the assumptions necessary for these models, the first we considered is independence. In this case, due to our own experience with cars, we feel confident assuming independence in these factors (primarily in mileage: some factors may be related such as make/model, as well as special features like leather/cruise with trim). Linearity was shown in Figure 2. Having transformed the data, the transformed price distibution now more closely matches the normal distribution (though still not exactly). 
+In considering the assumptions necessary for these models, the first we considered is independence. In this case, due to our own experience with cars, we feel confident assuming independence in these factors (primarily in mileage: some factors may be related such as make/model, as well as special features like leather/cruise with trim). Linearity was shown in Figure 1. Having transformed the data, the transformed price distibution now more closely matches the normal distribution (though still not exactly). 
 
 ```{r checking assumptions, fig.width=7, fig.height=3}
 par(mfrow = c(1, 2))
