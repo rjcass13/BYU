@@ -50,10 +50,14 @@ rmse_elastic_in = sqrt(mean((resid_elastic)^2))
 r2_elastic_in = 1 - sum((resid_elastic)^2)/sum((Y - mean(Y))^2)
 
 # PCR
+# Create initial model, with a semi-large value for ncomp. 
+# Plot the model and pick a value that minimizes RMSE/Maximizes R2, but keeps ncomp reasonable
 m_pcr.cv = pcr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 15)
 validationplot(m_pcr.cv, main = "PCR - Components vs. RMSE") # Based on these plots, 7 looks like a good option
 plot(m_pcr.cv, "validation", val.type = "R2", legendpos = "bottomright", main = "PCR - Components vs. R2") 
+# Recreate model with selected number of components
 m_pcr.cv = pcr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 7)
+# Calculate Residuals and R2, show
 yhat_pcr = predict(m_pcr.cv, newx = X, ncomp=7)
 resid_pcr <- Y - yhat_pcr
 plot(yhat_pcr, resid_pcr, main = 'PCR Residuals vs. Fitted', xlab = 'Fitted Values', ylab = 'Residuals')
@@ -62,10 +66,14 @@ rmse_pcr_in = sqrt(mean((resid_pcr)^2))
 r2_pcr_in = 1 - sum((resid_pcr)^2)/sum((Y - mean(Y))^2)
 
 # PLS
+# Create initial model, with a semi-large value for ncomp. 
+# Plot the model and pick a value that minimizes RMSE/Maximizes R2, but keeps ncomp reasonable
 m_plsr.cv = plsr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 15)
 validationplot(m_plsr.cv, main = "PLSR - Components vs. RMSE") # Looking at these plots, 4 feels like a good option
 plot(m_plsr.cv, "validation", val.type = "R2", legendpos = "bottomright", main = "PLSR - Components vs. R2") 
+# Recreate model with selected number of components
 m_plsr.cv = plsr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 4)
+# Calculate Residuals and R2, show
 yhat_plsr = predict(m_plsr.cv, newx = X, ncomp=7)
 resid_plsr <- Y - yhat_plsr
 plot(yhat_plsr, resid_plsr, main = 'PLSR Residuals vs. Fitted', xlab = 'Fitted Values', ylab = 'Residuals')

@@ -24,7 +24,7 @@ In this analysis, we want to address several key questions:
 
 
 ## [2. Exploratory Data Analysis]{.underline}
-In our initial exploration, the first thing that sticks out about the data is that flow is pretty heavily skewed with a long left tail. This violates the assumption of normality so we may need to perform a transformation. We also see indicators of strong collinearity between a large number of the factors and will need to account for that in our model. Also, there are a large number of factors when compared to available data points, so we will need to be careful in determining the coefficients of the factors.
+In our initial exploration, the first thing that sticks out about the data is that flow is pretty heavily skewed with a long left tail. This violates the assumption of normality so we may need to perform a transformation. We also see indicators of strong collinearity between a large number of the factors and will need to account for that in our model. Also, there are a large number of factors when compared to available data points, so we will need to be careful in determining the coefficients of the factors. There are also 2 factors which just have constant values: we can effectively just ignore those columns in our analysis as they provide no useful information.
 
 ## [3. Desired Attributes]{.underline}
 #### Model attributes required from the research questions

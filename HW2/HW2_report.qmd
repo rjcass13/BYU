@@ -1,0 +1,37 @@
+---
+title: HW2 Report
+author: RJ Cass
+execute:
+  echo: false
+format: 
+    pdf
+geometry: "margin=1in"
+---
+
+```{r initialize}
+# Initialize dataset
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(car))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(glmnet))
+suppressPackageStartupMessages(library(pls))
+river = read.csv("Rivers.csv", header = TRUE)
+
+# Remove columns that are just constant across each value (necessary for PCR, but also just good to do)
+sds <- apply(river, 2, sd)
+river = river[, sds > 0]
+```
+
+
+# Abstract
+We have a dataset of various factors at measurement sites in rivers in the Rocky Mountains, as well as the corresponding flow at that site. We used this data to create a linear model of 'Metric' (the measure showing flow rate at a site) to predict the flow rate of a river given various input factors. Using the modeling methods, we found that the factors that most impact the flow 'Metric' are X Y Z. We found that these factors explain X% of the variance in 'Metric'. We also identified that our predictive model has an RMSE of X.
+ 
+
+# 1: Introduction
+The Rivers dataset is a record of river flow rates (Metric) of various rivers across the Rocky Mountains, along with the measurements of corresponding factors. We want to use this data to create a predictive model to
+1) Understand which variables are most impactful in determining river flow rate
+2) Identify how well our selected model explains the variance of flow rate
+3) Quantify how predictive our selected model is of overall flow rate
+
