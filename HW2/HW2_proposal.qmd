@@ -38,3 +38,28 @@ The number of explaining factors is very large compared to the new number of ava
 
 #### What goes wrong if the above are not accounted for?
 Without meeting the requirements of the research questions, we will not be able to answer those questions. If we don't address collinearity, the calculated coefficient estimates won't be true. If we don't address non-normality, the standard models' likelihoods won't be appropriate. If we don't use an appropriate variable selection method, we will get a model that does not reflect the true effect of factors on output. 
+
+
+## [4. Proposed Method]{.underline}
+### Appropriate models
+In this analysis, a linear regression model is appropriate.  
+
+### Specific model proposal
+I will use Oridnary Least Squares (OLS) regression using the format:
+$$
+Y = \sum X_i \beta_i + \epsilon : \epsilon \sim N(0, \sigma^2)
+$$
+
+### Method strengts/weakness
+
+#### i. How this method accounts for issues in the dataset
+We can perform transformations in X to account for non-normality. We can use LASSO variable selection to account for collinearity and overcome the limitation of the ratio of data points to explaining factors. 
+
+#### ii. How this method accomplishes research/analysis goals and yields appropriate estimators
+For the goals of the analysis, regression can prodive $R^2$ values and predict, meeting the requirements of the research questions.
+
+#### iii. How this method will answer the research questions
+This method will answer the research questions by (for each question) 1) stating the included variables, 2) state $R^2$ value and explain ideas for non-included variables that may be significant, 3) testing the predictive capabilities by cross validating on the data and providing a measure of prediction accuracy. 
+
+#### iv. What assumptions are needed to use the model adequately? Are they reasonable to assume and explained well?
+To properly use this model we muse assume linearity, independence, normality, and equal variance. Linearity appears safe to assume, and we have tools to address the other assumptions should they turn out not to be true. 
