@@ -85,7 +85,7 @@ sum(betahats!=0) #only 26 nonzero coefficients: much more manageable than 5000!
 
 
 ################################################
-# A way to cross validate
+# A way to cross validate (manually)
 these.data = sample(1:102,80)
 train = gene_data[these.data,]
 test = gene_data[-these.data,]
@@ -107,3 +107,19 @@ ss_res = sum((y - yhat)^2)
 ss_tot = sum((y - mean(y))^2)
 r_squared = 1 - (ss_res / ss_tot)
 r_squared
+
+
+# Confidence intervals from Ridge/LASSO
+# LASSO is a tool, not a model (it's not proposing a distirbution, etc.)
+# Ridge has closed-form solution, can calculate
+# For LASSO, use bootstrapping
+# Boostrap alogrithm, repeat MANY times. For b - 1, ...., B
+# 1. Take a boostrap sample of size K from orirignal n points WITH REPLACEMENT
+# 2. Calculate and retain Bhatb
+
+
+# LASSO: Does variable selection, outperforms ridge when coefs are mostly 0, picks one of correlated variables
+# Ridge: No variable selection, outperforms LASSO when lots of small coefs, shrinks correl X's towards eachother
+# Elastic Net: Good balance, particularly when x's are correlated
+# Assumptions: Linearity (yeah). Independence (more of just need a good sample). Normal - no. Equal Var - no
+
