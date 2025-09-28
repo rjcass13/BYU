@@ -1,6 +1,6 @@
 ---
 title: HW2 Report
-author: RJ Cass
+author: Brett Pedersen and RJ Cass
 execute:
   echo: false
 format: 
@@ -17,6 +17,9 @@ suppressPackageStartupMessages(library(MASS))
 suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(glmnet))
 suppressPackageStartupMessages(library(pls))
+
+set.seed(12345)
+
 river = read.csv("Rivers.csv", header = TRUE)
 
 # Remove columns that are just constant across each value (necessary for PCR, but also just good to do)
@@ -30,8 +33,85 @@ We have a dataset of various factors at measurement sites in rivers in the Rocky
  
 
 # 1: Introduction
-The Rivers dataset is a record of river flow rates (Metric) of various rivers across the Rocky Mountains, along with the measurements of corresponding factors. We want to use this data to create a predictive model to
+We have a collection of data measuring river flow rates of across the Rocky Mountains, with corresponding measurements indicating various human, river network, and climate factors. We want to use this data to create a model to
 1) Understand which variables are most impactful in determining river flow rate
 2) Identify how well our selected model explains the variance of flow rate
-3) Quantify how predictive our selected model is of overall flow rate
+3) Quantify how successful our selected model is at predciting flow rate
 
+Upon investigating the data, we see a few prominent issues that will need to be addressed in our analysis. As shown in Figure 1 - Left, the Flow Rate is not normally distirbuted. If not accounted for, the resulting model will not correctly relate the explanatory factors to the output. Another issue we identified is that there are many factors that exhibit strong collinearity (Figure 1 - Right). If we don't account for collinearity in our model, the estimated factor coefficients will not be reliable. The final primary issue we will need to address is that there are almost as many factors as there are data points. As such, we will need to be careful in our model selection to ensure we pick a model that can correctly identify which factors are important with limited data. 
+
+```{r exploration}
+par(mfrow = c(1, 2))
+hist(river$Metric, main = "Histogram of Flow Rate", xlab = "Flow Rate", ylab = "Frequency")
+plot(river[,3], river[,5], main = "Plot of Two Sample Factors", xlab = colnames(river)[3], ylab = colnames(river)[5])
+par(mfrow = c(1, 1))
+```
+
+Figure 1: Left - histogram of Flow Rate. Note that the distribution is left skewed, showing non-normality. Right - a scatterplot of two sample factors (Magnitude and Length) showing collinearity.
+
+
+# 2: Methodology
+
+### 2.1 Proposed Models
+##### Model 1
+The first model we are proposing for this analysis is a Principal Component Regression (PCR) model. PCR models are particularly handy for working with datasets which have a large number of factors compared to data points. Also, they work well in handling collinear variables. However, this model does depend on the LINE assumptions, of which we have already indicated previously that normality is a concern. To account for this, we will need to perform a transform on the output variable to make it more closely represent a normal distirbution. 
+
+##### Model 2
+The second model we are proposing is a LASSO model. LASSO models are useful in reducing the number of factors (including accounting for collinearity). They are also capable of performing well given a large number of factors compared to data points. This model in particular is useful because it does not require normality in the output variable so we will not need to perform any transformations on the data. 
+
+```{r models}
+# Define some general cuts used later on
+X = as.matrix(river[,-1], nrow = nrow(river)) # Used in LASSO, Ridge, Elastic
+X_p = model.matrix(Metric ~ ., data = river)[,-1] # Used in PCR, PLS
+Y = river$Metric
+Y_trans = log(4 - river$Metric)
+
+
+# LASSO
+cv_lasso = cv.glmnet(x = X, y = Y, alpha = 1)
+# Get count of coefs
+coefs_min = coef(cv_lasso, s = "lambda.min")
+lasso_var_count = cv_lasso$nzero[which(cv_lasso$lambda == cv_lasso$lambda.min)]
+# Calculate R2 and RMSE
+yhat_lasso = predict(cv_lasso, newx = X, s = "lambda.min")
+resid_lasso = Y - yhat_lasso
+rmse_lasso_in = round(sqrt(mean((resid_lasso)^2)), 3)
+r2_lasso_in = round(1 - sum((resid_lasso)^2)/sum((Y - mean(Y))^2), 3)
+
+# PCR
+# hist(log(4 - river$Metric)) - used to find a more or less reasonable transform to make it more normal
+# Using validationplot, 7 looks like a resoanable choice for number of components
+m_pcr_cv = pcr(log(4 - river$Metric) ~ X_p, data = river, validation="CV", scale=T, ncomp = 7)
+# Get number of coefs
+pcr_coefs = coef(m_pcr_cv)
+pcr_var_count = length(pcr_coefs)
+# Calculate Residuals and R2
+yhat_pcr = predict(m_pcr_cv, newx = X_p, ncomp=7)
+resid_pcr = Y_trans - yhat_pcr
+rmse_pcr_in = round(sqrt(mean((resid_pcr)^2)), 3)
+r2_pcr_in = round(1 - sum((resid_pcr)^2)/sum((Y_trans - mean(Y_trans))^2), 3)
+```
+
+### 2.2 Model Evaluation
+We created a model using both methods described above. To compare the models, we looked at the number of impactful factors, the $R^2$ value of the model, and the RMSE of the predcitions of the model. 
+
+| Model | # Factors | $R^2$ | RMSE |
+|:-----:|:-----:|:------:|:------:|
+| PCR   | `r pcr_var_count` | `r r2_pcr_in` |   `r rmse_pcr_in`   |
+| LASSO | `r lasso_var_count`   | `r r2_lasso_in` |   `r rmse_lasso_in`   |
+
+Table 1: Comparison of the two models outlined previously. Note that LASSO has limited the selected factors to only those most important. 
+
+As shown in Table 1, LASSO has identified only the msot important factors (PCR does similar, but does not 'zero-out' the un-important factors). The $R^2$ for the LASSO model is better, but the RMSE for the PCR model is better. However, since we had to perform a transform on the PCR model, and the PCR model has such a larger number of factors, the LASSO model is much more explainable. Due to these factors, we are choosing to use the LASSO model to answer our research questions. 
+
+The selected model follows the format:
+
+\begin{equation}
+    \begin{split}
+        Flow Rate = \beta_0 & + \beta_1 Factor1 + \beta_2 Factor2 + \beta_3 Factor3 \\ & + \beta_4 Factor4 + \beta_5 Factor5 + \beta_6 Factor6 + \beta_7 Factor7
+    \end{split}
+\end{equation}
+
+# 3: Results
+
+### 3.1 Estimation of Model Parameters

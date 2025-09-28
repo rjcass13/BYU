@@ -4,6 +4,8 @@ library(glmnet)
 library(pls)
 river = read.csv("Rivers.csv", header = TRUE)
 
+max = max(river$Metric)
+hist(log(max + 1 - river$Metric))
 
 pairs(river[,1:7])
 
