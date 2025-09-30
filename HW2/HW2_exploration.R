@@ -58,9 +58,9 @@ m_pcr.cv = pcr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 15)
 validationplot(m_pcr.cv, main = "PCR - Components vs. RMSE") # Based on these plots, 7 looks like a good option
 plot(m_pcr.cv, "validation", val.type = "R2", legendpos = "bottomright", main = "PCR - Components vs. R2") 
 # Recreate model with selected number of components
-m_pcr.cv = pcr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 7)
+m_pcr_cv = pcr(Metric ~ X_p, data = river, validation="CV", scale=T, ncomp = 7)
 # Calculate Residuals and R2, show
-yhat_pcr = predict(m_pcr.cv, newx = X, ncomp=7)
+yhat_pcr = predict(m_pcr_cv, newx = X, ncomp=7)
 resid_pcr <- Y - yhat_pcr
 plot(yhat_pcr, resid_pcr, main = 'PCR Residuals vs. Fitted', xlab = 'Fitted Values', ylab = 'Residuals')
 abline(h = 0, col = 'red')
