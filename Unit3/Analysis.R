@@ -108,3 +108,104 @@ plot(train$cwsi, train$swc)
 lines(train$cwsi[order(train$cwsi)], mod_lin_3$fitted.values[order(train$cwsi)])
 
 
+###########################
+# Kernel Smoothing
+###########################
+# Kernel: a 'functional' distribution (ie. oh, this matches the exponential, etc.)
+# Kernel smoothing: Take points within range and find average (point)
+# Nearest Neighbor: Take average of nearby points (within a bandwidth)
+### Similar to K-nearest neighbors (But KNN picks # points on each side, not width)
+# Epanechnikov Kernel: Apply normal (no tails) distributed weights to nearest points
+# There are a bunch of kernels. Usually, want to 0 out things far away 
+# How to choose width: Cross-validate. Usually best to only report Out of Sample RMSE
+# On boundaries (not as much data) variance of predictions increases, becomes biased at tails
+
+# KNN Example
+# Get training/test data
+ts = sample(1:nrow(water),20)
+train = water[-ts,]
+test = water[ts,]
+# Plot train vs. test
+plot(train$cwsi,train$swc,ylim=c(22,30))
+points(test$cwsi,test$swc,pch=19)
+
+# KNN in caret
+library(caret)
+model = caret::knnreg(swc~cwsi,data=train,k = 10)
+yhat = predict(model,newdata = test)
+# Just plotting as is is out of order
+lines(test$cwsi,yhat,type='o',col=2)
+# Order the test x's:
+plot(train$cwsi,train$swc,ylim=c(22,30))
+points(test$cwsi,test$swc,pch=19)
+lines(test$cwsi[order(test$cwsi)],yhat[order(test$cwsi)],type='o',col=2)
+
+# But which k? ---note that we can also see the bias/variance tradeoff here! 
+k = 1:nrow(train)
+MSE = numeric(length(k)) # empty vector of the same length as klist. 
+
+# recall MSE = bias^2 + var + sigma2
+# loop through all suggested k, then plot
+for(i in 1:length(k)){
+  model = caret::knnreg(swc~cwsi,data=train,k = k[i])
+  yhat = predict(model,newdata = test)
+  MSE[i] = (mean((test$swc - yhat)^2))
+}
+plot(k,MSE,ylim=c(0,max(MSE)))
+
+###########################
+# Local Regression (LOESS)
+###########################
+# Uses a kernal function to weight, then fits a poly model within that range
+# y = b0 + bx + bx^2
+
+?loess
+# loess(formula=, data=, degree=, span=) - 
+# this uses a tricubic weighting function with smoothing span span to fit a local 
+# regression of degree degree. If span<1 then only a fraction of the data is weighted. 
+# IMPORTANT: this function can only handle up to 4 numeric predictors. For higher dimensions, 
+# local regression usually doesn’t work well due to the curse of dimensionality.
+
+# Degree: Which ceofficients are used: setting to 0 = average (kernel smoothing)
+
+# Get training/test data
+ts = sample(1:nrow(water),20)
+train = water[-ts,]
+test = water[ts,]
+# first, the default settings of quadratic (degree=2) and span=0.75
+model = loess(swc~cwsi,data=train)
+oo = order(train$cwsi)
+plot(train$cwsi,train$swc,ylim=c(22,30))
+points(test$cwsi,test$swc,pch=19)
+lines(train$cwsi[oo],model$fitted[oo],col=2)
+
+# Now increase the flexibility by using more local weights with span=0.15
+model2 = loess(swc~cwsi,data=train,span=.15)
+lines(train$cwsi[oo],model2$fitted[oo],col=3)
+
+model3 = loess(swc~cwsi,data=train,span=.5, degree = 1)
+lines(train$cwsi[oo],model3$fitted[oo],col=4)
+
+# Model 1
+yhat = predict(model,newdata = test)
+(mean((test$swc - yhat)^2))
+# Model 2
+yhat2 = predict(model2,newdata = test)
+(mean((test$swc - yhat2)^2))
+# Model 3
+yhat3 = predict(model3,newdata = test)
+(mean((test$swc - yhat3)^2))
+
+x <- c(1:10)
+span_mse <- numeric(length(x))
+spans <- numeric(length(x))
+for (i in 1:10) {
+  span = 1/i
+  span_model <- loess(swc~cwsi,data=train,span=span)
+  span_yhat <- predict(span_model, newdata = test)
+  span_mse[i] <- (mean((test$swc - span_yhat)^2))
+  spans[i] <- span
+}
+plot(spans, span_mse)
+
+(test$swc - span_yhat)
