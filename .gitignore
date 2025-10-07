@@ -8,3 +8,6 @@
 ehthumbs.db
 Thumbs.db
 *.keep
+.Rhistory
+**.keep
+*.ini
