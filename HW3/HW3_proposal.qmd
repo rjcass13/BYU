@@ -61,7 +61,7 @@ We can use this modeling method to account for non-linearity in the data. This m
 This model accomplishes our research goals by allowing us to identify the relationship between the factors and the outputs, as well as provide predictions. 
 
 #### iii. How this method will answer the research questions
- We will be able to review the relationships outlined in the model to see if there are diminishing returns on extracurricular activities, and identify if English as a second language is a barrier to learning. This will also allow us to see which factors are most impactful on score, and will indicate which actions we should suggest to improve score. Finally, this model does allow for prediction, and we will be able to compare it to other models which allow for prediction. 
+We will be able to review the relationships outlined in the model to see if there are diminishing returns on extracurricular activities, and identify if English as a second language is a barrier to learning. This will also allow us to see which factors are most impactful on score, and will indicate which actions we should suggest to improve score. Finally, this model does allow for prediction, and we will be able to compare it to other models which allow for prediction. 
 
 #### iv. What assumptions are needed to use the model adequately? Are they reasonable to assume and explained well?
 One of the strengths of a polynomial spline model is that there are no inherent assumptions the data need to meet. Thus, we do not need to worry about any assumptions. 

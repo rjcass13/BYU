@@ -86,6 +86,7 @@ plot(water$cwsi, water$swc)
 lines(water$cwsi[order(water$cwsi)], mod_spl$fitted.values[order(water$cwsi)])
 
 # Cubic splines behave poorly outside range of data: can use natural splines (ns())
+# Natural splines force linearity outside of last knots
 # Number of knots: has a large impact on performance
 # Degrees of freedom:
 # ns(): num.knots = df - 1
@@ -168,6 +169,9 @@ plot(k,MSE,ylim=c(0,max(MSE)))
 
 # Degree: Which ceofficients are used: setting to 0 = average (kernel smoothing)
 
+
+
+# Test some examples
 # Get training/test data
 ts = sample(1:nrow(water),20)
 train = water[-ts,]
@@ -196,6 +200,7 @@ yhat2 = predict(model2,newdata = test)
 yhat3 = predict(model3,newdata = test)
 (mean((test$swc - yhat3)^2))
 
+# What happens as span changes?
 x <- c(1:10)
 span_mse <- numeric(length(x))
 spans <- numeric(length(x))
@@ -209,3 +214,57 @@ for (i in 1:10) {
 plot(spans, span_mse)
 
 (test$swc - span_yhat)
+
+###########################
+# Smoothing Splines
+###########################
+# Want small changes in second derivative (penalize how fast the derivative changes)
+# We don't need to choose knots, but choose lambda via cross-validation
+
+# gam or mgcv libraries
+# Note the mgcv library because it has an option for calculating standard errors while gam doesn’t.
+library(mgcv)
+
+# gam(y~s(x), data=) - while with other basis function expansions you can just use the lm() function, 
+# smoothing splines are a different in that you have to use the gam function (becase, recall from class, 
+# that smoothing splines are LASSO-ed, splines with a knot at every point). The s(x) specifies that you 
+# want a smoothing spline in x. When you specify the model this way gam will do cross-validation for you to 
+# choose the correct penalty parameter.
+model1 = gam(swc ~ s(cwsi),data=water)
+plot(water$cwsi,water$swc)
+lines(water$cwsi[order(water$cwsi)],model1$fitted.values[order(water$cwsi)],col='green')
+# add two standard errors
+p = predict(model1,se.fit=T)
+lines(water$cwsi[order(water$cwsi)],(p$fit+2*p$se.fit)[order(water$cwsi)],col='orange',lty=2)
+lines(water$cwsi[order(water$cwsi)],(p$fit-2*p$se.fit)[order(water$cwsi)],col='orange',lty=2)
+# There's also a smooth.spline() function if you want to choose df manually
+
+###########################
+# Generalized Additive Models (GAMs)
+###########################
+# Basically, fit a value (function) for each factor, then iterate through until all functions converge
+# Selection in GAMs
+# Up to me to determine whether or not a variable should or should not be included in the model
+# Can involve looking at individual relationships to see which ones appear to be related, which should be linear, etc.
+
+
+
+###########################
+# Testing
+###########################
+water <- read.table('AgricultureWater.txt',header=T)
+
+ts = sample(1:nrow(water),20)
+train = water[-ts,]
+test = water[ts,]
+model1 = gam(swc ~ s(cwsi),data=train)
+p = predict(model1,newdata = test, se.fit=T)
+# Predictive capability
+sqrt(mean(p$se.fit))
+# Water needed to add to get to 29
+29- predict(model1, newdata = data.frame(cwsi = .5))
+
+
+plot(model1)
+library(gratia)
+

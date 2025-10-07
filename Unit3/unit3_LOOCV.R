@@ -1,4 +1,4 @@
-water = read.table('~/Dropbox/Teaching/Stat 536/3 - Nonlinear/AgricultureWater.txt',header=T)
+water = read.table('AgricultureWater.txt',header=T)
 water = water[order(water$cwsi),]
 
 # Setup values we want to explore over
@@ -16,8 +16,8 @@ loess.test.errors = matrix(NA, ncol=loess.max.span, nrow=nrow(water))
 
 gam.test.errors = numeric(nrow(water))
 
+# LOOCV: Leave One Out Cross Validation
 # For LOOCV, we loop through each observation i as the test set. 
-
 for(i in 1:nrow(water)){
   train = water[-i,]
   test = water[i,]
