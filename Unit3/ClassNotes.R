@@ -263,8 +263,36 @@ p = predict(model1,newdata = test, se.fit=T)
 sqrt(mean(p$se.fit))
 # Water needed to add to get to 29
 29- predict(model1, newdata = data.frame(cwsi = .5))
-
-
 plot(model1)
-library(gratia)
+
+
+
+##########################################################
+water <- read.table('AgricultureWater.txt',header=T)
+
+ts = sample(1:nrow(water),20)
+train = water[-ts,]
+test = water[ts,]
+model <- lm(swc~bs(cwsi,degree = 1, knots = c(.5)),data=train)
+plot(water$cwsi, water$swc, xlab = "CWSI", ylab = "SWC", main = "Model Fit")
+x.out = seq(0, 1, .01)
+newdata = data.frame(cwsi = x.out)
+y.out <- predict(model, newdata = newdata, interval = 'confidence')
+lines(x.out, y.out[, 2], lty = 2, lw = 2, col = 'cyan3')
+lines(x.out, y.out[, 1], lw = 3, col = 'mediumorchid3')
+lines(x.out, y.out[, 3], lw = 2, lty = 2, col = 'cyan3')
+
+y_pred <- predict(model, newdata = test)
+RMSE <- sqrt(mean((test$swc - y_pred)^2))
+RMSE
+
+for(i in 1:nrow(water)){
+  train = water[-i,]
+  test = water[i,]
+  model <- lm(swc~bs(cwsi,degree = 1, knots = c(.5)),data=train)
+  yhat = predict(model,newdata = test)
+  bs.test.error = test$swc - yhat
+}
+loocv_rmse <- sqrt(mean(bs.test.error^2))
+loocv_rmse
 

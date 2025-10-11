@@ -16,3 +16,5 @@ plot(edu$Expenditure, edu$Score)
 plot(edu$Income, edu$Score)
 plot(edu$English, edu$Score)
 plot(edu$STratio, edu$Score)
+
+# RJ develop model excluding variables that appear not to matter
