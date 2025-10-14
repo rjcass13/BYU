@@ -1,5 +1,7 @@
 library(mgcv)
 library(splines)
+library(boot)
+library(gratia)
 
 edu <- read.table('SchoolResults.txt',header=T)
 
@@ -7,7 +9,7 @@ edu <- read.table('SchoolResults.txt',header=T)
 # EDA
 
 # Looks normal!
-hist(edu$Score)
+hist(edu$Score, main = 'Histogram of Score', xlab = 'Score', ylab = 'Count')
 
 # There is some collinearity (ex: income vs. lunch)
 pairs(edu)
@@ -74,6 +76,7 @@ summary(eng)
 y <- predict(eng, newdata = edu)
 plot(edu$English, edu$Score, main = 'English vs. Score', xlab = 'English', ylab = 'Score', cex.main = 2, cex.lab = 2, cex.axis = 2)
 lines(edu$English, y, col = 'red')
+plot(eng)
 
 ########################################
 # Non-Linear: Plot a linear fit and a spline to show non-linear
@@ -120,11 +123,26 @@ for(i in 1:nrow(edu)){
   gam_r_sq[i] <- summary(model)$r.sq
 }
 sqrt(mean(gam_test_errors^2))
+c(-1, 1) * sqrt(sd(gam_test_errors)/length(edu))
 mean(gam_r_sq)
+c(-1, 1) * sqrt(sd(gam_r_sq)/length(edu))
 
 # In Sample RMSE, R2
 model <- gam(Score ~ English + ns(Income, df = 4) + bs(Lunch, degree = 3), data = edu)
 p <- predict(model, newdata = edu)
 sqrt(mean((edu$Score - p)^2))
+c(-1, 1) * sqrt(sd((edu$Score - p))/length(edu))
 summary(model)$r.sq
+
+set.seed(1337)
+# Boot strap a conf int. for the In sample R2 
+calc_rsq <- function(data, indices) {
+  boot_data <- data[indices, ]
+  boot_mod <- gam(Score ~ English + ns(Income, df = 4) + bs(Lunch, degree = 3), data = boot_data)
+  summary(boot_mod)$r.sq
+}
+boot_results <- boot(data = edu, statistic = calc_rsq, R = 1000) # R is number of bootstrap replicates
+
+# Get confidence interval
+boot.ci(boot_results, type = "perc")
 
