@@ -1,0 +1,69 @@
+---
+title: HW4 Proposal
+author: RJ Cass
+format: pdf
+---
+
+
+
+$$
+\statvec{Y} + \EX(\statvec{Y})
+$$
+
+## [1. Understanding the Problem]{.underline}
+### Background: 
+
+
+### Goals:
+In this analysis, we want to address several key questions:
+
+#### i. Is there evidence of diminishing returns on extracurricular activities in terms of student learning?
+- TEST
+
+#### ii. Is English as a second language a barrier to student learning?
+- 
+
+#### iii. In your opinion and based on the data, what can be done to increase student learning?
+- 
+
+
+#### iv. How well does the model predict compared to alternatives?
+- 
+
+
+## [2. Exploratory Data Analysis]{.underline}
+
+
+## [3. Desired Attributes]{.underline}
+#### Model attributes required from the research questions
+
+
+#### Model attributes required from the data 
+
+
+#### Any other anticipated problems
+
+
+#### What goes wrong if the above are not accounted for?
+
+
+
+## [4. Proposed Method]{.underline}
+### Appropriate models
+
+
+### Specific model proposal
+
+
+### Method strengts/weakness
+
+#### i. How this method accounts for issues in the dataset
+
+
+#### ii. How this method accomplishes research/analysis goals and yields appropriate estimators
+ 
+
+#### iii. How this method will answer the research questions
+
+
+#### iv. What assumptions are needed to use the model adequately? Are they reasonable to assume and explained well?
