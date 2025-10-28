@@ -1,0 +1,627 @@
+---
+title: "Example Homework"
+author: "Jared Fisher"
+date: "September 17, 2021"
+output: 
+        bookdown::pdf_document2: 
+                toc: false
+abstract: "Chill-E-AC's sales of air conditioners is expected to be very high in July 2019, which is attributable to the high annual growth and strong seasonal pattern of high sales in the summer. The Fourth of July should also contribute to especially high sales. According to our parametric model with ARMA(1,1)x(1,0)[7] noise, the increasing sales seen in early summer will start to level off, but at this peak, Chill-E-AC should see some of the highest selling days in its history."
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r include=FALSE,results='hide'}
+library(astsa)
+library(forecast)
+library(knitr)
+```
+
+<!-- The following script adds the PACF to sarima() -->
+```{r}
+sarima_wPACF = function (xdata, p, d, q, P = 0, D = 0, Q = 0, S = -1, details = TRUE, 
+          xreg = NULL, Model = TRUE, fixed = NULL, tol = sqrt(.Machine$double.eps), 
+          no.constant = FALSE, max.lag = -1) 
+{
+  layout = graphics::layout
+  par = graphics::par
+  plot = graphics::plot
+  grid = graphics::grid
+  title = graphics::title
+  polygon = graphics::polygon
+  abline = graphics::abline
+  lines = graphics::lines
+  frequency = stats::frequency
+  coef = stats::coef
+  dnorm = stats::dnorm
+  ppoints = stats::ppoints
+  qnorm = stats::qnorm
+  time = stats::time
+  na.pass = stats::na.pass
+  trans = ifelse(is.null(fixed), TRUE, FALSE)
+  trc = ifelse(details, 1, 0)
+  n = length(xdata)
+  if (is.null(xreg)) {
+    constant = 1:n
+    xmean = rep(1, n)
+    if (no.constant == TRUE) 
+      xmean = NULL
+    if (d == 0 & D == 0) {
+      fitit = stats::arima(xdata, order = c(p, d, q), seasonal = list(order = c(P, 
+                                                                                D, Q), period = S), xreg = xmean, include.mean = FALSE, 
+                           fixed = fixed, trans = trans, optim.control = list(trace = trc, 
+                                                                              REPORT = 1, reltol = tol))
+    }
+    else if (xor(d == 1, D == 1) & no.constant == FALSE) {
+      fitit = stats::arima(xdata, order = c(p, d, q), seasonal = list(order = c(P, 
+                                                                                D, Q), period = S), xreg = constant, fixed = fixed, 
+                           trans = trans, optim.control = list(trace = trc, 
+                                                               REPORT = 1, reltol = tol))
+    }
+    else fitit = stats::arima(xdata, order = c(p, d, q), 
+                              seasonal = list(order = c(P, D, Q), period = S), 
+                              include.mean = !no.constant, fixed = fixed, trans = trans, 
+                              optim.control = list(trace = trc, REPORT = 1, reltol = tol))
+  }
+  if (!is.null(xreg)) {
+    fitit = stats::arima(xdata, order = c(p, d, q), seasonal = list(order = c(P, 
+                                                                              D, Q), period = S), xreg = xreg, fixed = fixed, trans = trans, 
+                         optim.control = list(trace = trc, REPORT = 1, reltol = tol))
+  }
+  if (details) {
+    old.par <- par(no.readonly = TRUE)
+    layout(matrix(c(1, 2, 4, 1, 3, 5), ncol = 2))
+    par(mar = c(2.2, 2, 1, 0.25) + 0.5, mgp = c(1.6, 0.6, 
+                                                0))
+    
+    ## Standardized residuals
+    
+    rs <- fitit$residuals
+    stdres <- rs/sqrt(fitit$sigma2)
+    num <- sum(!is.na(rs))
+    plot.ts(stdres, main = "Standardized Residuals", ylab = "")
+    if (Model) {
+      if (S < 0) {
+        title(paste("Model: (", p, ",", d, ",", q, ")", 
+                    sep = ""), adj = 0)
+      }
+      else {
+        title(paste("Model: (", p, ",", d, ",", q, ") ", 
+                    "(", P, ",", D, ",", Q, ") [", S, "]", sep = ""), 
+              adj = 0)
+      }
+    }
+    
+    ## ACF
+    
+    alag <- max(10 + sqrt(num), 3 * S, max.lag)
+    ACF = stats::acf(rs, alag, plot = FALSE, na.action = na.pass)$acf[-1]
+    LAG = 1:alag/frequency(xdata)
+    L = 2/sqrt(num)
+    plot(LAG, ACF, type = "h"
+         , ylim = c(min(ACF) - 0.1, min(1,  max(ACF + 0.4)))
+         , main = "ACF of Residuals")
+    abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4))
+    
+    ## Q-Q Plot
+    
+    stats::qqnorm(stdres, main = "Normal Q-Q Plot of Std Residuals")
+    sR <- !is.na(stdres)
+    ord <- order(stdres[sR])
+    ord.stdres <- stdres[sR][ord]
+    PP <- stats::ppoints(num)
+    z <- stats::qnorm(PP)
+    y <- stats::quantile(ord.stdres, c(0.25, 0.75), names = FALSE, 
+                         type = 7, na.rm = TRUE)
+    x <- stats::qnorm(c(0.25, 0.75))
+    b <- diff(y)/diff(x)
+    a <- y[1L] - b * x[1L]
+    abline(a, b, col = 4)
+    SE <- (b/dnorm(z)) * sqrt(PP * (1 - PP)/num)
+    qqfit <- a + b * z
+    U <- qqfit + 3.9 * SE
+    L <- qqfit - 3.9 * SE
+    z[1] = z[1] - 0.1
+    z[length(z)] = z[length(z)] + 0.1
+    xx <- c(z, rev(z))
+    yy <- c(L, rev(U))
+    polygon(xx, yy, border = NA, col = gray(0.6, alpha = 0.2))
+    
+    
+    ## PACF
+    
+    alag <- max(10 + sqrt(num), 3 * S, max.lag)
+    PACF = stats::pacf(rs, alag, plot = FALSE, na.action = na.pass)$acf
+    LAG = 1:alag/frequency(xdata)
+    L = 2/sqrt(num)
+    plot(LAG, PACF, type = "h", ylim = c(min(PACF) - 0.1, min(1,max(PACF + 0.4))), 
+         main = "PACF of Residuals")
+    abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4))
+    
+    
+    ##?
+    
+    nlag <- ifelse(S < 7, 20, 3 * S)
+    ppq <- p + q + P + Q - sum(!is.na(fixed))
+    if (nlag < ppq + 8) {
+      nlag = ppq + 8
+    }
+    pval <- numeric(nlag)
+    for (i in (ppq + 1):nlag) {
+      u <- stats::Box.test(rs, i, type = "Ljung-Box")$statistic
+      pval[i] <- stats::pchisq(u, i - ppq, lower.tail = FALSE)
+    }
+    plot((ppq + 1):nlag, pval[(ppq + 1):nlag], xlab = "LAG (H)", 
+         ylab = "p value", ylim = c(-0.1, 1), main = "p values for Ljung-Box statistic")
+    abline(h = 0.05, lty = 2, col = "blue")
+    on.exit(par(old.par))
+  }
+  if (is.null(fixed)) {
+    coefs = fitit$coef
+  }
+  else {
+    coefs = fitit$coef[is.na(fixed)]
+  }
+  dfree = fitit$nobs - length(coefs)
+  t.value = coefs/sqrt(diag(fitit$var.coef))
+  p.two = stats::pf(t.value^2, df1 = 1, df2 = dfree, lower.tail = FALSE)
+  ttable = cbind(Estimate = coefs, SE = sqrt(diag(fitit$var.coef)), 
+                 t.value, p.value = p.two)
+  ttable = round(ttable, 4)
+  k = length(coefs)
+  n = n - (d + D)
+  BIC = stats::BIC(fitit)/n
+  AIC = stats::AIC(fitit)/n
+  AICc = (n * AIC + ((2 * k^2 + 2 * k)/(n - k - 1)))/n
+  list(fit = fitit, degrees_of_freedom = dfree, ttable = ttable, 
+       AIC = AIC, AICc = AICc, BIC = BIC)
+}
+```
+
+\textcolor{red}{[Note to students: this document contains comments to you inside of square braces [x] like this. Some aren't red if I can't change the color (e.g. in a caption).]} 
+
+
+# Exploratory Data Analysis
+
+```{r}
+sales = read.csv('~/Dropbox/Teaching/UC Berkeley/STAT 153/2021A-Spring/Datasets/sales.csv')
+sales$year = format(as.Date(sales$Date, tryFormats = "%m/%d/%Y"), "%Y")
+sales$month = format(as.Date(sales$Date, tryFormats = "%m/%d/%Y"), "%m")
+sales$day = format(as.Date(sales$Date, tryFormats = "%m/%d/%Y"), "%d")
+sales$weekday = weekdays(as.Date(sales$Date, tryFormats = "%m/%d/%Y"))
+sales$salesseason = 1- 1*(sales$month %in% c("11","12","01","02","03"))
+sales$fourth.of.july = 1*(sales$day == "04" & sales$month == '07')
+```
+
+Air conditioner sales for Chill-E-AC (hereafter referred to simply as "sales") have been growing annually, as seen below in the left panel of Figure \@ref(fig:EDA). There is a strong seasonal pattern: sales spike in the summer and are almost nonexistent in the winter. Also of note is that the variance of sales in their offseasons appears to increase over time, and may imply the same issue during their sales seasons as well.
+
+```{r EDA, fig.cap="Daily air conditioner sales for Chill-E-AC. In the right panel, the green and red circles denote Saturdays and Sundays respectively.", fig.height = 4, fig.width=8, out.width = "90%", fig.align = 'center'}
+par(mfrow=c(1,2))
+plot.sales = function(timeseries,main="",ylab='Sales',x= sales$X,type='l',col=1){
+   plot(x,timeseries
+     ,type = type
+     ,xlab = "Year"
+     ,col = col
+     ,ylab = ylab
+     ,main = main
+     ,axes = F
+     )
+        box()
+        axis(2)
+        axis(1,at = c(1,366,732,1097,1462), labels = 2015:2019)
+}
+# par(mar = c(6,3,1,1))
+plot.sales(timeseries = sales$sales, main="Chill-E-AC Sales History")
+# abline(v=which(sales$day=="01"),col=2:4)
+
+# Mark weekends
+eighteen = which(sales$year==2018)
+satsun = sales$weekday[eighteen]
+satsun = ifelse(satsun=="Saturday","green",ifelse(satsun=="Sunday","red","black"))
+plot.sales(timeseries = sales$sales[eighteen], main="Effects of Weekends", x = sales$X[eighteen], col=satsun, type='o')
+
+```
+When looking closer, there are also a few peculiar days in the dataset. The right panel of Figure \@ref(fig:EDA) shows the effects of different days of the week. Saturdays have higher than average sales and Sundays are lower than average. Also, the company has a big discount every the Fourth of July, so sales are naturally higher on this holiday every year. Lastly, 2016 is a leap year, such that the existence of February 29 will make some modeling methods more difficult to employ. 
+<!-- Seasonal lull begins late october and ends early march. We'll create an indicator for Nov/Dec/Jan/Feb. Leap year: 2/29/2016.  -->
+
+<!-- ```{r, weekdays, fig.cap="Differences in sales for different days of the week. The left panel gives boxplots of the different days [note: the labels need work, but it's just the checkpoint!]. In the right panel, green circles indicate Saturdays, and red circles indicate Sundays.", fig.align = 'center', fig.show="hold", out.width="80%",fig.height = 3 } -->
+<!-- #fig.width = 6.5,  -->
+<!-- par(mar = c(3,3,1,1),mfrow=c(1,2)) -->
+<!-- par(mfrow=c(1,2)) -->
+<!-- sales$wkd = substr(sales$weekday,1,2) -->
+<!-- sales$wkd = factor(sales$wkd, levels=c("Mo","Tu",'We','Th',"Fr",'Sa','Su')) -->
+<!-- boxplot(sales~wkd,data=sales,xlab = "Day of the Week",main="Sales by Day of the Week") -->
+<!-- eighteen = which(sales$year==2018) -->
+<!-- satsun = sales$weekday[eighteen] -->
+<!-- satsun = ifelse(satsun=="Saturday","green",ifelse(satsun=="Sunday","red","black")) -->
+<!-- plot.sales(timeseries = sales$sales[eighteen], main="Effects of Weekends", x = sales$X[eighteen], col=satsun, type='o') -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
+# Models Used
+
+We consider a parametric model of time. To create a sinusoid that increases in amplitude every year but is flat during the offseason, a sinusoid with period 365.25 is interacted with time and with an indicator for the months of the sales season, April to October. Additionally, indicators for day of the week and the Fourth of July are added. This deterministic signal model is detailed in Equation \@ref(eq:parm) below, where $X_t$ is the additive noise term.  
+
+\begin{align}
+\text{Sales}_t =&\, \beta_0 + \beta_1 t + \beta_2I_{\text{season}_{t}} + \beta_3 t I_{\text{season}_{t}} + \beta_4I_{\text{July4}_{t}} + \sum_{j=1}^6 \beta_{4+j}I_{\text{weekday}_{jt}} 
++ \beta_{11} I_{\text{season}_{t}} cos\left(\frac{2\pi t}{365.25}\right) \notag
+\\&
++ \beta_{12} I_{\text{season}_{t}} sin\left(\frac{2\pi t}{365.25}\right) 
++ \beta_{13} t I_{\text{season}_{t}} cos\left(\frac{2\pi t}{365.25}\right) 
++ \beta_{14} t I_{\text{season}_{t}} sin\left(\frac{2\pi t}{365.25}\right) + X_t
+(\#eq:parm)
+\end{align}
+
+<!-- To combat adjust for heteroscedasticity, the response variable of interest is $log(sales+4)$, as the minimum value in the raw data is -3.  -->
+Figure \@ref(fig:signal1) presents the fit  as well as the residuals, which appear reasonably stationary. Both plots focus in on the last two years of data in order to show the fine details. 
+
+```{r signal1, fig.cap="The parametric signal model. The left panel shows this model's fitted values in green, plotted atop the sales data in black. The right panel shows the residuals of this model.",  fig.align = 'center', fig.show="hold", fig.height = 4, fig.width=8, out.width = "90%"}
+# 
+# par(mar = c(3,3,1,1),mfrow=c(1,2))
+# fig.align = 'center', fig.width = 6, fig.height = 3}
+
+mod1 = lm(sales ~ X * salesseason + weekday
+          + fourth.of.july
+          # + cos(2*pi*X*1/365.25):X
+          # + sin(2*pi*X*1/365.25):X
+          + cos(2*pi*X*1/365.25):salesseason:X
+          + sin(2*pi*X*1/365.25):salesseason:X
+          + cos(2*pi*X*1/365.25):salesseason
+          + sin(2*pi*X*1/365.25):salesseason
+          ,data=sales)
+par(mfrow=c(1,2))
+# plot.sales(sales$sales,main="Parametric Signal Model",x = sales$X)
+# lines(sales$X,mod1$fitted.values,col=3)
+these =(nrow(sales)-730+1):nrow(sales)
+plot.sales(sales$sales[these],main="Parametric Signal Model",x = sales$X[these],ylab="Sales")
+lines(sales$X[these],mod1$fitted.values[these],col=3)
+plot.sales(mod1$residuals[these],main="Residuals",ylab='Residuals',x = sales$X[these])
+```
+
+The right panel of Figure \@ref(fig:signal1) shows that there potentially is heteroscedasticity when comparing the summer sales season with the winter "offseason".   
+
+## Parametric Signal with ARMA(1,1)x(1,0)[7]
+
+The ACF and PACF plots for the parametric model residuals are shown in Figure \@ref(fig:acf1). The lags with the largest magnitude ACF values occur at lags 1 and 7. Furthermore, there are more significant lags in the ACF than in the PACF. These two observations lead to proposing p=P=1 as a potential fit, however trial and error showed that this shape is not well fit unless q=1 as well.  Thus, ARMA(1,1)x(1,0)[7] is proposed, and this model implies the ACF and PACF indicated by the red circles in Figure \@ref(fig:acf1) which fit the general pattern of the sample autocorrelations. \textcolor{red}{[This is part of the assumptions I need to show for this time series model. You'll have different assumptions for the different models!]}
+
+```{r results='hide', include="false"}
+s1.1 = sarima_wPACF(mod1$residuals,p=1,d=0,q=1,S=7,P=1,Q=0,max.lag = 50)
+```
+```{r results='hide'}
+auto.arima(ts(mod1$residuals,frequency = 7),max.d=0,max.D=0)
+# resid.f7 = ts(mod1$residuals,frequency = 7)
+# auto.arima(resid.f7)
+```
+```{r results='hide', include='false'}
+s1.2 <- sarima_wPACF(mod1$residuals,p=1,d=0,q=1,S=7,Q=2)
+```
+
+```{r acf1, fig.cap="Autocorrelation function (ACF) and partial autocorrelation function (PACF) values for the parametric signal model's residuals. Red circles reflect the AR(1)xSAR(1)[7] model, while the blue circles reflect the ARMA(2,2) model.",  fig.align = 'center', fig.show="hold",  fig.height = 4, fig.width=8, out.width = "90%"}
+# ,fig.width = 6.5,fig.height = 3
+# a = acf2(mod1$residuals,main="",max.lag = 100)
+par(mfrow=c(1,2))
+lag.max = 40
+ACF = acf(mod1$residuals,lag.max = lag.max,plot = FALSE)$acf[-1]
+PACF = pacf(mod1$residuals,lag.max = lag.max,plot = FALSE)$acf
+ylim = range(c(ACF,PACF))
+Lag = 1:lag.max
+L = 2/sqrt(length(mod1$residuals))
+
+## ACF 
+    plot(Lag, ACF, type = "h"
+         , ylim = ylim
+         , main = "ACF of Residuals")
+    abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4))
+    # noise 1
+    # a = ARMAacf(ar=c(s1.1$fit$coef[1],rep(0,5),s1.1$fit$coef[2],-s1.1$fit$coef[1]*s1.1$fit$coef[2] ),lag.max = lag.max)
+    a = ARMAacf(ma = s1.1$fit$coef[2],ar=c(s1.1$fit$coef[1],rep(0,5),s1.1$fit$coef[3],-s1.1$fit$coef[1]*s1.1$fit$coef[3] ),lag.max = lag.max)
+    points(Lag,a[-1],col='red',cex=.5)
+    # noise 2
+    a = ARMAacf(ar=s1.2$fit$coef[1],ma=c(s1.2$fit$coef[2], rep(0,5), s1.2$fit$coef[3], s1.2$fit$coef[2]*s1.2$fit$coef[3], rep(0,5), s1.2$fit$coef[4], s1.2$fit$coef[2]*s1.2$fit$coef[4] ),lag.max = lag.max)
+    points(Lag,a[-1],col='blue',cex=.5)
+## PACF
+    plot(Lag, PACF, type = "h"
+         , ylim = ylim
+         , main = "PACF of Residuals")
+    abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4))
+    # noise 1
+    p = ARMAacf(ma = s1.1$fit$coef[2],ar=c(s1.1$fit$coef[1],rep(0,5),s1.1$fit$coef[3],-s1.1$fit$coef[1]*s1.1$fit$coef[3] ),lag.max = lag.max,pacf = TRUE)
+    points(Lag,p,col='red',cex=.5)
+    # noise 2
+    p = ARMAacf(ar=s1.2$fit$coef[1],ma=c(s1.2$fit$coef[2], rep(0,5), s1.2$fit$coef[3], s1.2$fit$coef[2]*s1.2$fit$coef[3], rep(0,5), s1.2$fit$coef[4], s1.2$fit$coef[2]*s1.2$fit$coef[4] ),lag.max = lag.max,pacf = TRUE)
+    points(Lag,p,col='blue',cex=.5)
+```
+
+
+
+This was the best model as determined by [describe here! Cross validation? F-test?]. 
+These four model options are compared through time series cross validation. The nonoverlapping testing sets roll through the last 180 days in the data, 1/2/2019 through 6/30/2019, in 10 day segments. Thus there will be 180 forecasted points over these 18 windows. The training sets consist of all data that occur before the appropriate testing set. The models' forecasting performances will be compared through root-mean-square prediction error (RMSPE). The model with the lowest RMSPE will be chosen as the model for predicting sales in July. 
+
+Table \@ref(tab:rmsetable) shows that the parametric model with ARMA(1,1)x(1,0)[7] has the lowest cross-validated forecast error, as measured by RMSPE, though the parametric model with ARMA(1,1)x(0,2)[7] is a close second. Thus the parametric model with ARMA(1,1)x(1,0)[7] is the chosen forecasting model. \textcolor{red}{[Students: I'm not particular with exactly how you cross validate, as long as you've thought it through and explain yourself it should be fine.]}
+
+```{r include="false"}
+sum_squared_errors <- c(model1.1=0, model1.2=0, model2.1=0, model2.2=0)
+for (i in 18:1) { #18:1
+  train_set <- sales[1:(nrow(sales) - 10*i),]
+  test_set <- sales[(nrow(sales) - 10*i + 1):(nrow(sales) - 10*(i-1) ),]
+  N = nrow(train_set)
+  # Signal model 1
+  signal1 = lm(sales ~ X * salesseason + weekday
+          + fourth.of.july
+          # + cos(2*pi*X*1/365.25):X herehere
+          # + sin(2*pi*X*1/365.25):X
+          + cos(2*pi*X*1/365.25):salesseason:X
+          + sin(2*pi*X*1/365.25):salesseason:X
+          + cos(2*pi*X*1/365.25):salesseason
+          + sin(2*pi*X*1/365.25):salesseason,data=train_set)
+  signal.forecast1 = predict(signal1,test_set)
+  noise.forecast1.1 = sarima.for(signal1$residuals, n.ahead=10, p=1,d=0,q=1,S=7,P=1)$pred
+  noise.forecast1.2 = sarima.for(signal1$residuals, n.ahead=10, p=2,d=0,q=2)$pred
+  forecast1.1 = signal.forecast1 + noise.forecast1.1
+  forecast1.2 = signal.forecast1 + noise.forecast1.2
+
+  # Signal model 2 - Differencing
+  leap = which(train_set$Date == "2/29/2016")
+  post.leap = train_set[(leap+1):N,]
+  d = diff(diff(post.leap$sales,365),7)
+  # You can just do differencing inside of sarima.for! I don't because I've taken two seasonal differences with different periods, which is not supported by sarima.for currently.
+  noise.forecast2.1 = sarima.for(d,n.ahead=10,p=0,d=0,q=0,P=0,D=0,Q=1,S=7)$pred
+  noise.forecast2.2 = sarima.for(d,n.ahead=10,p=0,d=0,q=5,S=7,Q=1)$pred
+
+  forecast2.1 = numeric(10)
+  forecast2.2 = numeric(10)
+  # These equation are specific for the lag-7 differencing, as the first few forecasts must become the Y_{i-7} values for i in 8:10. 
+  for(i in 1:7){
+          forecast2.1[i] = noise.forecast2.1[i] + train_set$sales[N+i-7]
+                                + train_set$sales[N+i-365] - train_set$sales[N+i-365-7]
+          forecast2.2[i] = noise.forecast2.2[i] + train_set$sales[N+i-7]
+                                + train_set$sales[N+i-365] - train_set$sales[N+i-365-7]
+  }
+  for(i in 8:10){
+          forecast2.1[i] = noise.forecast2.1[i] + forecast2.1[i-7] #this is hat(Y)_[N+i-7]
+                                + train_set$sales[N+i-365] - train_set$sales[N+i-365-7]
+          forecast2.2[i] = noise.forecast2.2[i] + forecast2.2[i-7] #this is hat(Y)_[N+i-7]
+                                + train_set$sales[N+i-365] - train_set$sales[N+i-365-7]
+  }
+
+
+  #
+  sum_squared_errors[1] = sum_squared_errors[1] + sum((forecast1.1 - test_set$sales)^2)
+  sum_squared_errors[2] = sum_squared_errors[2] + sum((forecast1.2 - test_set$sales)^2)
+  sum_squared_errors[3] = sum_squared_errors[3] + sum((forecast2.1 - test_set$sales)^2)
+  sum_squared_errors[4] = sum_squared_errors[4] + sum((forecast2.2 - test_set$sales)^2)
+}
+```
+
+```{r rmsetable}
+#RMSE table
+rmse = matrix(sqrt(sum_squared_errors/180)[1:2], nrow=2,ncol = 1)
+colnames(rmse) = "RMSPE"
+rownames(rmse) = c(
+        "Parametric Model + ARMA(1,1)x(1,0)[7]",
+        "Parametric Model + ARMA(1,1)x(0,2)[7]"
+        )
+knitr::kable(rmse,caption = "Cross-validated out-of-sample root mean squared prediction error for the four models under consideration.")
+```
+    
+
+
+
+To forecast sales in July, a parametric model of time will be used. Let $\text{Sales}_t$ be the air conditioner sales on day $t$ with additive noise term $X_t$, as previously shown in Equation \@ref(eq:parm), which is restated below as part of Equation \@ref(eq:pred). $X_t$ is a stationary process defined by ARMA(1,1)x(1,0)[7], where $W_t$ is white noise with variance $\sigma^2_W$. 
+
+\begin{align}
+\text{Sales}_t =&\, \beta_0 + \beta_1 t + \beta_2I_{\text{season}_{t}} + \beta_3 t I_{\text{season}_{t}} + \beta_4I_{\text{July4}_{t}} + \sum_{j=1}^6 \beta_{4+j}I_{\text{weekday}_{jt}} 
++ \beta_{11} I_{\text{season}_{t}} cos\left(\frac{2\pi t}{365.25}\right)  \notag
+\\&
++ \beta_{12} I_{\text{season}_{t}} sin\left(\frac{2\pi t}{365.25}\right) 
++ \beta_{13} t I_{\text{season}_{t}} cos\left(\frac{2\pi t}{365.25}\right) 
++ \beta_{14} t I_{\text{season}_{t}} sin\left(\frac{2\pi t}{365.25}\right) + X_t \notag \\
+X_t =&\, \phi X_{t-1} + \Phi X_{t-7} - \phi \Phi X_{t-8} + W_t + \theta W_{t-1} 
+(\#eq:pred)
+\end{align}
+
+There are several binary indicators in this model. $I_{\text{season}_{t}}$ indicates if day $t$ is in one of the months of the sales season, April to October. $I_{\text{July4}_{t}}$ indicates if day $t$ is the Fourth of July. $I_{\text{weekday}_{jt}}$ indicates if day $t$ is the $j$th day of the week. $\phi$, $\Phi$, $\theta$, and all of the $\beta$'s are coefficients that will be estimated in the next subsection.
+
+
+
+## Parametric Signal with ARMA(1,1)x(0,2)[7]
+
+\textcolor{red}{[If I needed another model to answer a minor point, I should describe it in two or three sentences as per the syllabus. Of course, the main model needs to be fully described.]} The R function auto.arima(), with the no differencing option specified, suggests ARMA(1,1)x(0,2)[7]. This seems plausible as the seasonal AR component (P=1) is replaced by a larger order of a seasonal MA component (Q=2).  This model's ACF and PACF are included as blue points on Figure \@ref(fig:acf1), which look like an incrementally better fit to the sample autocorrelations than the red circles from the first suggested ARMA model. 
+
+
+
+
+<!-- ## Differencing -->
+
+<!-- As previously addressed, there are annual peaks in the summers, so lag-365 differencing will be helpful. Note that the leap day on 2/29/2016 will interfere with this, so everything before 3/1/2016 is trimmed off from the dataset when differencing. There are also weekly effects (high Saturday sales, low Sunday sales), so lag-7 differencing will also be beneficial, and as this is now twice differenced, any linear or quadratic trend will be accounted for. We see this is the case in the implied fitted values of this differencing approach, which are shown in Figure \@ref(fig:signal2). Also shown is the time series of the differences, which appears stationary. [note to students: this is essentially the residual plot! And you could reasonably argue it's nonstationary due to heteroscedasticity, but again, we can't take the log of the raw data in this problem.] -->
+
+<!-- ```{r signal2, fig.cap='Diagnostics for differencing "signal model". The left panel shows the data in black and the fitted values in green The right plot shows the differences themselves, to be assessed for stationarity.',  fig.align = 'center',  fig.height = 4, fig.width=8, out.width = "90%"} -->
+<!-- par(mfrow=c(1,2)) -->
+<!-- leap = which(sales$Date == "2/29/2016") -->
+<!-- post.leap = sales[(leap+1):nrow(sales),] -->
+<!-- d = diff(diff(post.leap$sales,365),7) -->
+<!-- post.leap$impliedmodel = NA -->
+<!-- for(i in 373:nrow(post.leap)){ -->
+<!--         post.leap$impliedmodel[i] = mean(d) + post.leap$sales[i-7] + post.leap$sales[i-365] - post.leap$sales[i-365-7] -->
+<!-- } -->
+<!-- # -->
+<!-- plot.sales(post.leap$sales[(nrow(post.leap)-length(d)+1):nrow(post.leap)],x=post.leap$X[(nrow(post.leap)-length(d)+1):nrow(post.leap)],main="Differencing Fitted Values") -->
+<!-- lines(post.leap$X,post.leap$impliedmodel,col='green',lwd=.2) -->
+<!-- # -->
+<!-- plot.sales(d -->
+<!--            ,main=expression(paste(nabla[7],nabla[365],"Sales"[t])) -->
+<!--            ,x=post.leap$X[(nrow(post.leap)-length(d)+1):nrow(post.leap)]) -->
+
+<!-- ``` -->
+
+
+
+<!-- ## Differencing with SMA(1)[7] -->
+<!-- ```{r s21, results='hide', fig.cap='Diagnostic plots for SMA(1)[7].', out.width = "80%", fig.align = 'center', include=FALSE} -->
+<!-- s2.1 = sarima_wPACF(d,p=0,d=0,q=0,P=0,D=0,Q=1,S=7,max.lag=30) -->
+<!-- # s2.1 = sarima_wPACF(d,p=1,d=0,q=1,P=1,D=0,Q=1,S=7,max.lag=30) -->
+<!-- ``` -->
+
+
+
+<!-- ```{r s22, results='hide', fig.cap='Diagnostic plots for MA(5)xSMA(1)[7].', out.width = "80%", fig.align = 'center', include=FALSE} -->
+<!-- dts = ts(d,frequency =7) -->
+<!-- auto.arima(dts) -->
+<!-- s2.2 = sarima(d,p=0,d=0,q=5,S=7,Q=1) -->
+<!-- ``` -->
+
+
+<!-- ```{r acf2, fig.cap="Autocorrelation function (ACF) and partial autocorrelation function (PACF) values for the differencing model.  Red circles reflect the SMA(1)[7] model, while the blue circles reflect the ARMA(0,5)x(0,1)[7].",  fig.align = 'center', fig.show="hold",  fig.height = 4, fig.width=8, out.width = "90%"} -->
+<!-- # ,fig.width = 6.5,fig.height = 3 -->
+<!-- # a = acf2(mod1$residuals,main="",max.lag = 100) -->
+<!-- par(mfrow=c(1,2)) -->
+<!-- lag.max = 40 -->
+<!-- ACF = acf(d,lag.max = lag.max,plot = FALSE)$acf[-1] -->
+<!-- PACF = pacf(d,lag.max = lag.max,plot = FALSE)$acf -->
+<!-- ylim = range(c(ACF,PACF)) -->
+<!-- Lag = 1:lag.max -->
+<!-- L = 2/sqrt(length(mod1$residuals)) -->
+
+<!-- ## ACF -->
+<!--     plot(Lag, ACF, type = "h" -->
+<!--          , ylim = ylim -->
+<!--          , main = "ACF of Residuals") -->
+<!--     abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4)) -->
+<!--     # noise 1 -->
+<!--     # a = ARMAacf(ma=c(s2.1$fit$coef[1],rep(0,5),s2.1$fit$coef[2],s2.1$fit$coef[1]*s2.1$fit$coef[2] ),lag.max = lag.max) -->
+<!--     a = ARMAacf(ma = c(0,0,0,0,0,0,s2.1$fit$coef[1]) ,lag.max = lag.max) -->
+<!--     points(Lag,a[-1],col='red',cex=.5) -->
+<!-- #     # noise 2 -->
+<!--     a = ARMAacf(ma=c(s2.2$fit$coef[1:5],0,s2.2$fit$coef[6],s2.2$fit$coef[6]*s2.2$fit$coef[1:5]),lag.max = lag.max) -->
+<!--     points(Lag,a[-1],col='blue',cex=.5) -->
+<!-- ## PACF -->
+<!--     plot(Lag, PACF, type = "h" -->
+<!--          , ylim = ylim -->
+<!--          , main = "PACF of Residuals") -->
+<!--     abline(h = c(0, -L, L), lty = c(1, 2, 2), col = c(1,4, 4)) -->
+<!--     # noise 1 -->
+<!--     # p = ARMAacf(ma=c(s2.1$fit$coef[1],rep(0,5),s2.1$fit$coef[2],s2.1$fit$coef[1]*s2.1$fit$coef[2] ),lag.max = lag.max,pacf = TRUE) -->
+<!--     p = ARMAacf(ma = c(0,0,0,0,0,0,s2.1$fit$coef[1]),lag.max = lag.max,pacf = TRUE) -->
+<!--     points(Lag,p,col='red',cex=.5) -->
+<!-- #     # noise 2 -->
+<!--     p = ARMAacf(ma=c(s2.2$fit$coef[1:5],0,s2.2$fit$coef[6],s2.2$fit$coef[6]*s2.2$fit$coef[1:5]),lag.max = lag.max,pacf = TRUE) -->
+<!--     points(Lag,p,col='blue',cex=.5) -->
+
+<!-- ``` -->
+
+
+<!-- The sample ACF and PACF for these differences are shown in Figure \@ref(fig:acf2). Significant values at every seventh lag of the PACF plot suggest that Q=1 and S=7. There are other lags that appear significant and similar to the q=Q=1 pattern, however, adding q=1 does not fit these points well, so the simpler model is chosen. The fit of this  choice is shown in Figure \@ref(fig:acf2) with red circles.  These red circles show that this SMA(1)[7] specification fits well at each of the most-significant lags: PACF values at multiples of seven and the ACF at lag seven.  [I could instead show all of, or a subset of, the sarima diagnostics...] -->
+
+
+
+<!-- ## Differencing with ARMA(0,5)x(0,1)[7] -->
+
+<!-- As with the previous signal model's second ARMA specification, this second noise model will be chosen by the R function auto.arima(), with the no differencing option specified. This automated procedure suggests ARMA(0,5)x(0,1)[7], i.e. q=5 and Q=1 for S=7, which is a more complex version of the SMA(1)[7] model in the previous subsubsection. [Students: note that auto.arima's default is to cap q at 5...] The ACF and PACF of this ARMA model are included as blue circles on Figure \@ref(fig:acf1), which look similar but more sporadic compared to the same values from SMA(1)[7] in red circles. They are similar in that the PACF values at multiples of seven (and thus the ACF at lag seven) are accounted for. However, this more complex model also tries to account for some of the PACF values off of lag seven, though this seems to cause some of the ARMA ACF values (in blue) to stray away from the sample ACF values in black.   -->
+
+
+<!-- HERE -->
+
+
+# Results
+
+
+## Estimation of model parameters
+
+Estimates of the model parameters are given in Table 2 in Appendix 1. It is particularly interesting to note that the Fourth of July averages 34 more sales than it would as a normal day. For the days of the week, Friday is set as the baseline category, such that Saturdays average 19 more sales than Fridays, Sundays 13 fewer, and the other weekdays show little difference. 
+
+
+```{r}
+  signal1 = lm(sales ~ X * salesseason + weekday
+          + fourth.of.july
+          # + cos(2*pi*X*1/365.25):X
+          # + sin(2*pi*X*1/365.25):X
+          + cos(2*pi*X*1/365.25):salesseason:X
+          + sin(2*pi*X*1/365.25):salesseason:X
+          + cos(2*pi*X*1/365.25):salesseason
+          + sin(2*pi*X*1/365.25):salesseason,data=sales)
+s = summary(signal1)
+```
+
+
+Table 2: Estimates of the forecasting model parameters in  Equation \@ref(eq:pred), with their standard errors (SE). \textcolor{red}{[Note that I've included a brief description of what each of the coefficients are, because there are a lot of betas here. You'll want to interpret them in your text though, in context of the problem, as per the rubric. If you have a lot of them, like more than 6ish(?), then only interpreting the important ones will suffice.]} 
+
+|Parameter|Estimate|SE|Coefficient Description |
+|:---------|---:|---:|:---|
+|$\beta_{0}$|2.738|1.450|Intercept|
+|$\beta_{1}$|0.008|0.001|Time|
+|$\beta_{2}$|-9.189|2.043|Sales season|
+|$\beta_{3}$|0.033|0.002|Time $\times$ sales season interaction|
+|$\beta_{4}$|34.387|7.620|Fourth of July|
+|$\beta_{5}$|19.163|1.398|Saturday|
+|$\beta_{6}$|-13.433|1.397|Sunday|
+|$\beta_{7}$|-0.312|1.399|Monday|
+|$\beta_{8}$|0.130|1.399|Tuesday|
+|$\beta_{9}$|0.796|1.399|Wednesday|
+|$\beta_{10}$|-1.588|1.397|Thursday|
+|$\beta_{11}$|-17.001|2.556|Cosine $\times$ sales season interaction|
+|$\beta_{12}$|-7.763|1.403|Sine $\times$ sales season interaction|
+|$\beta_{13}$|-0.061|0.003|Cosine $\times$ time $\times$ sales season|
+|$\beta_{14}$|-0.016|0.001|Sine $\times$ time $\times$ sales season interaction|
+|$\phi$|0.971|0.008|AR coefficient|
+|$\theta$|-0.873|0.016|MA coefficient|
+|$\Phi$|0.083|0.025|Seasonal AR coefficient|
+|$\sigma^2_W$|186.521| |Variance of White Noise|
+
+\textcolor{red}{$[$The coefficient description is not required but helpful. You could also name the cofficient $\beta_{Sunday}$, etc. $]$}
+
+## Prediction
+\textcolor{red}{$[$Main question of interest is the forecast over the next ten days. $]$}
+Figure \@ref(fig:forecasts) shows the forecasted values of sales for the first ten days of July. The model predicts that the peak of sales season is near, as the expected sales are growing at a slower pace than in previous weeks. We do see high expected sales on both Thursday, July 4, and Saturday, July 6. Looking at the prediction intervals, either of these two days may set the company daily sales record. 
+
+
+ 
+
+
+```{r forecasts, fig.cap='Forecasts of air conditioner sales for Chill-E-AC. The x-axis is time in years. The black points are the recent historical sales data. The red points are the forecasts for the first ten days in July 2019. The dark/light grey bands are the one/two standard error bands, representing 68\\%/95\\% prediction intervals, respectively. [Note to students: the x-axis would ideally be dates, but currently it is time in whole years, which is better than just integers "t".  Sarima.for is proving to be a challenge to customize with their options; of course, I/you could just take their code and customize it correctly.]',  fig.align = 'center', fig.show="hold",  fig.height = 4, fig.width=8, out.width = "90%"}
+
+#  
+sales2 = tail(sales,10)[,c(1,7,8,9)]
+sales2$X = sales2$X + 10
+sales2$fourth.of.july[4] = 1
+sales2$weekday = sales$weekday[5:14]
+signal.forecast1 = predict(signal1,sales2)
+
+# !!! The most accurate way to calculate the forecast
+# noise.forecast1.1 = sarima.for(signal1$residuals, n.ahead=10, p=1,d=0,q=1,S=7,P=1, )$pred
+# forecast1.1 = signal.forecast1 + noise.forecast1.1
+# THEN PLOT both the original points and the new values (in a different color?)
+# helpful for lm to create new dataframe with covariates for next 10 obs
+# this is a bit complicated for me as I made new variables. 
+
+
+# !!! However, this way makes it easier to make a nicer plot. It's a bit more complicated, but basically your model's values are included as a regressor. It should have a coefficient essentially equal to 1 in the sarima fitting. 
+Sales = ts(sales$sales,start = c(2015,1),frequency = 365) #ignoring the leap year... not ideal but it shouldn't affect my plot too much... 
+attempt = sarima.for(Sales, n.ahead=10, p=1,d=0,q=1,S=7,P=1, xreg = signal1$fitted.values, newxreg = signal.forecast1)$pred
+# You'll then want to output forecast1.1 (or "attempt" above) to csv file in the CORRECT/specific format discussed on the assignment! 
+
+#write.table(x = attempt,file = "~/Desktop/sales_1234567.csv", sep=",",row.names=FALSE,  col.names=FALSE)
+```
+
+# Conclusion
+
+\textcolor{red}{[Concluding statements should be here as per the rubric]}
+
+
+
+
+<!-- You can simply use the kable function, but it's trickier to get math symbols in there...  -->
+<!-- ```{r} -->
+<!-- kable(s$coefficients[,1:2]) -->
+<!-- kable(s1.1$ttable[,1:2]) -->
+<!-- # the following line gives sigma^2_W: -->
+<!-- s1.1$fit$sigma2 -->
+<!-- ``` -->
+
+<!-- This table is made using raw Markdown. I made it by copying/pasting the needed values from s$coefficients, s1.1$ttable, and s1.1$fit$sigma2 (like above) into Excel. From Excel, you can move "Text to Columns" and then add the | and - as needed for formatting. This essetially how I'd make a table for LaTeX too, though the xtable() function helps a lot with exporting R tables to LaTeX-->

@@ -1,0 +1,183 @@
+---
+title: HW1 Report
+author: RJ Cass
+execute:
+  echo: false
+format: 
+    pdf
+geometry: "margin=1in"
+---
+
+```{r initialize}
+# Initialize dataset
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(car))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(knitr))
+kbb = read.csv("KBB.csv")
+kbb <- kbb %>%
+  mutate(across(where(is.character), as.factor))
+```
+
+# Abstract
+Kelley Blue Book (KBB) has an extensive dataset covering car conditions and their sale price. We created a linear model of the Square Root of Price to predict a resonable resale value for a car. We found that the factors that impact Price are Mileage, Make, Model, Trim, Sound, and Leather. We also found that the Make impacts how quickly a car loses value as mileage increases, with Chevrolets and Saturns best retaining their value. We also showed that a Cadillac XLR-V8 with upgraded sound and leather interior has the best value at 15k miles. Finally, we showed that the car parameters given in the research problem, a resonable resale range is $34522.6 to $35516.23.
+
+# 1: Introduction
+The Kelley Blue Book (KBB) dataset is intended to help consumers know what is a reasonable sale price for a car given its current condition. We want to use this data to
+1) Understand which variables are most important in determining resale value
+2) Consider what factors might not be included in this dataset which could contribute
+3) Identify if their is any interaction between car make and mileage on determining the sale price
+4) Create a model to identify which factors give the highest resale value for a car at 15k miles
+5) Predict price range for a car with given values
+
+As shown in Figure 1 - Left, price does not appear to be normally distributed. As such we will need to perform a transformation on the Price data so we can meet the assumptions for our model. If we do not perform this transformation, the resulting model will not properly explain the relationship between the covariates and the output. 
+
+Looking at how price trends based on mileage (Figure 1 - Right), price does trend downwards as mileage increases. Furthermore, examining the general decrease of price by car make, it appears there is an interaction between car make and mileage (it seems that the decrease of price due to mileage for Cadillac cars is greater than other makes). If we do not account for this interaction effect, our prediction model will not provide accurate values for price range. 
+
+```{r exploration, fig.width=8, fig.height=5}
+par(mfrow = c(1, 2))
+hist(kbb$Price, main = "Histogram of Price", xlab = "Price", ylab = "Frequency")
+
+lm = lm(Price ~ Mileage, data = kbb)
+plot(kbb$Mileage, kbb$Price, col = kbb$Make, pch = 19, 
+    main = "Mileage x Make vs. Price", xlab = "Mileage", ylab = "Price ($)")
+legend("topright", legend = levels(kbb$Make), 
+    col = unique(kbb$Make), lty = 1, lwd = 4)
+par(mfrow = c(1, 1))
+```
+
+Figure 1: Left - Histogram of Price. Note that this is a right-skewed distribution, as does not meet normality assumptions. Right - Mileage versus Price with different colors for each car make. We can see that price decreases as mileage increases. Note that the rate of decrease for the red dots (Cadillac) appears to be larger.
+
+# 2: Methodology
+
+### 2.1 Proposed Models
+
+```{r variable selection}
+#| include: false
+
+# 2 models I will be testing: log transform and square-root transform
+log_model = lm(log(Price) ~ . + Make*Mileage, data=kbb)
+root_model = lm(sqrt(Price) ~ . + Make*Mileage, data=kbb)
+
+# Perform variable selection
+aic_log = stepAIC(log_model,direction = "both")
+aic_root = stepAIC(root_model,direction = "both")
+log_selected_variables <- names(coef(aic_log))
+root_selected_variables <- names(coef(aic_root))
+```
+
+In order to account for the non-normality of Price, we are considering 2 models. The first model is a linear model using $ln(Price)$ (Model 1). The second model is a linear model using $\sqrt{Price}$ (Model 2). For each model we performed variable selection using the hybrid AIC method. In each case we found the interaciton between Make and Mileage to be significant and have included it in the model.
+
+\begin{equation}
+    \begin{split}
+        ln(Price) = \beta_0 + & \beta_1 I_{Mileage} + \beta_2 I_{Sound} + \beta_3 I_{Leather} + \beta_4 I_{Cruise} + \sum_{i=1}^{n} \beta_{5_i} I_{Make_{i}*Mileage} \\
+        & + \sum_{i=1}^{n} \beta_{6_i} I_{Trim_i} + \sum_{i=1}^{n} \beta_{7_i} I_{Model_i} + \sum_{i=1}^{n} \beta_{8_i} I_{Make_i}
+    \end{split}
+\end{equation}
+
+\begin{equation}
+    \begin{split}
+        \sqrt{Price} = \beta_0 + & \beta_1 I_{Mileage} + \beta_2 I_{Sound} + \beta_3 I_{Leather} + \sum_{i=1}^{n} \beta_{4_i} I_{Make_{i}*Mileage}   \\
+        & + \sum_{i=1}^{n} \beta_{5_i} I_{Trim_i} + \sum_{i=1}^{n} \beta_{6_i} I_{Model_i} + \sum_{i=1}^{n} \beta_{7_i} I_{Make_i}
+    \end{split}
+\end{equation}
+
+In considering the assumptions necessary for these models, the first we considered is independence. In this case, due to our own experience with cars, we feel confident assuming independence in these factors (primarily in mileage: some factors may be related such as make/model, as well as special features like leather/cruise with trim). Linearity was shown in Figure 1. As shown in Figure 1 - Top, Model 1 more closelt matches the normality assumption, but both are an improvement over the untransformed data. To check the equal veriance assumption, we examine the fitted residuals of each model (Figure 2 - Bottom). We see that Model 2 has a more constant distribution of residuals, indicating it more cloesly meets the assumptions necessary for the model. 
+
+```{r checking assumptions, fig.width=7, fig.height=3}
+par(mfrow = c(1, 2))
+hist(log(kbb$Price), main = "Histogram of ln(Price)", xlab = "ln(Price)")
+hist(sqrt(kbb$Price), main = "Histogram of sqrt(Price)", xlab = "sqrt(Price)")
+
+par(mfrow = c(1, 2))
+plot(aic_log, which = 1, main = "Residuals vs. Fitted: ln(Price)")
+plot(aic_root, which = 1, main = "Residauls vs. Fitted: sqrt(Price)")
+par(mfrow = c(1, 1))
+
+log_adj_r_squared = round(summary(aic_log)$adj.r.squared, 3)
+root_adj_r_squared = round(summary(aic_root)$adj.r.squared, 3)
+
+yhat_log = predict(aic_log)
+yhat_root = predict(aic_root)
+
+ss_res_log = sum((log(kbb$Price) - yhat_log)^2)
+ss_tot_log = sum((log(kbb$Price) - mean(log(kbb$Price)))^2)
+r_squared_log = round(1 - (ss_res_log / ss_tot_log), 3)
+
+ss_res_root = sum((sqrt(kbb$Price) - yhat_root)^2)
+ss_tot_root = sum((sqrt(kbb$Price) - mean(sqrt(kbb$Price)))^2)
+r_squared_root = round(1 - (ss_res_root / ss_tot_root), 3)
+
+par(mfrow = c(1, 1))
+```
+
+Figure 2: Top - Histograms showing the distribution of the transformed Price values. Note they are less skewed than the histogram in Figure 1, but still show show right-skewedness. Bottom - Plots of residuals versus fitted values. The residuals for Model 2 are more consistent across the fitted values.
+
+
+### 2.2 Evaluation of Models
+
+Comparing the adjusted $R^2$ values for each model, for Model 1 we get a value of `r log_adj_r_squared`. For Model 2 we get a value of `r root_adj_r_squared`. These models perform almost identically in explaining the variance in the provided data set. Furthermore, when evaluating prediction capabilites, the models perform almost identially, with Model 1 having a prediction $R^2$ of `r r_squared_log` and Model 2 `r r_squared_root`.
+
+Comparing the models directly, we see that Model 1 identified $Cruise$ as being significant, whereas Model 2 excludes it from the model. It's important to note that even though Model 2 does not include $Cruise$ as a predictor, it did not lose any predictive power. Thus, the simplicity (one variable less) of Model 2, combined with nearly identical performance in our desired measures, leads us to select Model 2 to answer our research question. 
+
+# 3: Results
+
+### 3.1 Estimation of Model Parameters
+
+The estimates for the parameters are given in Table 2 in the appendix. However, we want to highlight some particularly impactful parameters. The coefficient for Mileage is -0.0005828: this means that as mileage increases by 1 mile, the expected value of the square root of the cost of the car decreases by \$0.0005828. The coefficient for the interaction of Mileage and Cadillac is -.0002621 meaning that for a Cadillac car, as the mileage increases by 1 mile, the expected value of the square root of the cost of the car decreases by \$0.0002621 when compared to a Buick. Following with the example of Cadillacs, the coefficient for the $Make = Cadillac$ parameter is 104.895 meaning that the expected value of the square root of the price of a Cadillac increases by $104.895 when compared to a Buick. Similarly, the other coefficients relating to multi-level factors are an indication of how much the square root of price increases (or decreases) when that value is present vs. the baseline value. 
+
+### 3.2 Addressing Research Questions
+
+1. What variables are important in predicting the price of car?
+
+We found that the following variables are important in explaining the price of a car: Mileage, Make, Model, Trim, Sound, Leather, and the interaction between Mileage and Make. 
+
+2. What other factorsr might be important in predicting car price?
+
+The model we selected describes the provided data extremely well. However, based on personal experience, we believe that the state of a car's title is also an important factor to consider (Clean, Rebuilt, etc.). It may be that all the cars in our dataset had 1 type of title, thus it did not play an important role in our analysis. However, if we were to generalize this model we believe Title Status would need to be included. 
+
+3. Does the make of a car impact the rate at which mileage impacts price?
+
+Yes, as shown in Figure 1 - Right, we identified that the make of a car does interact with mileage, resulting in some makes maintaining value as a function of mileage better than others. In particular, Chevrolet and Saturn hold their value better than the other makes.
+
+```{r predict best values}
+    # Get all possible combinations of relevant fields. For Mileage set to given value. Otherwise set to any of the existing values
+    predict_best_values_input = expand.grid(Mileage = c(1700), Make = unique(kbb$Make), Model = unique(kbb$Model), Trim = unique(kbb$Trim), Type = c("Sedan"), Cylinder = c(1), Liter = c(1), Doors = c(1), Cruise = c(1), Sound = unique(kbb$Sound), Leather = unique(kbb$Leather))
+    predicted_best_values = suppressWarnings(predict_best_values_input[which.max(predict(aic_root, newdata = predict_best_values_input)), ])
+```
+
+4. What characteristics give a car the highest value if it has 15k miles?
+
+Using the selected model, the values that give the highest price of a car at 15k miles is a Cadillac XLR-V8 (which by default has is a Trim: Hardtop Conv 2D), with upgraded sound and leather interior.
+
+```{r predict cost}
+predict_data = data.frame(Mileage = c(1700), Make = c("Cadillac"), Model = c("CTS"), Trim = ("Sedan 4D"), Type = c(6), Cylinder = c(2.8), Liter = c(4), Doors = c(4), Cruise = c(1),  Sound = c(1), Leather = c(1))
+predict_cost = predict(aic_root, newdata = predict_data, interval = "confidence")^2
+predict_cost_lower = format(round(predict_cost[,2], 2), scientific = FALSE)
+predict_cost_upper = format(round(predict_cost[,3], 2), scientific = FALSE)
+```
+
+5. What is a reasonable resale value for a Cadillac CTS 4D Sedan with 17,000 miles, 6 cylinder, 2.8 liter engine, cruise control, upgraded speakers and leather seats?
+
+Using the selected model we predict that a reasonable price for a car meeting the stated specifications is between \$`r predict_cost_lower` and \$`r predict_cost_upper`.
+
+# 4: Conclusion
+
+In this analysis, we addressed the research questions by creating a linear model of the Square Root of price. The model meets most of the required assumptions fairly well, but does still have some non-normality in the distirbution of price. However, it resulted in a simpler model than the other considered model, which is why we chose it.
+
+Through this model we determined that the variables that impact price are: Mileage, Make, Model, Trim, Sound, and Leather. We also detremined that there may be other factors not included which may be important, such as title status. We showed that the make of the car does impact the rate at which the car loses value per mile, with Chevrolet and Saturn cars best maintaining their value. We calculated that given a car at 15k miles, the values that would maximize the value of that car are a Cadillac XLR-V8 with upgraded sound and a leather interior. Finally, we predict that a resonable resale price for a car with the given condition is between \$`r predict_cost_lower` and \$`r predict_cost_upper`.
+
+Moving forward, we believe it would be useful to perform this same analysis but including the Title Status. We believe this would have a large impact on resale price and would allow more accurate predictions of price. We also feel it would be useful to include a wider variety of makes, particularly from different regions/countries, as perceptions of quality of makes from different countries may have an impacton resale price. 
+
+# 5. Appendix
+
+Table 2: The calculated coefficients of the parameters used in the selected model
+
+```{r variable coefficients}
+output_table = as.data.frame(coef(aic_root))
+intervals = as.data.frame(confint(aic_root))
+output_table$lower_bound = intervals[,1]
+output_table$upper_bound = intervals[,2]
+kable(output_table, caption = "Model Variable Coefficients")
+```
