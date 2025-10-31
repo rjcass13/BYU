@@ -39,3 +39,49 @@ tp + fp + fn +tn
 
 sensitivity <- tp/p
 precision <- tp / (tp + fp)
+
+summary(mod)
+
+# library(glmnet)
+# y <- as.matrix(crash$SEVERITY)
+# x <- as.matrix(crash[, colnames(crash) != "SEVERITY"])
+# mod <- glmnet(x, y, family = "binomial", alpha = 1)
+# cvfit <- cv.glmnet(x, y, alpha = 1)
+# optimal_lambda <- cvfit$lambda.min # Or cvfit$lambda.1se
+# coef(cvfit, s = optimal_lambda)
+library(MASS)
+stepAIC(mod, direction = "backward")
+fin_mod <- stepAIC(mod, direction = "both")
+# Includes:
+# LGT_COND, WETHER, ALOCHOL, TYP_INT, REST_USE, AIR_BAG, VNUM_LAN, VSPD_LIM, VALIGN
+# Excludes: 
+# VSURCOND, VTRAFWAY, HOUR
+coef(fin_mod)
+# Increase likeliehood: 
+# LGT_COND2, 3, 4, 5 (3 is highest: Dark-Lighted)
+# WEATHER3, 6, 10 (3 is highest: Sleet)
+# Alcohol1 (Yes)
+# TYP_INT5, 7 (7: Five point)
+# REST_USE7, 8 (7 is highest, None)
+# AIR_BAG1, 2, 3, 8, 9 (8 is highest: Combination, 1 is second highest: Front)
+# VNUM_LAN3, 5, 6 (6 is highest: Six Lanes)
+# VSPD_LIM: as speed increases
+# VALIGN2, 3, 4: (4 highest: Curve, unknown. 3 is second highest: Curve left)
+# Decrease likelihood:
+# LGT_COND1 (Daylight)
+# WEATHER2, 4, 5, 7, 11, 12 (7 and 12 highest: blowing sand and stuff)
+# Alcohol2 (No)
+# TYP_INT2, 3, 4, 6, 10 (10 is lowest: L-type)
+# REST_USE1, 2, 3, 5 (5 is lowest: Motorcycle helmet)
+# AIR_BAG7, 20 (20 is lowest: Not deployed)
+# VNUM_LAN2, 4, 7 (7 is lowest: seven or more)
+# VSPD_LIM: as speed decrease
+# VALIGN1: Straight
+
+library(pROC)
+
+# Calculate AUC
+predicted_probabilities <- predict(fin_mod, type = "response")
+auc_value <- auc(crash$SEVERITY, predicted_probabilities)
+print(auc_value)
+plot(roc(crash$SEVERITY, fin_mod$fitted.values))
