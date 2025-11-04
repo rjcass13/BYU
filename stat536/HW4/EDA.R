@@ -11,11 +11,13 @@ mark$y <- ifelse(mark$y == "no", 0, 1)
 mark$pdays <- ifelse(mark$pdays == "999", 0, 1)
 mark$pdays <- as.factor(mark$pdays)
 
+mark$age <- cut(mark$age, c(0, 18, 26, 36, 51, 71, 100), labels = c('<18', '18-25', '26-35', '36-50', '51-70', '70+'), right = FALSE)
+
 ####################
 ### Jitter Plots ###
 ####################
 # Jitter Plot - age
-plot(mark$age,jitter(mark$y))
+plot(mark$age,jitter(mark$y), main = 'Age vs. New Account', xlab = 'Age', ylab = 'New Account (yes/no)')
 smooth_fit <- loess(mark$y ~ mark$age)
 lines(mark$age[order(mark$age)], predict(smooth_fit)[order(mark$age)], col = "red", lwd = 2)
 
@@ -54,7 +56,7 @@ pairs(mark[, c(1, 11, 12, 13)])
 mod1 <- glm(y ~ . - pdays - housing - loan, data = mark, family = binomial)
 summary(mod1)
 fin_mod1 <- stepAIC(mod1, direction = "both")
-coef(fin_mod1)
+coefs <- coef(fin_mod1)
 # Excluded Variables
 # Housing
 # Loan
@@ -63,6 +65,16 @@ predicted_probabilities1 <- predict(fin_mod1, type = "response")
 auc_value1 <- auc(mark$y, predicted_probabilities1)
 print(auc_value1)
 plot(roc(mark$y, fin_mod1$fitted.values), col = 'blue')
+confints <- confint(fin_mod1)
+
+library(knitr)
+coefs <- data.frame(coefs)
+coefs$Variable <- rownames(coefs)
+confints <- data.frame(confints)
+confints$Variable <- rownames(confints)
+colnames(confints) <- c('Lower Bound: 2.5%', 'Upper Bound: 97.5%', 'Variable')
+df <- merge(coefs, confints, by = 'Variable')
+kable(df, format = 'latex', caption = 'Table of Coefficients and Uncertainties')
 
 ####### MODEL 2
 mod2 <- glm(y ~ . - pdays - housing - loan, data = mark, family = binomial(link='probit'))
@@ -73,7 +85,7 @@ predicted_probabilities2 <- predict(fin_mod2, type = "response")
 auc_value2 <- auc(mark$y, predicted_probabilities2)
 print(auc_value2)
 plot(roc(mark$y, fin_mod2$fitted.values), add = TRUE, col = "red")
-confint(fin_mod2)
+
 
 
 
