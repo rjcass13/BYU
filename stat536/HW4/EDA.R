@@ -74,3 +74,39 @@ auc_value2 <- auc(mark$y, predicted_probabilities2)
 print(auc_value2)
 plot(roc(mark$y, fin_mod2$fitted.values), add = TRUE, col = "red")
 confint(fin_mod2)
+
+
+
+###### MODEL ASSUMPTIONS
+library(car)
+crPlots(fin_mod1, terms = ~ age + campaign + previous)
+yhats <- predict(fin_mod1, type = "link")
+par(mfrow = c(1, 3))
+plot(mark$age, yhats, main = 'Age vs. Predicted Log-odds', xlab = 'Age', ylab = 'Log-odds')
+plot(mark$campaign, yhats, main = 'Campaign vs. Predicted Log-odds', xlab = 'Campaign', ylab = 'Log-odds')
+plot(mark$previous, yhats, main = 'Previous vs. Predicted Log-odds', xlab = 'Previous', ylab = 'Log-odds')
+par(mfrow = c(1, 1))
+
+
+
+###### Plot of effects
+previous_range <- seq(min(mark$previous), max(mark$previous), length.out = 20)
+age <- 35
+job <- 'retired'
+marital <- 'single'
+education <- 'illiterate'
+default <- 'no'
+housing <- 'no'
+loan <- 'no'
+contact <- 'socialMedia'
+month <- 'mar'
+day_of_week <- 'wed'
+campaign <- 1
+pdays <- 999
+poutcome <- 'nonexistent'
+
+full_range <- expand.grid(age, job, marital, education, default, housing, loan,  contact, month, day_of_week, campaign, pdays, previous_range, poutcome)
+colnames(full_range) <- c("age", "job", "marital", 'education', 'default', 'housing', 'loan', 'contact', 'month', 'day_of_week', 'campaign', 'pdays', 'previous', 'poutcome')
+
+full_range$yhat <- predict(fin_mod1, newdata = full_range)
+plot(previous_range, full_range$yhat)
