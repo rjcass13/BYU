@@ -49,18 +49,28 @@ pairs(mark[, c(1, 11, 12, 13)])
 #   include.lowest = TRUE)
 
 
-mod <- glm(y ~ ., data = mark, family = binomial)
-summary(mod)
-fin_mod <- stepAIC(mod, direction = "both")
-coef(fin_mod)
+
+####### MODEL 1
+mod1 <- glm(y ~ . - pdays - housing - loan, data = mark, family = binomial)
+summary(mod1)
+fin_mod1 <- stepAIC(mod1, direction = "both")
+coef(fin_mod1)
 # Excluded Variables
 # Housing
 # Loan
+# AUC
+predicted_probabilities1 <- predict(fin_mod1, type = "response")
+auc_value1 <- auc(mark$y, predicted_probabilities1)
+print(auc_value1)
+plot(roc(mark$y, fin_mod1$fitted.values), col = 'blue')
 
-
-# Calculate AUC
-predicted_probabilities <- predict(fin_mod, type = "response")
-auc_value <- auc(mark$y, predicted_probabilities)
-print(auc_value)
-plot(roc(mark$y, fin_mod$fitted.values))
-
+####### MODEL 2
+mod2 <- glm(y ~ . - pdays - housing - loan, data = mark, family = binomial(link='probit'))
+fin_mod2 <- stepAIC(mod2, direction = "backward")
+coef(fin_mod2)
+# AUC
+predicted_probabilities2 <- predict(fin_mod2, type = "response")
+auc_value2 <- auc(mark$y, predicted_probabilities2)
+print(auc_value2)
+plot(roc(mark$y, fin_mod2$fitted.values), add = TRUE, col = "red")
+confint(fin_mod2)
