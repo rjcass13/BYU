@@ -18,7 +18,7 @@ In this analysis, we want to address several key questions:
 - To answer this we will use the same predictive model created for the first question and apply it to the 'Out-of-Sample' data and predict whether they are fraudulent or not. 
 
 ## [2. Exploratory Data Analysis]{.underline}
-The first thing to consider in this dataset is that our output variable is binary (yes/no). As such, we will need to create our model based on the likelihood of the output. We also need to consider if all the continuous variables are monotonic in relation to the likelihood of the outcome. Furthermore, there is an extremely heavy imbalance in the outcome result, where only .2% of the transactions are labelled as fraudulent, giving us a very limited amount of data to determine what indicates fraudulence. 
+The first thing to consider in this dataset is that our output variable is binary (yes/no). As such, we will need to create our model based on the likelihood of the output. We also need to consider if all the continuous variables are monotonic (always increasing/decreasing) in relation to the likelihood of the outcome. Furthermore, there is an extremely heavy imbalance in the outcome result, where only .2% of the transactions are labelled as fraudulent, giving us a very limited amount of data to determine what indicates fraudulence. If these are not accounted for, our model will not be able to correctly predict, or it may perform well In-Sample, but poorly Out-of-Sample.
 
 ## [3. Desired Attributes]{.underline}
 #### Model attributes required from the research questions
@@ -33,18 +33,12 @@ In our initial exploration, we identified that not all of the variables appear t
 #### What goes wrong if the above are not accounted for?
 If all of our assumptions are not met, the resultant model will not correctly account for each factor, meaning the predictive power will decrease, or we may be able to predict very well In-Sample, but have poor Out-of-Sample performance. 
 
-
 ## [4. Proposed Method]{.underline}
 ### Appropriate models
-For this analysis, we propose using a Support Vector Machine REVISIT ME!!!!!
+Models appropriate for this analysis include a logistic regression, a KNN (K-nearest neighbors), and decision trees. In these cases, we can use Downsampling on the 'Not Fraudulent' transactions, and Upsampling on the 'Fraudulent' transactions.
 
 ### Specific model proposal
-We propose using a model of the form:
-$$
-\ell(p_i) = \log(\frac{p_i}{1 - p_i}) = \mathbf{x}_i' \beta
-$$
-
-where $\mathbf{x}_i'$ is the matrix representing the explanatory variables, and $\beta$ is the matrix representing the coefficients for each factor.
+For this analysis, we propose using a Random Forest. These models do not have a specific mathematical representation, but can be thought of as a binary tree where each branch represents a certain cutoff in the data, and can be used to identify which combination of factors indicates a transaction is fraudulent.
 
 ### Method strengths/weaknesses
 
