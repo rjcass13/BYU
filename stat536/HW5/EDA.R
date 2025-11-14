@@ -2,6 +2,9 @@ library(mgcv)
 cc <- read.csv("CCFraud.csv", stringsAsFactors = TRUE)
 cc <- cc[, -1] # Get rid of the 'X' column which is just the row indices
 
+######################
+# Monotonicity
+######################
 # Sort of Monotonic: within the heavy region on the right it is
 plot(cc$V1,jitter(cc$Class), main = 'Fraudulent vs. V1', xlab = 'V1', ylab = 'Fraudulent (yes/no)')
 smooth_fit <- gam(cc$Class ~ s(cc$V1))
@@ -36,3 +39,38 @@ lines(cc$V6[order(cc$V6)], predict(smooth_fit)[order(cc$V6)], col = "red", lwd =
 plot(cc$V7,jitter(cc$Class), main = 'Fraudulent vs. V7', xlab = 'V7', ylab = 'Fraudulent (yes/no)')
 smooth_fit <- gam(cc$Class ~ s(cc$V7))
 lines(cc$V7[order(cc$V7)], predict(smooth_fit)[order(cc$V7)], col = "red", lwd = 2)
+
+
+
+#####################
+# Bagging
+#####################
+library(ranger)
+library(vip)
+library(pdp)
+library(ggplot2)
+set.seed(1337)
+non_fraud <- cc[which(cc$Class == 0), ]
+fraud <- cc[which(cc$Class == 1), ]
+n_fraud <- nrow(fraud)
+n_non_fraud <- nrow(non_fraud)
+
+B <- 1
+forests <- vector("list", length = B)
+for (i in 1:B) {
+  # One Bagging sample
+  up_fraud <- fraud[sample(1:n_fraud, 1000, replace = TRUE), ]
+  down_non_fraud <- non_fraud[sample(1:n_non_fraud, 10000, replace = TRUE), ]
+
+  train <- rbind(up_fraud, down_non_fraud)
+  y_train <- train$Class
+  x_train <- train[, colnames(train) != 'Class']
+  x_test <- fraud[, colnames(train) != 'Class']
+
+  forests[[i]] <- ranger(Class ~ ., data=cc, num.trees = 200
+    #, mtry = 3
+    , importance = "impurity", probability = T)  
+}
+
+f <- forests[[1]]
+vip(f, num_features = 29)

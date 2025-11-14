@@ -17,13 +17,13 @@ plot(low_accept$CGPA, low_accept$Research)
 
 
 ## JDF hacks for plotting cool stuff
-dim = 101
+dim = 50
 gre_seq = seq(290, 340, length.out = dim)
 gpa_seq = seq(min(adm$CGPA), 4, length.out = dim)
-uni_seq = seq(1, 5, length.out = dim)
-res_seq = seq(0, 1, length.out = dim)
-sop_seq = seq(1, 5, length.out = dim)
-lor_seq = seq(1, 5, length.out = dim)
+uni_seq = seq(1, 5, by = .5)
+res_seq = c(0, 1)
+sop_seq = seq(1, 5, by = .5)
+lor_seq = seq(1, 5, by = .5)
 gre_test = rep(gre_seq, dim)
 gpa_test = rep(gpa_seq, dim)
 uni_test = rep(uni_seq, dim)
@@ -33,7 +33,7 @@ lor_test = rep(lor_seq, dim)
 X_test = cbind(gre_test, gpa_test, res_test, uni_test, sop_test, lor_test)
 #points(X_test,col=6,cex=.2)
 X_test_df = data.frame(CGPA = gpa_test, GRE.Score = gre_test, Research = res_test, University.Rating = uni_test, SOP = sop_test, LOR = lor_test)
-
+X_test <- expand.grid(CGPA = gpa_seq, GRE.Score = gre_seq, Research = res_seq, University.Rating = uni_seq, SOP = sop_seq, LOR = lor_seq)
 
 #################################
 ########### KNN
@@ -66,16 +66,35 @@ plot(gre_test, gpa_test, col=as.numeric(model2), pch=19)
 #################################
 library(ranger)
 library(vip)
+library(pdp)
+library(ggplot2)
 rf <- ranger(Status ~ ., data=adm, num.trees = 200
-  # , mtry = 4
+  , mtry = 3
   , importance = "impurity", probability = T)  
-p = predict(rf, data = X_test_df)
-plot_these = which(p$predictions[,1] < .6 & p$predictions[,1] > .4)
+p = predict(rf, data = X_test)
+plot_these = which(p$predictions[,1] < .5005 & p$predictions[,1] > .4995)
 plot(adm$GRE.Score, adm$CGPA, col = as.numeric(adm$Status) + 1, pch=16)
-points(X_test_df$GRE.Score[plot_these], X_test_df$CGPA[plot_these], col=5, pch=20)
+points(X_test$GRE.Score[plot_these], X_test$CGPA[plot_these], col=5, pch=20)
 # Different Importance outputs
 importance(rf)
 vip(rf, num_features = 20)
+
+pred <- predict(rf, data = adm)
+pred_stat <- cut(pred$predictions, breaks = c(-1, .5, 1), labels = c(0, 1))
+length(which(pred_stat == adm$Status))
+
+p = partial(rf,"CGPA")
+autoplot(p, contour = TRUE)
+p = partial(rf,"GRE.Score")
+autoplot(p, contour = TRUE)
+p = partial(rf,"SOP")
+autoplot(p, contour = TRUE)
+p = partial(rf,"LOR")
+autoplot(p, contour = TRUE)
+p = partial(rf,"University.Rating")
+autoplot(p, contour = TRUE)
+p = partial(rf,"Research")
+autoplot(p, contour = TRUE)
 
 #################################
 ########### Boosting
@@ -92,3 +111,6 @@ plot_these = which(p<.6 & p>.4)
 plot(adm$GRE.Score, adm$CGPA, col = as.numeric(adm$Status) + 1, pch=16)
 points(gre_test[plot_these], gpa_test[plot_these], col=5, pch=20)
 
+#################################
+########### BART 
+#################################
