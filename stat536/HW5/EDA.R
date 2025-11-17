@@ -64,10 +64,9 @@ for (i in 1:B) {
     #, mtry = 3
     , importance = "impurity", probability = T)  
   
-  if (i == 5) {
+  if (i == 2) {
     pred <- predict(rf, data = train)
-    print(rf$forest$class.values)
-    pred_pos <- pred$predictions[, 1] >= .5 
+    pred_pos <- pred$predictions[, 1] >= .5
     pred_neg <- pred$predictions[, 1] < .5
     act_pos <- train$Class == 1
     act_neg <- train$Class == 0
@@ -80,7 +79,7 @@ for (i in 1:B) {
   
   # Values calculated using the Confuscion matrix here: https://en.wikipedia.org/wiki/Sensitivity_and_specificity
   pred <- predict(rf, data = cc)
-  pred_pos <- pred$predictions[, 1] >= .5 
+  pred_pos <- pred$predictions[, 1] >= .5
   pred_neg <- pred$predictions[, 1] < .5
   act_pos <- cc$Class == 1
   act_neg <- cc$Class == 0
