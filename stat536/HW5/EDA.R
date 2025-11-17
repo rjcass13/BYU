@@ -66,6 +66,7 @@ for (i in 1:B) {
   
   if (i == 5) {
     pred <- predict(rf, data = train)
+    print(rf$forest$class.values)
     pred_pos <- pred$predictions[, 1] >= .5 
     pred_neg <- pred$predictions[, 1] < .5
     act_pos <- train$Class == 1
@@ -98,6 +99,11 @@ p <- vip(f, num_features = 10) +
   theme(plot.title = element_text(hjust = 0.5))
 print(p)
 
-vals <-vi(f)
+vals <- vi(f)
 table <- xtable(vals, type = 'latex')
 print(table, include.rownames = FALSE)
+
+test_data <- read.csv('IsFraudulent.csv')
+test_data <- test_data[, -1]
+preds <- predict(f, data = test_data, type = 'response')
+
