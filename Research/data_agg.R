@@ -37,42 +37,40 @@ plot(time + start_date, provo_temp)
 
 
 
-time_short <- time[1:30]
-
-# Make into a DF
-grid <- expand.grid(lon, lat, time_short)
-colnames(grid) <- c('lon', 'lat', 'time')
-grid$temp <- 0
-
 n_lon <- length(lon)
 n_lat <- length(lat)
-n_time <- length(time_short)
+n_time <- length(time)
 
-for (i in 1:n_time) {
-  for (j in 1:n_lat) {
-    for (k in 1:n_lon) {
-      grid$temp[k + (j-1) * n_lon + (i-1) * n_lat * n_lon] <- temp[k, j, i]
+data_red <- matrix(NA, 0, 5) 
+
+week_val <- 1
+for (week_ind in 1:52) {
+  lat_ind_range <- ifelse(week_ind == 52, (week_ind * 7 - 6):n_time, (week_ind * 7 - 6):(week_ind * 7))
+
+  lat_val <- -89.5
+  data_week <- matrix(NA, 0, 5) 
+  for (lat_ind in 1:180) {
+    lat_ind_range <- ifelse (lat_ind == 180, (lat_ind * 4 - 3):721, (lat_ind * 4 - 3):(lat_ind * 4))
+
+    lon_val <- .5
+    data_lat <- matrix(NA, 360, 5) 
+    for (lon_ind in 1:360) {
+      lon_ind_range <- (lon_ind * 4 - 3):(lon_ind * 4)
+
+      avg <- mean(temp[lon_ind_range, lat_ind_range, week_ind_range])
+      data_lat[lon_ind,] <- c(lat_val, lon_val, week_val, )
+
+      lon_val <- lon_val +1
     }
+
+    data_week <- rbind(data_week, data_lat)
+    lat_val <- lat_val + 1
   }
-  print('one time step done')
+
+  data_red <- rbind(data_red, data_week)
+  cat("Done: Week", week_val)
+  week_val <- week_val + 1
 }
-
-memory_usage_bytes <- object.size(grid)
-print(paste("Memory usage of df:", round(memory_usage_bytes / (1024^2), 2), "MB"))
-
-memory_usage_bytes <- object.size(temp)
-print(paste("Memory usage of df:", round(memory_usage_bytes / (1024^2), 2), "MB"))
-
-p <- image(temp_first_table)
-memory_usage_bytes <- object.size(p)
-print(paste("Memory usage of df:", round(memory_usage_bytes / (1024^2), 2), "MB"))
-
-class(temp)
-df_long <- reshape2::melt(temp)
-df_long$Var1 <- df_long$Var1 / 4 - .25
-df_long$Var2 <- df_long$Var2 / 4 - .25
-max(df_long$Var3)
-colnames(df_long) <- c('lon', 'lat', 'time', 'temp')
 
 
 .
