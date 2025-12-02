@@ -364,5 +364,100 @@ Theorem: Let $Z_1, ..., X_n$ be a random sample with population mean and varianc
 3) $\EX(s^2) = \sigma^2$
 
 
+\section*{2 Dec 2025}
+\subsection*{Convergence in $r^{th}$ mean}
+A sequence of r.v. $X_1, X_2...$ converges to $X$ in $r^{th}$ mean if $\lim_{n \to \infty} \EX(|X_n - X|^r) = 0$
+Written as: $X_n \overset{L^r}{\to} X$
+
+Proof: Assume $X_n \overset{L^r}{\to} X$. We know then that $\lim_{n \to \infty} \EX(|X_n - X|^r) = 0$. 
+By Chebychev's, $\lim_{n \to \infty} P(|X_n - X| > \epsilon) = \lim_{n \to \infty} P(|X_n - X|^r > \epsilon^r) \le \lim_{n \to \infty} \frac{\EX(|X_n - X|^r)}{\epsilon^r} = 0$
+
+Ex. Let $U \sim Unif(0, 1)$
+$X_1 = I_{[0,1]}^{(u)}$
+$X_2 = I_{[0,1/2]}^{(u)}, X_3 = I_{[1/2,1]}^{(u)}$
+$X_4 = I_{[0,1/3]}^{(u)}, X_5 = I_{[1/3,2/3]}^{(u)}, X_6 = I_{[2/3,1]}^{(u)}...$
+We showed previously that $X_n \overset{P}{\to} 0$ but $X_n \cancel{\overset{a.s.}{\to}} 0$
+What about $X_n \overset{L^r}{\to} 0$?
+Well, $\lim_{n \to \infty} \EX(|X_n - 0|^r) = \lim_{n \to \infty} \EX((X_n)^r)$
+$X_n$ will either be 0 or 1, depending on the $Unif()$. Thus, $ = \lim_{n \to \infty} \EX((X_n))$. 
+We know $\EX(X_2) = P(0 < u < 1/2) = 1/2)$. This can be applied to all $X_n$'s.
+Thus $ = \lim_{n \to \infty} h(n) = 0$.
+Thus the limit goes to 0, which then means that $X_n \overset{L^r}{\to} 0$. This also implies $X_n \overset{P}{\to} 0$\\~\\
+
+If $s > r \ge 1$ then $X_n \overset{L^s}{\to} X \implies X_n \overset{L^r}{\to} X$
+
+\subsection*{Convergence in Distribution}
+A sequence of r.v. $X_1, X_2...$ converges in distribution to r.v. $X$ if $\lim_{n \to \infty} F_{X_n}(x) = F_X(x)$ at all points $x$ where $F_X(x)$ is continuous.
+$X_n \overset{D}{\to} X$ is implied by all the other convergences (probability, almost surely, and $r^{th}$ means).
+
+Ex. $X_1, X_2,... \iiddist Unif(0, 1)$. Let's examine $X_{(n)}$ as $n \to \infty$.
+Recall that:
+
+\disobeylines
+\begin{math}
+F_{X_{(n)}}(x) = \left\{
+    \begin{array}{ll}
+      0, & x < 0\\
+      x^n, & x \in [0,1)\\
+      1, & x \ge 1
+    \end{array}
+\right.
+\end{math}
+\obeylines\\
+
+\disobeylines
+\begin{math}
+lim_{n \to \infty} F_{X_{(n)}}(x) = \left\{
+    \begin{array}{ll}
+      0, & x < 0\\
+      lim_{n \to \infty} x^n, & x \in [0,1)\\
+      1, & x \ge 1
+    \end{array}
+\right. = \left\{
+    \begin{array}{ll}
+      0, & x < 1\\
+      1, & x \ge 1
+    \end{array}
+\right.
+\end{math}
+\obeylines\\
+Note that this is the CDF for a point mass (step function) at 1, so $X_{(n)} \overset{D}{\to} 1$.
+
+
+Theorem: For a sequence of random variables $X_{(n)} \overset{P}{\to} C$ iff $X_{(n)} \overset{D}{\to} C$
+In words, $P(|X_n - C| > \epsilon) \to 0 \forall \epsilon$ is equivalent to 
+\disobeylines
+\begin{math}
+lim_{n \to \infty} F_{X_{(n)}}(x) = \left\{
+    \begin{array}{ll}
+      0, & x < 1\\
+      1, & x \ge 1
+    \end{array}
+\right.
+\end{math}
+\obeylines\\
+
+\subsection{Slowing Down Convergence}
+Sometimes it is helpful to 'slow down' convergence so the limiting distribution isn't a constant. 
+As an example, consider $Y_n = n(1 - X_{(n)})$
+$F(Y_n) = P(Y_N \le y) = P(n(1 - X_{(n)})) = P(1 - \frac{y}{n} \le X_{(n)}) = 1 - P(X_{(n)} \le 1 - \frac{y}{n}) = 1 - (1 - \frac{y}{n})^n$
+Thus, $lim_{n \to \infty} F(Y_n) = lim_{n \to \infty} 1 - (1 - \frac{y}{n})^n = 1 - lim_{n \to \infty}(1 - \frac{y}{n})^n = 1 - e^{-y}$
+Thus $Y_n \overset{D}{\to} Y \sim Exp(1)$
+
+\subsection{Central Limit Theorem}
+Consider $X_n = \frac{1}{n} \sum_{i=1}^{n} X_i$ for a sequence $X_1, X_2, ...$.
+We have shown: $\bar{X_n} \overset{P}{\to} \mu$, $\bar{X_n} \overset{a.s.}{\to} \mu$
+Let $X_1, X_2, ...$ be a seuqnce of iid r.v. whose MGFs exist in a neighborhood of 0. Let $\EX(X_i) = \mu$, $Var(X_i) = \sigma^2 > 0$.
+
+Let $X_n = \frac{1}{n} \sum_{i=1}^{n} X_i$. Let $G_n(x)$ be the CDF of $\frac{\sqrt{n}(\bar{X_n} - \mu)}{\sigma}$ or $\frac{\bar{X} - \mu}{\sigma/\sqrt{n}}$
+Then for any $x \in \mathbb{R}: lim_{n \to \infty} G_n(x) = \int_{-\infty}^{x} \frac{1}{\sqrt{2\pi}} e^{\frac{1}{2}y^2} dy$ = CDF of Standard Normal.
+Thus, $\frac{\sqrt{n}(\bar{X_n} - \mu)}{\sigma} \overset{D}{\to} N(0,1)$, or $Z_n = \frac{\sqrt{n}(\bar{X_n} - \mu)}{\sigma}$ and $Z \sim N(0,1), Z_n \overset{D}{\to} Z$
+
+Proof: Let $Y_i = \frac{X_i - \mu}{\sigma}$, $\EX(Y_i) = 0$, $Var(Y_i) = 1$.
+$\frac{1}{n}\sum_{i=1}^{n} Y_i = \frac{1}{\sqrt{n}} \sum_{i=1}^{n} \left(\frac{X_i - \mu}{\sigma}\right)$
+$ = \frac{1}{\sigma\sqrt{n}} \left(\sum_{i=1}^{n} X_i - n\mu\right) = \frac{1}{\sigma\sqrt{n}} (n\bar{X_n} - n\mu)$
+$ = \frac{\sqrt{n}(\bar{X_n} - \mu)}{\sigma} = Z_n$
+By Thm. 2.3.15, Thm 4.6.7, $M_{Z_n}(t) = \left[M_Y(\frac{t}{\sqrt{n}})\right]^n$
+
 
 \end{document}

@@ -1,9 +1,10 @@
 library(ggplot2)
 library(ranger)
 library(vip)
+library(MASS)
 ltr <- read.csv('letter-recognition.csv', stringsAsFactors = TRUE)
 
-# Basic box plot of 'outcome' by 'group1' and 'group2'
+# Basic box plots of 'outcome' by 'group1' and 'group2'
 ggplot(ltr, aes(x = letter, y = ybar)) +
   geom_boxplot() +
   labs(title = "Box Plots of Outcome by Group1 and Group2",
@@ -14,6 +15,8 @@ ggplot(ltr, aes(x = letter, y = ybar)) +
 # Most useful variables appear to be xbar, ybar, xege, yege, width
 # Most identifiable letters appear to be A, H, I, L, M, T, W
 
+
+# Random Forest
 f <- ranger(letter ~ ., data  = ltr, num.trees = 200
   #, mtry = 3
   , classification = TRUE, importance = "impurity")
@@ -25,6 +28,7 @@ vip(f)
 ### ### ### ### ### ### 
 ###   NEURAL NET    ### 
 ### ### ### ### ### ### 
+library(torch)
 tst <- sample(1:nrow(ltr),2000)
 
 #convert vector response variable to factor
@@ -50,10 +54,9 @@ y_test <- torch_tensor(Ytest)
 net = nn_module(
   "class_net",
   initialize = function(){
-    self$linear1 = nn_linear(16,64) # 16 columns in the X matrix
-    self$linear2 = nn_linear(64,32)
-    #self$linear3 = nn_linear(10,10)
-    self$linear4 = nn_linear(32,26) # 26 categories (letter in the alphabet)
+    self$linear1 = nn_linear(16,26) # 16 columns in the X matrix
+    self$linear2 = nn_linear(26,26)
+    self$linear4 = nn_linear(26,26) # 26 categories (letters in the alphabet)
     
   },
   forward = function(x) {
@@ -96,8 +99,6 @@ for(i in 1: epochs){
   optimizer$step()
   
   ### administration:
-  
-  
   # Append loss and accuracy values to vectors
   loss_values <- c(loss_values, as.numeric(loss))
   
@@ -108,7 +109,6 @@ for(i in 1: epochs){
   
   # Append the current validation loss to the vector
   test_loss_values <- c(test_loss_values, test_loss$item())
-  
   
   #check training
   if(i %% 100 == 0){
@@ -143,3 +143,38 @@ winnersTST = yTST_pred$argmax(dim=2)   #get the category with highest probabilit
 correctsTST = (winnersTST == y_test)
 accuracyTST = correctsTST$sum()$item() / y_test$size()
 cat("Test", "Loss:", lossTST$item(),"Accuracy:", accuracyTST, "\n")
+
+
+
+### ### ### ### ### ### 
+###       LDA       ### 
+### ### ### ### ### ### 
+set.seed(1337)
+ind <- sample(1:nrow(ltr), .1 * nrow(ltr),replace = FALSE)
+train <- ltr[-ind, ]
+test <- ltr[ind, ]
+model_lda = lda(letter ~ ., data = train)
+p_in <- predict(model_lda, newdata = train)
+p_out <- predict(model_lda, newdata = test)
+check_in <- p_in$class == train$letter
+check_out <- p_out$class == test$letter
+mean(check_in)
+mean(check_out)
+
+
+### ### ### ### ### ### 
+###       QDA       ### 
+### ### ### ### ### ### 
+model_qda = qda(letter ~ ., data = train)
+p_in <- predict(model_qda, newdata = train)
+p_out <- predict(model_qda, newdata = test)
+check_in <- p_in$class == train$letter
+check_out <- p_out$class == test$letter
+mean(check_in)
+mean(check_out)
+pairs <- cbind(as.character(p_out$class), as.character(test$letter))
+pairs <- pairs[which(pairs[,1] != pairs[,2]), ]
+
+library(caret)
+confusionMatrix(factor(pairs[ ,2]), factor(pairs[,1]))
+
