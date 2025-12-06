@@ -29,10 +29,11 @@ library(reshape2)
 
 
 
-years <- c('2024', '2023')
+years <- c('2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016', '2015')
 
 # Predefine the destination matrix columns
-data_red <- matrix(NA, 0, 5) 
+ncols <- 5
+data_red <- matrix(NA, 0, ncols) 
 
 for (year in years) {
   cat('Processing', year, '\n')
@@ -57,22 +58,21 @@ for (year in years) {
 
   # Set the starting week parameters
   week_val <- 1
-  week_start_date <- as.Date(paste0(year, '-01-01'))
   for (week_ind in 1:52) {
     # Define the range of indices to average over for week
     week_ind_range <- (week_ind * 7 - 6):ifelse(week_ind == 52, n_days, (week_ind * 7))
     
     # Define the starting latitude parameters
     lat_val <- -89.5
-
+    year_week <- paste0(year, '-', week_val)
     # Predefine a matrix to hold all the data for one week
-    data_week <- matrix(NA, 0, 5) 
+    data_week <- matrix(NA, 0, ncols) 
     for (lat_ind in 1:180) {
       # Define the range of indices to average over for Latitude
       lat_ind_range <- (lat_ind * 4 - 3):ifelse(lat_ind == 180, 721, (lat_ind * 4))
 
       lon_val <- .5
-      data_lat <- matrix(NA, 360, 5) 
+      data_lat <- matrix(NA, 360, ncols) 
       for (lon_ind in 1:360) {
         # Define the range of indices to average over for Longitude
         lon_ind_range <- (lon_ind * 4 - 3):(lon_ind * 4)
@@ -82,7 +82,7 @@ for (year in years) {
         precip_avg <- mean(precip[lon_ind_range, lat_ind_range, week_ind_range])
 
         # Store the average values with their corresponding lat/lon/week values
-        data_lat[lon_ind,] <- c(lat_val, lon_val, week_start_date, temp_avg, precip_avg)
+        data_lat[lon_ind,] <- c(lat_val, lon_val, year_week, temp_avg, precip_avg)
 
         lon_val <- lon_val +1
       }
@@ -101,7 +101,6 @@ for (year in years) {
 
     if (week_val %% 10 == 0) { cat("Done: Week", week_val, '\n') }
     week_val <- week_val + 1
-    week_start_date <- week_start_date + 7
   }
 
   rm(temp)
@@ -111,8 +110,11 @@ for (year in years) {
   cat(year, 'complete', '\n')
 }
 
+colnames(data_red) <- c('Lat', 'Lon', 'Year_Week', 'Temp', 'Precip')
+write.csv(data_red, file = "agg_1x1_2015_2024_temp_precip.csv", row.names = FALSE)
+Sys.time()
 object_size_bytes <- object.size(data_red)
 print(format(object_size_bytes, units = "auto"))
 
-
+asDate(data_red[1, 3])
 
