@@ -1,0 +1,382 @@
+---
+title: "HW2"
+subtitle: "STAT 651"
+author: "RJ Cass"
+date: "26 Jan. 2026"
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption, bm, amsmath, xcolor}
+        \setlength{\parindent}{0pt}
+        \captionsetup{textfont={it}, font=small} 
+        \newcommand{\statvec}[1]{\underset{\sim}{#1}}
+geometry: "margin=1in"
+---
+
+
+# 1: BDA3 2.20
+
+### a)
+
+$p(y|\theta) \sim Exp(\theta), \pi(\theta) \sim Gamma(\alpha, \beta)$. We observe that $y \ge 100$. What is $p(\theta|y \ge 100)$?
+
+$p(\theta|y \ge 100) \propto p(y \ge 100|\theta)\pi(\theta) \propto [1-(1-e^{-100\theta})]\theta^{\alpha - 1}e^{-\beta \theta} = e^{-100\theta}\theta^{\alpha - 1}e^{-\beta \theta} = \theta^{\alpha - 1}e^{-\theta(\beta + 100)}$
+
+This is a Gamma distribution: $\underline{p(\theta|y \ge 100) \propto Gamma(\alpha, \beta + 100)}$
+
+We can use the mean and variance of the Gamma to give us:
+
+$\underline{\text{Posterior Mean: } \frac{\alpha}{\beta + 100}}$
+
+$\underline{\text{Posterior Variance: } \frac{\alpha}{(\beta + 100)^2}}$
+
+### b) 
+
+$p(\theta|y = 100) \propto \theta e^{-100 \theta}\theta^{\alpha - 1}e^{-\beta \theta} = \theta^{\alpha}e^{-\theta(\beta + 100)}$
+
+This is a Gamma distribution: $\underline{p(\theta|y = 100) \propto Gamma(\alpha + 1, \beta + 100)}$
+
+We can use the mean and variance of the Gamma to give us:
+
+$\underline{\text{Posterior Mean: } \frac{\alpha + 1}{\beta + 100}}$
+
+$\underline{\text{Posterior Variance: } \frac{\alpha + 1}{(\beta + 100)^2}}$
+
+
+### c)
+
+On average the intuition is correct, but it is not guaranteed that for all values of $y$, knowing the exact value will certainly reduce the variance. (2.8) only states that on average, more knowledge will reduce variance. In this case, the value of 100 is one such value that actually ends up increasing the variance for whatever reason. 
+
+
+# 2: BDA 3.3
+$n_c = 32, \bar{y}_c = 1.013, s_c = .24, n_t = 36, \bar{y}_t = 1.173, s_t = .2$
+
+### a) 
+
+Let $p(y_c|\mu_c) = N(\mu_c, \sigma^2_c); \pi(\mu_c), \pi(\mu_t), \pi(ln(\sigma_c)), \pi(ln(\sigma_t)) = Unif(0, 1)$
+
+$p(\mu_c|\statvec{y_c}) =  p(y_c|\mu_c)\pi(\mu_c)$ This is a normal distirbution with an uninformative unfirom prior. This is shown in the book to be $t_{n-1}(\bar{y}, s^2/n)$:
+
+$\implies p(\mu_c|\statvec{y_c}) = t_{n_c - 1}(\bar{y}_c, s_c^2/n_c) = \underline{t_{31}(1.013, .24^2/32)}$
+
+Similarly we can find:
+
+$\implies p(\mu_t|\statvec{y_t}) = t_{n_t - 1}(\bar{y}_t, s_t^2/n_t) = \underline{t_{35}(1.173, .2^2/36)}$
+
+### b)
+
+```{r}
+c <- rt(10000, 31)*.24/sqrt(32) + 1.013
+t <- rt(10000, 35)*.2/sqrt(36) + 1.173
+diff <- t-c
+hist(diff)
+lower <- round(quantile(diff, .025), 4)
+upper <- round(quantile(diff, .975), 4)
+```
+
+95% interval: `r lower` to `r upper`
+
+
+# 3
+
+### WHEN GENERATING FINAL PDF, REMOVE EVAL:FALSE, and uncomment/move results out of code
+
+I'm using one of the priors from the HW2 key, the moderately informative prior: $\alpha = 11, \beta = 5500$
+
+Below is my STAN code:
+
+```{}
+data {
+    int<lower=0> N;
+    array[N] int y;
+}
+
+parameters {
+    real theta;
+}
+
+model {
+    y ~ exponential(theta);
+    theta ~ gamma(11, 5500); //From HW2 Key
+}
+```
+
+```{r}
+set.seed(1337)
+rivers <- as.numeric(readLines("rivers.dat"))
+
+suppressPackageStartupMessages(library("rstan"))
+
+data_stan <- list(N = length(rivers), y = rivers)
+
+params <- c("theta")
+
+n_cores <- parallel::detectCores()   # Count how many cores are available
+options(mc.cores = n_cores)          
+
+fit_stan <- stan(model_code = readLines("rivers.stan"),
+                 data = data_stan, pars = params,
+                 iter = 5000, warmup = 500, thin = 5, chains = n_cores)
+
+summary(fit_stan)
+
+mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+sim_stan <- extract(fit_stan) # collect samples from all chains
+post_thetas <- sim_stan$theta
+post_mean <- mean(post_thetas)
+post_med <- median(post_thetas)
+post_mode <- mode(post_thetas)
+post_var <- var(post_thetas)
+post_sd <- sd(post_thetas)
+post_int <- c(quantile(post_thetas, .025), quantile(post_thetas, .975))
+```
+
+We get the following:
+
+Posterior Mean: `r post_mean`
+
+Posterior Median: `r post_med`
+
+Posterior Mode: `r post_mode`
+
+Posterior Variance: `r post_var`
+
+Posterior Standard Deviation: `r post_sd`
+
+95% Credibel Interval: `r post_int`
+
+
+
+# 4
+
+$x_t|t_i, \theta \overset{ind}{\sim} Pois(\lambda_i), \lambda_i = t_i\theta$
+
+### a) 
+
+$L(\theta t_i | x_i) = \prod \frac{\lambda_i^{x_i}e^{-\lambda_i}}{x_i !} = e^{ln[\prod \frac{\lambda_i^{x_i}e^{-\lambda_i}}{x_i !}]} = e^{\sum [x_i(ln(\lambda_i)) - \lambda_i - ln(x_i !)]} = e^{\sum x_i ln(\lambda_i) - \sum \lambda_i - \sum ln(x_i !)} = e^{\sum x_i (ln(\theta) + ln(t_i)) - \theta \sum t_i - \sum ln(x_i!)} = e^{\sum x_i ln(t_i) - \sum ln(x_i !)}e^{\sum x_i ln(\theta) - \theta \sum t_i}$
+
+
+### b) 
+
+$\eta(\theta) = ln(\theta)$
+
+$T(x_i) = \sum x_i$
+
+
+### c) 
+
+$Gamma(\alpha, \beta) = \frac{\beta^\alpha}{\Gamma(\alpha)}\theta^{\alpha-1}e^{-\beta \theta} = \frac{\beta^{\alpha}}{\Gamma(\alpha)}e^{(\alpha-1)ln(\theta) - \beta\theta}$
+
+### d) 
+
+Expert expects no more than 10 failures in a month, meaning the failure rate in a day should be well below 1/3 (in a typical month of 30 days). 
+
+I used Google to look up parameters for a Gamma distirbution that would put the upper 95% interval at 1/3 and got the following:
+$\alpha = 2, \beta = .0703$
+
+### e) 
+
+$p(\theta| x_i) \propto e^{ln(\theta)\sum x_i - \theta \sum t_i}e^{(\alpha - 1)ln(\theta)-\beta\theta} = e^{ln(\theta)(\sum x_i + \alpha - 1) - \theta(\beta + \sum t_i)}$
+
+This is the Natural Parameter form of the Gamma with $\alpha = \sum x_i + \alpha$ and $\beta = \beta + \sum t_i$
+
+$\implies p(\theta| x_i) \sim Gamma(\alpha + \sum x_i, \beta + \sum t_i)$
+
+### f & g)
+
+My Stan Code: 
+
+```{}
+data {
+    int<lower=0> N;
+    array[N] int x;
+    array[N] int t;
+    real alpha;
+    real beta;
+}
+
+parameters {
+    real theta;
+}
+
+model {
+    real sum_x = sum(x);
+    real sum_t = sum(t);
+    x ~ exponential(theta);
+    theta ~ gamma(alpha, beta);
+}
+```
+
+
+```{r}
+comps <- read.table("computer-failures-process.dat", header = TRUE)
+
+alpha = 2
+beta = .0703
+
+data_stan <- list(N = length(comps$x), x = comps$x, t = comps$t, alpha = alpha, beta = beta)
+
+params <- c("theta")
+
+n_cores <- parallel::detectCores()   # Count how many cores are available
+options(mc.cores = n_cores)          
+
+fit_stan <- stan(model_code = readLines("comps.stan"),
+                 data = data_stan, pars = params,
+                 iter = 5000, warmup = 500, thin = 5, chains = n_cores)
+
+sim_stan <- extract(fit_stan) # collect samples from all chains
+post_thetas <- sim_stan$theta
+post_int_4 <- c(quantile(post_thetas, .025), quantile(post_thetas, .975))
+index_hpd <- which(sim_stan$lp__ >= quantile(sim_stan$lp__, .05))
+hpd_int <- c(min(sim_stan$theta[index_hpd]), max(sim_stan$theta[index_hpd]))
+```
+
+
+We get the following:
+
+95% Equal Tailed: `r post_int_4`
+
+HPD Interval (95%): `r hpd_int`
+
+
+### h) 
+
+```{r}
+prior_prob <- pgamma(.1, shape = alpha, rate = beta)
+post_prob <- pgamma(.1, shape = (alpha + sum(comps$x)), rate = (beta + sum(comps$t)))
+```
+
+
+Prior: $p(\theta < .1|x_i) = \text{pgamma(.1, shape = 2, rate = .0703)} \implies p(H_0) = `r prior_prob`, p(H_1) = `r 1 - prior_prob`$
+
+Posterior: $p(\theta < .1|x_i)  = \text{pgamma(.1, shape = 2, rate = .0703)} \implies p(H_0|data) = `r post_prob`, p(H_1|data) = `r 1 - post_prob`$
+
+Bayes Factor: $\frac{p(H_1|data)/p(H_1)}{p(H_0|data)/p(H_0)} = `r ((1-post_prob)/(1-prior_prob))/((post_prob)/(prior_prob))`$
+
+This means that even though the prior was for $H_1$, there was a significant amount of evidence in the data to heavily swing it more against $H_1$ in favor of $H_0$
+
+
+### i)
+
+The following finds the proabability for equals, as well as for the epsilon ranges. For my generated samples, it appears that none of them are in the appointed ranges, due to my minimum parameter value being `r min(post_thetas)`.
+
+```{r}
+mean(post_thetas == .1)
+epsilon <- c(.005, .001, .0001)
+lapply(epsilon, \(e) cat('Epsilon:', e, 'Probability: ', mean((post_thetas >= .1 - e) & (post_thetas <= .1 + e)), '\n'))
+
+min(post_thetas)
+```
+
+For the posteriors, no, it doesn't really make sense to look at probability of equaling a value because they are draws, and thus dependent on at least one draw equalling that exact value. Intervals make much more sense. 
+
+# 5
+
+$f(x_i|\theta) = \theta^{x_i}(1-\theta)^{1 - x_i}$
+
+$\phi = ln(\frac{\theta}{1-\theta})$
+
+### a)
+
+$\phi = ln(\frac{\theta}{1-\theta}) \implies e^{\phi} = \frac{\theta}{1-\theta} \implies e^{\phi} - \theta e^{\phi} = \theta \implies e^{\phi} = \theta(1 + e^{\phi}) \implies \theta = \frac{e^{\phi}}{1 + e^{\phi}}$
+
+$f(x_i|\theta) = \theta^{x_i}(1-\theta)^{1 - x_i} \implies f(x_i|\phi) = [\frac{e^{\phi}}{1 + e^{\phi}}]^{x_i}[1-\frac{e^{\phi}}{1 + e^{\phi}}]^{1-x_i}$
+
+When $x_i = 1 \implies f(x_i|\phi) = \frac{e^{\phi}}{1 + e^{\phi}}$
+
+When $x_i = 0 \implies f(x_i|\phi) = 1 - \frac{e^{\phi}}{1 + e^{\phi}} = \frac{1 + e^{\phi}}{1 + e^{\phi}} - \frac{e^{\phi}}{1 + e^{\phi}} = \frac{1}{1 + e^{\phi}}$
+
+The only thing that differs between the two is the numerator, which is $e^{\phi}$ when $x=1$, and $1$ when $x_1 = 0$. This can be represented by just $e^{\phi x_i}$
+
+$\implies \underline{f(x_i|\phi) = \frac{e^{\phi x_i}}{1 + e^{\phi}}I\{x_i \in \{0,1\}\}}$
+
+### b)
+
+$f(\statvec{x}|\phi) = \prod \frac{e^{\phi x_i}}{1 + e^{\phi}} = \frac{e^{\phi \sum x_i}}{(1 + e^{\phi})^n}$
+
+$l(\statvec{x}|\phi) = \phi \sum x_i - ln(1 + e^{\phi})$
+
+$\frac{d}{d\phi} l(\statvec{x}|\phi) = \sum x_i - \frac{e^{\phi}}{1+e^{\phi}}$
+
+$I = \mathbb{E}[(\frac{d l}{d \phi})^2] = \mathbb{E}[-\frac{e^{\phi}}{(1+e^{\phi})^2}] = \frac{e^{\phi}}{(1+e^{\phi})^2}$
+
+$\pi_{\phi}^1(\phi) = \sqrt{I(\phi)} = \sqrt{\frac{e^{\phi}}{(1+e^{\phi})^2}} = \underline{\frac{e^{\phi/2}}{1 + e^\phi}}$
+
+
+### c)
+
+
+$$
+\begin{aligned}
+\pi_{\theta}^1(\theta)|\frac{\partial \theta}{\partial\phi} |
+&= Beta(1/2, 1/2)\frac{\partial}{\partial\phi}\frac{e^{\phi}}{1 + e^{\phi}} \\
+&\propto \theta^{-1/2}(1-\theta)^{-1/2}\frac{e^{\phi}}{(1+e^{\phi})^2}  \\
+&= [\frac{e^{\phi}}{1+e^{\phi}}]^{-1/2}(1-\frac{e^{\phi}}{1+e^{\phi}})^{-1/2}\frac{e^{\phi}}{(1+e^{\phi})^2} \\
+&= \frac{e^{\phi - 1/2 \phi}}{(1 + e^{\phi})^{2-1/2-1/2}} \\
+&= \frac{e^{\phi/2}}{(1 + e^\phi)}
+\end{aligned}
+$$
+
+That is the same as $\pi_{\phi}^1(\phi)$ shown in part (b).
+
+
+# 6
+
+$y_i | \mu, \tau \sim N(\mu, 1/\tau), Var(y_i | \mu, \tau) = 1/\tau$
+
+$\pi(\mu, \tau) \propto 1/\tau$
+
+### a) 
+
+Per (3.2) in BDA3, we have that the Joint Posterior is (just replacing $\sigma^2$ with $1/\tau$):
+
+$$
+p(\mu, \tau | y) \propto \tau^{(n-1)/2}exp(-\tau/2[\sum_{i=1}^n(y_i - \bar{y})^2 + n(\bar{y}-\mu)^2])
+$$
+
+To get the marginal for $\tau$ we integrate out $\mu$:
+
+$$
+\begin{aligned}
+p(\tau|y) 
+&\propto \int_{\mu} \tau^{(n-1)/2}exp(-\tau/(2\tau)[\sum_{i=1}^n(y_i - \bar{y})^2 + n(\bar{y}-\mu)^2]) \\
+&= \tau^{(n-1)/2}exp(-\tau/2\sum_{i=1}^n(y_i - \bar{y})^2)\textcolor{red}{\int_{\mu}exp(-\tau/2 n(\bar{y}-\mu)^2)} \text{the red bit is a normal kernel}\\
+&\propto \tau^{(n-1)/2}exp(-\tau/2\sum_{i=1}^n(y_i - \bar{y})^2)\tau^{1/2} \\
+&= \tau^{(n-1)/2 - 1}exp(-\tau/2\sum_{i=1}^n(y_i - \bar{y})^2)
+\end{aligned}
+$$
+
+This is proportional to a Chi-Squared distribution: $\chi^2_{n-1}$
+
+### b)
+
+$t = \sqrt{n}(\mu - \bar{y})/s$ where $s^2 = \sum (y_i - \bar{y})^2/(n-1)$
+
+Show $t \propto (1 + \frac{t^2}{n-1})^{-n/2}$.
+
+In BDA3, we have that the marginal posterior for $\mu$ is:
+$p(\mu|y) \propto \left[1 + \frac{n(\mu - \bar{y})^2}{(n-1)s^2} \right]^{n/2} = \left[1 + \left(\frac{\sqrt{n}(\mu - \bar{y})}{s}\right)^2\frac{1}{n-1} \right]^{n/2}$
+
+Plugging in t: $p(t|y) \propto \left[1 + \frac{t^2}{n-1} \right]^{-n/2}$
+
+This is a t-distribution: $t_{n-1}$
+
+I'm not too sure what to comment on, but very interesting that a reparameterization that seems a little crazy would end up resulting in the t-distribution. 
+
+
+
+# Acknolwedgements
+
+#### Estimated time
+
+I estimate this assignment took me in total around 11 hours to complete
+
+#### Resources Used
+
+I used the book quite a lot, class slides. I used Google AI to help me understand how to derive a Jeffrey's prior, and how to setup STAN stuff

@@ -1,0 +1,1843 @@
+%\documentclass[twocolumn]{article}\
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\DeclareMathOperator{\ext}{\EX_{\theta}} % Expected Value symbol
+\DeclareMathOperator{\vart}{Var_{\theta}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+\usepackage[linktoc=all]{hyperref}
+
+
+
+\begin{document}
+
+\tableofcontents
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Point Estimation}
+
+\underline{Definition}: A point estimator is any scalar (or vector) -valued function of the sample. 
+$(x_1, ... x_n) \sim f(x|\theta)$
+
+A point estimator for $\tau(\theta)$ is a statistic $T(x)$ with the purpose of approximating $\tau(\theta)$
+
+\subsection{Method of Moments}
+The k-th moment of a r.v. $X$ is $\mu_k(\theta) = \EX_{\theta} (X^k) = \int_{\mathbb{X}} x^k f(x|\theta)dx$
+
+Given an iid sample $x_1 ... x_n \iiddist f(x|\theta)$ we have sample moments: $\hat{\mu}_k = \frac{1}{n}\sum_{i=1}^{n} x_i^k$
+
+Suppose $\theta \in \Theta \in \real^P$, and that $\mu_k(\theta)$ exists and is fininte for k = 1, ..., p.
+
+\underline{Definition}: The method of moments estimator of $\theta$ is the solution to the system of equations:
+\begin{align}
+\mu_1(\theta) &= \hat{\mu}_1 \\
+&. \\
+&. \\
+\mu_p(\theta) &= \hat{\mu}_p
+\end{align}
+We call it $\hat{\theta}_{MM}$
+
+\underline{Example}: $X_i \iiddist Beta(\alpha, \beta), \theta = (\alpha, \beta)$
+
+$\mu_1(\theta) = \frac{\alpha}{\alpha + \beta}$
+
+$\mu_2(\theta) = Var_{\theta}(x_1) + \left(\frac{\alpha}{\alpha + \beta}\right)^2 = \frac{\alpha\beta}{(\alpha+\beta)^2 (\alpha + \beta + 1)} + \frac{\alpha^2}{(\alpha + \beta)^2}$
+
+$\frac{\alpha}{\alpha + \beta} = \hat{\mu}_1, \frac{\alpha\beta}{(\alpha+\beta)^2 (\alpha + \beta + 1)} + \frac{\alpha^2}{(\alpha + \beta)^2} = \hat{\mu}_2$
+
+$\beta = \left(\frac{1 - \hat{\mu}_1}{\hat{\mu}_1}\right)\alpha$ from the first equation. Plug this into the second expression and solve: 
+
+$\hat{\alpha}_{MM} = \hat{\mu}_1\left[\frac{\hat{\mu}_1(1-\hat{\mu}_1)}{\hat{\mu}_2 - \hat{\mu}_1^2} - 1 \right]$
+
+$\implies \hat{\beta}_{MM} = \frac{(1-\hat{\mu}_1)}{\hat{\mu}_1}\hat{\alpha}_{MM}$
+
+\underline{Example}: $x_i \iiddist N(\mu, \sigma^2)$
+
+$\mu_1(\theta) = \hat{\mu}_1, \mu_1(\theta) = \mu, \implies \hat{\mu}_{MM} = \mu$
+
+$\mu_2(\theta) = Var_{\theta}(x_1) + \mu_1^2 = \sigma^2 + \mu^2 = \hat{\mu}_2$
+
+$\sigma^2_{MM} = \hat{\mu}_2 - \hat{\mu}_1^2 = \frac{n-1}{n}s^2$
+
+Note: If $\mu, \sigma^2$ are the mean/variance of any family, their MM estimators are $\overline{X}, \frac{n-1}{n}s^2$.
+
+For families where parameters are not just the mean and variance, you can find it via two ways: use mean/variance in MM, then calculate parameters, or use parameters in MM then calculate mean/variance. Both yield same results. 
+
+Fact: MM estimators are invariant of re-parameterizations.
+
+Let $\eta = \eta(\theta)$ be a 1:1 mapping (intervtible). Then, $\hat{\eta}_{MM} = \eta(\hat{\theta}_{MM})$
+
+Let's say $x_i \iiddist N(\mu, \sigma^2)$ and we want to estimate $\tau(\theta) = \frac{\mu}{\sigma}$. This isn't 1:1. What can we do? We can do the 'Transformations' method and create a second value $\tau_2$, etc. We can also just plug in the estimators. 
+
+\underline{Definition}: The MM estimator for a parametric function $\tau(\theta)$ is just $\hat{\tau}_{MM}(\theta) = \tau(\hat(\theta)_{MM})$
+
+\underline{Properties}:
+\begin{itemize}
+    \item MM equations may have a unique solution, no solution, or many solutions
+    \item Often, MM estimators are used as initial values for another estimation technique (ie. a root finding method)
+    \item Why should it work? Let's say $\theta^*$ is the true value of $\theta$. Then Law of Large Numbers says: $\hat{\mu}_k \pto \mu_k(\theta*)$. Then we are solving $\mu_k(\theta) = \hat{\mu}_k \approx \mu_k(\theta^*)$
+\end{itemize}
+
+\underline{Example}: $X_i \iiddist Bin(m, \theta), i=1,...,n$ (m is known)
+
+Find the MM estimator of $\tau(\theta) = ln\frac{\theta}{1-\theta}$
+\begin{enumerate}
+    \item Find MM for $\theta$ ($\hat{\theta}_{MM}$)
+    \item Plug in ($\hat{\tau}_{MM}(\theta) = \tau(\hat{\theta}_{MM})$)
+    \item $\hat{\tau}_{MM}(\theta) = ln\frac{\overline{X}/m}{1-\overline{X}/m}$
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Maximum Likelihood}
+
+$X = (X_1, ..., X_n) \sim f(x|\theta), \theta \in \Theta \subset \real^k$
+
+Notation: $f(x;\theta)$: function of $x$ indexed at $\theta$. Basically, given some set value of the $\theta$.
+
+\underline{Likelihood Function}: The likelihood function is: $L(\theta;x) = f(x|\theta)$
+
+Notes: 
+\begin{itemize}
+    \item $L$ is a function of $\theta$ for each $x \in \mathbb{X}$ (in sample space)
+    \item Plugging in $X$ for $x$ gives $L(\theta;X)$, a stochastic process (ie. plug in a random $X$ makes this a random function for $\theta$)
+    \item The log-likelihood function is $l(\theta;x) = ln [L(\theta;x)]$
+    \item If $x_i \iiddist f(x_i | \theta)$ ($f$ is marginal dist.), then $l(\theta;x) = \sum_{i=1}^{n} ln [f(x_i|\theta)]$ (because $x_i \iiddist$, the sum is just a transformation and we can apply LLN, CLT, etc.)
+\end{itemize}
+
+\underline{Maximum Likelihood Estimate}: If $x \in \mathbb{X}$ is observed, a maximum likelihood estimate of $\theta, \hat{\theta}(x)$, is any value $\theta \in \Theta$ that maximizes $L(\theta|x)$.
+
+$\hat{\theta}(x) = \underset{\theta \in \Theta}{argmax} [ L(\theta|x) ]$
+
+This is a function of observed data (an estimate, not an estimator). 
+
+\underline{Maximum Likelihood Estimator}: A maximum likelihood estimator (MLE) is $\hat{\theta} = \hat{\theta}(X)$
+
+If an ML estimate exists, then $\hat{\theta}(x) = \underset{\theta \in \Theta}{argmax} [l(\theta;x)]$. This is because $ln(x)$ is a strictly increasing function.
+
+
+\underline{Why does maximum likelihood work?} Can we show that $\hat{\theta} \approx \theta_0$ (true parameter)?
+
+Assume $X_1, ..., X_n \iiddist f(x_i|\theta)$. $l(\theta | x) = \sum_{i=1}^n ln[f(x_i|\theta)]$
+
+$\frac{1}{n} l(\theta | x) = \frac{1}{n}\sum_{i=1}^n ln[f(x_i | \theta)] \pto \EX_{\theta_0}(ln[f(x|\theta)]) = \int_{\mathbb{X}} ln[f(x|\theta)]f(x|\theta_0)dx$
+
+It would make sense that $\hat{\theta}(x) = \underset{\theta \in \Theta}{argmax}[l(X|\theta)] \approx \underset{\theta \in \Theta}{argmax}\EX_{\theta_0}(ln[f(X|\theta)])$ which we hope $= \theta_0$.
+
+Define $D(\theta;\theta_0) = \EX_{\theta_0}(ln[f(X|\theta)])$. We will show that $D(\theta_0;\theta_0) - D(\theta;\theta_0) \ge 0 \forall \theta$.
+
+Kullback-Liebler Divergence: Let $f_0$ and $f_1$ be any two PDFs/PMFs. The Kullback-Liebler divergence from $f_0$ to $f_1$ is $K(f_0, f_1) = -\EX_{f_0}[ln\frac{f_1(x)}{f_0(x)}]$
+
+$D(\theta_0;\theta_0) - D(\theta;\theta_0) = \EX_{\theta_0}[ln(f(X|\theta_0)) - ln(f(X|\theta))] = -\EX_{\theta_0}[ln\frac{f(X|\theta)}{f(X|\theta_0)}]$.
+
+Lemma: For any two PDFs/PMFs $f_0, f_1, K(f_0, f_1) \ge 0$, with equality iff $f_0 \equiv f_1$.
+
+Remeber Jensen's Inequality: When $g(x)$ is convex (happy), $\EX[g(x)] \ge g(\EX[x])$.
+
+\underline{Proof (Discrete Case)}: Suppose $X \sim f_0$ and set $Z = \frac{f_1(x)}{f_0(x)}$. Let $S_j = \{x: f_j(x) > 0\}$
+
+Since $g(z) = - ln(z)$ is convex and $\EX_{f_0}(z) = \sum_{x \in S_0} \frac{f_1(x)}{f_0(x)}f_0(x) = \sum_{x \in S_0} f_1(x) \le 1$.
+
+By Jensen's Inequality: $K(f_0,f_1) = -\EX_{f_0}[ln(Z)] = \EX_{f_0}[g(z)] \underset{1}{\ge} g(\EX_{f_0}(z)) \underset{2}{\ge} 0$. 
+
+This is only 'equal' when $g$ is linear. Since $g(z)$ is not linear, equality in $1$ only happens iff $Z = \frac{f_1(x)}{f_0} = c \ne 0, \forall x \in S_0, [S_0 \subset S_1]$. Equality in $2$ only happens iff $\sum_{x \in S_0} f_1(x) = 1, [S_1 \subset S_0]$. 
+
+Suppose 1 and 2 are equalities. $1 = \sum_{x \in S_1}f_1(x) = \sum_{x \in S_1}c f_0(x) = c \sum_{x \in S_1} f_0(x) = c \sum_{x \in S_0} f_0(x) = c$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Decision Theory}
+
+\subsection{Bayesian Estimation}
+$x_1, ..., x_n \sim f(x|\theta), \theta \in \Theta$
+
+\underline{Definition}: A priori distribution $\pi$ for $\theta$ is a PDF/PMf over $\Theta$: $\int_{\Theta} \pi(\theta)d\theta = 1, \pi(\theta) \ge 0, \theta \in \Theta$
+
+Main Idea: $\pi$ tells us what $\theta$s are "important". $\pi(\theta|x)$ tells us which are important afetr knowing $x$.
+
+\underline{Definition}: If we observed $x \in X$, the posterior distribution is: $\pi(\theta|x) = \frac{f(x|\theta)\pi(\theta)}{\int_{\Theta} f(\theta|x)\pi(\theta)d\theta}$
+
+Here, $m(x) = \int_{\Theta} f(\theta|x)\pi(\theta)d\theta$ is the "marginal" distirbution of $x$. 
+
+Some logical things to do with $\pi(\theta|x)$:
+\begin{enumerate}
+    \item Estimate $\theta$ using a measure of 'center':
+    \item  $\hat{\theta} = \EX(\theta|x) = \int_{\Theta} \theta \pi(\theta|x)d\theta$
+    \item $0.5 = \int_0^{\hat{\theta}}pi(\theta|x)d\theta$
+    \item $\hat{\theta}(x) = \underset{\theta \in \Theta}{argmax} [\pi(\theta|x)]$
+\end{enumerate}
+
+\underline{Example}: 
+$x_i \iiddist Bern(\theta), \theta \sim Beta(\alpha, \beta)$ (the common prior for the Bernoulli is the Beta: also defined on 0:1)
+
+$$
+\begin{aligned}
+\pi(\theta) 
+&= \frac{1}{\beta(\alpha, \beta)}\theta^{\alpha-1}(1-\theta)^{\beta - 1}, 0<\theta<1 \\
+&\propto \theta^{\alpha-1}(1-\theta)^{\beta - 1}
+\end{aligned}
+$$
+
+$f(x|\theta) = \prod_{i=1}^n \theta^{x_i}(1-\theta)^{1-x_i} = \theta^{\sum x_i}(1-\theta)^{n-\sum x_i}$
+
+$\pi(\theta|x) = \frac{\theta^{\sum x_i}(1-\theta)^{n-\sum x_i}\theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{B(\alpha, \beta)\int_0^1 \frac{\theta^{\sum x_i}(1-\theta)^{n-\sum x_i}\theta^{\alpha - 1}(1-\theta)^{\beta - 1}}{B(\alpha, \beta)}d\theta}$
+
+Denominator is just a function of x (integrating out $\theta$) and some constants. 
+
+$\implies \pi(\theta|x) \propto \theta^{\alpha + \sum x_i - 1}(1-\theta)^{\beta + n - \sum x_i - 1}$
+
+i.e., $\theta|x \sim Beta(\alpha + \sum x_i, \beta + n - \sum x_i)$
+
+The posterior mean is $\hat{\theta}(x) = \frac{\alpha + \sum x_i}{\alpha + \beta + n}$
+
+Take-aways from this example:
+\begin{enumerate}
+    \item Both $\pi(\theta)$ and $\pi(\theta|x)$ were Beta distributions. We say then that the Beta is conjugate for the Bernoulli likelihood
+    \item We did not need to compute the $m(x)$. In practice, usually can't compute it and instead rely on smapling (MCMC, etc.)
+    \item The usual frequentist estimate is $\bar{x}$ (this would be the limiting case of $\alpha = \beta = 0$). In fact, $\hat{\theta}_B(x) = \frac{\alpha}{\alpha + \beta + n} + \frac{\sum x_i}{\alpha + \beta + n}= \left(\frac{\alpha}{\alpha + \beta}\right)\left(\frac{\alpha + \beta}{\alpha + \beta + n}\right) + \bar{X}\left(\frac{n}{\alpha + \beta + n}\right)$. That is, the posterior mean is a weighted average of the prior mean and the MLE. As $\alpha$ or $\beta$ go to infinity, result is dominated by prior. As $n$ goes to infitinty, get more weight on the $\bar{X}$
+\end{enumerate}
+
+\subsection{Conjugate Priors}
+\underline{Definition}:
+Let $f(x|theta)$ be a gamily of PMFs/PDFs indexed by $\theta \in \Theta$. A family of distributions is $\Pi = \{\pi(\theta)\}$ is said to be conjugate for $f(x|\theta)$ if $\pi \in \Pi \implies \pi(\theta|x) \in \Pi$. 
+
+Note: Number of parameters in conjugate family is always going to be 1 more than the base distribution.
+
+If $f(x|\theta)$ is an eponential family, $f(x|\theta) = (\pi h(x_i))e^{\sum_{j=1}^k T_j(x)w_j(\theta) + n ln[c(\theta)]}, T_j(x) = \sum_{i=1}^n t_j(x_i)$
+
+A conjugate family with hyperparameter $t \in \real^{k+1}$ is $\pi_t(\theta) \propto e^{\sum_{j=1}^k t_j(x)w_j(\theta) + t_{k+1} ln[c(\theta)]}$ 
+
+where $t$ must satisfy $\int_\theta e^{\sum_{j=1}^k t_j(x)w_j(\theta) + t_{k+1} ln[c(\theta)]} < \infty$
+
+
+\underline{Example}:
+$X_i \iiddist N(\theta, \sigma^2), \sigma^2$ is known
+
+
+$$
+\begin{aligned}
+f(x|\theta) 
+&= (2\pi \sigma^2)^{-n/2} e^{1/(2\sigma^2)\sum(x_i - \theta)^2} \\ 
+&= h(x) e^{\frac{n\bar{x}}{\sigma^2}\theta - \frac{n}{2\sigma^2}\theta^2}
+\end{aligned}
+$$
+
+Thus the conjugate prior has the form $\pi_t(\theta) \propto e^{t_1 \theta + t_2\theta^2}$. This is e to a quadratic which must be a Normal. We know $t_2$ must be negative so the tails die out. 
+
+Since this must be a normal distirbution, find the mean and variance in terms of $t_1$ and $t_2$:
+
+Let $\nu, \tau^2$ represent mean and variance that correspond to $(t_1, t_2)$. $t_2 = \frac{-1}{2\tau^2}, t_1 = \frac{\nu}{\tau^2}$
+
+$\pi_t(\theta) \propto e^{\frac{n\bar{x}}{\sigma^2}\theta - \frac{n}{2\sigma^2}\theta^2} e^{t_1 \theta + t_2\theta^2} = e^{(t_1 + \frac{n\bar{x}}{\sigma^2})\theta + (t_2 - \frac{n}{2\sigma^2})\theta^2} = e^{t_1^*\theta + t_2^*\theta^2}$
+
+$\implies \theta|x \sim N(\nu^*, \tau^{*2})$ where $\tau^{*2} = -\frac{1}{2t_2^*} = \frac{\sigma^2\tau^2}{n \tau^2 + \sigma^2}, \nu^* = \frac{\tau^2}{\tau^2 + \sigma^2/n}\bar{X} + \frac{\sigma^2/n}{\tau^2 + \sigma^2/n}\nu$
+
+
+\subsection{Bayes Rules}
+\underline{Definition}: A Bayes rule for a loss function $l(t|\theta)$ and a prior $\pi$ is an estimator $W^*$ for which the Bayes risk is minimized: $r_{\pi}(W^*) \le r_{\pi}(W) \forall W$
+
+$$
+\begin{aligned}
+r_{\pi}(W) 
+&= \int_{\Theta} R(\theta;W)\pi(\theta)d\theta \\
+&= \int_{\Theta} \EX[l(W(x), \theta)|\theta]\pi(\theta)d\theta \\
+&= \int_\mathbb{X} \EX[l(W(x), \theta)|X=x]m(x)dx \\
+&= \int_\mathbb{X} r_{\pi}(W(x)|x)m(x)dx
+\end{aligned}
+$$
+
+If $r_{\pi}(W^*(x)|x) \le r_{\pi}(W(x)|x)$, then $W^*$ is the Bayes Rule
+
+\underline{Example}: $l(t, \theta) = (t-\theta)^2$
+
+$$
+\begin{aligned}
+r_{\pi}(w(x) | x) 
+&= \EX[(w(x) - \theta)^2 | X=x] \\
+&= \int(w(x) - \theta)^2\pi(\theta|x)d\theta \\
+&= \int_{\Theta}(w^2(x) - 2W(x)\theta + \theta^2)\pi(\theta|x)d\theta \\
+&= w^2(x) - 2w(x)\EX[\theta|X=x] + \EX[\theta^2|X=x] \implies w^*(x) \\
+&= \frac{2\EX[\theta|X=x]}{2(1)} \\
+&= \EX[\theta|X=x]
+\end{aligned}
+$$
+
+When using squared-error loss, the Bayes Rule is the posterior mean, when using absolute value squared-error loss it's the posterior median. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Jan 29}
+
+REVIEW
+
+$r_{\pi}(w) = \int_\mathbb{X} r_{\pi}(W(x)|x)m(x)dx$
+
+$r_{\pi}(w(x) | x)  = \EX[l(W(x), \theta)|X=x]$
+
+If $l(t, \theta) = (t-\theta)^2 \implies$ The Bayes Rule is $\EX[\theta|X=x]$
+
+If $l(t, \theta) = |t-\theta| \implies w^*(x)$ is the posterior median. 
+
+
+A reasonable loss smight be realted to SEL or AEL (Squared/Absolute Error Loss): $l(t, \theta) = g(\theta)(t-\theta)^2$
+
+$$
+\begin{aligned}
+r_{\pi}(w(x) | x)  
+&= \int_{\Theta} l(t, \theta)\pi(\theta|x)d\theta \\
+&= \int_{\Theta} g(\theta)(t-\theta)^2\pi(\theta|x)d\theta \\
+&= \int_{\Theta} (t-\theta)^2[g(\theta)\pi(\theta|x)]d\theta
+\end{aligned}
+$$
+
+Provided $\int_{\Theta} [g(\theta)\pi(\theta|x)]d\theta$ is finite (integrable), it becomes the Kernel of another function: define: $\tilde{\pi}(\theta|x) \propto g(\theta)\pi(\theta|x)$
+
+Then $r_{\pi}(w(x) | x) \propto \int_{\Theta} (t-\theta)^2\tilde{\pi}(\theta|x)d\theta = r_{\tilde{\pi}}(w(x)|x)$ (under SEL) $\implies w^*(x) = \EX_{\tilde{\pi}}(\theta|X=x)$
+
+\underline{Example}: $X_i \iiddist Exp(\theta)$
+
+$\pi(\theta)$ is the $Gamma(\alpha, \beta)$
+
+$l(t, \theta) = (\frac{t}{\theta} - 1)^2 = \frac{(t-\theta)^2}{\theta^2} \implies g(\theta) = \frac{1}{\theta^2}$
+
+$g(\theta)\pi(\theta|x) \propto \frac{1}{\theta^2}\theta^n e^{\theta \sum x_i}\theta^{\alpha-1}e^{-\theta/\beta} = \theta^{\alpha+n-3}e^{-\theta(\sum x_i + \beta^{-1})}$ which is a $Gamma(\alpha + n -2, (\sum x_i + \beta^{-1})^{-1})$ (note that we need n >= 2 to have valid parameters).
+
+The Bayes Rule is $w^*(x) = \frac{\alpha + n - 2}{\sum x_i + \beta^{-1}}$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Best Unbiased Estimation}
+
+Recall: $MSE_{\theta}(w) = \EX[(w-\theta)^2]$ (this is a risk function, so common it has its own name!)
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2)$
+
+1. $w(x) = \bar{x}, MSE_{\mu, \sigma^2}(\bar{x}) = \EX_{\mu, \sigma^2}[(\bar{x} - \mu)^2]$
+
+Since $\bar{x} \sim N(\mu, \sigma^2/n), MSE_{\mu, \sigma^2}(\bar{x}) = Var(\bar{x}) = \frac{\sigma^2}{n}$
+
+2. Let $s^2 = \frac{1}{n-1}\sum(x_i - \bar{x})^2 \sim \frac{\sigma^2}{n-1}\chi^2_{n-1}$
+
+$MSE_{\mu, \sigma^2}(s^2) = \EX_{\mu, \sigma^2}[(s^2 - \sigma^2)^2] = Var(s^2) = \frac{\sigma^4}{(n-1)^2}2(n-1) = \frac{2\sigma^4}{n-1}$
+
+In general: 
+$$
+\begin{aligned}
+MSE_{\theta}(w) 
+&= \EX_{\theta}[(w-\theta)^2] \\
+&= \EX_{\theta}[(w - \EX_{\theta}[w] + \EX_{\theta}[w] - \theta)^2] \\
+&= \EX_{\theta}[(w - \EX_{\theta}[w])^2] + (\EX_{\theta}[w] - \theta)^2 + 2\EX_{\theta}[(w - \EX_{\theta}[w])(\EX_{\theta}[w] - \theta)] \\
+&= Var_{\theta}(w) + Bias^2_{\theta}(w), Bias_{\theta}(w) = \EX_{\theta}[w] - \theta
+\end{aligned}
+$$
+
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2)$
+
+$s^2 = \frac{1}{n-1}\sum(x_i - \bar{x})^2$
+
+$\hat{\theta} = \frac{1}{n}\sum(x_i - \bar{x})^2$ (MLE/MM)
+
+
+$$
+\begin{aligned}
+MSE_{\sigma^2}(\hat{\sigma}^2) 
+&= Var_{\hat{\sigma}^2}(\hat{\sigma}^2) + Bias^2_{\sigma^2}(\hat{\sigma}^2) \\
+&= Var_{\sigma^2}(\frac{n-1}{n}s^2) + Bias^2_{\sigma^2}(\frac{n-1}{n}s^2) \\
+&= (\frac{n-1}{n})^2\frac{2\sigma^4}{n-1} + [\EX_{\sigma^2}(\frac{n-1}{n}s^2) - \sigma^2]^2 \\
+&= \frac{2\sigma^4(n-1)}{n^2} + [\frac{n-1}{n}\sigma^2 - \sigma^2]^2 \\
+&= \frac{2\sigma^4}{n-1}(\frac{n-1}{n})^2 + \frac{\sigma^2}{n^2} \\
+&= \frac{2\sigma^4}{n-1}[\frac{(n-1/2)(n-1)}{n^2}] < MSE_{\sigma^2}(s^2)
+\end{aligned}
+$$
+
+
+Let $\tau(\theta)$ be some estimand:
+
+\underline{Define}: $w$ is said to be unbiased for $\tau(\theta)$ if $\EX_{\theta}(w) = \tau(\theta) \forall \theta \in \Theta$
+
+\underline{Definition}: An estimator $w^*$ is said to be a (uniformly) minimum variance unbiased estimator (MVUE) of $\tau(\theta)$ if:
+
+1. $w^*$ is unbiased for $\tau(\theta)$
+
+2. For any $w$ unbiased for $\tau(\theta), Var(w) \ge Var_{\theta}(w^*)$
+
+\underline{Example}: $x_1, ..., x_n \iiddist, \EX[x_i] = \theta$
+
+Let $w_1 = x_1, w_2 = \bar{x}$. Both are unbiased, but $\bar{x}$ has smaller variance. To prove the MVUE, we'd have to compare $w_2$ to all other $w$s
+
+\underline{Example}: $x_i \iiddist Pois(\lambda)$
+
+Both $\bar{x}, s^2$ are unbiased. $\bar{x}$ is simpler, and also, $Var(\bar{x}) = \frac{\lambda}{n} < Var_{\lambda}(s^2)$
+
+
+Two ways to establish that an estimator is an MVUE:
+
+1. Find a lower bound $L(\theta)$ such that $Var_{\theta}(w) \ge L(\theta)$ for all unbiased $w$. Then, $Var_{\theta}(w^*) = L(\theta), w^*$ is MVUE
+
+2. Show that the MVUE has characterstic properties and construct $w^*$ with those properties
+
+
+
+\subsection{Cramer-Rao Lower Bound}
+
+The score function is $\psi(x;\theta) = \frac{\partial}{\partial \theta}ln(f(x|\theta))$
+
+CR Condition: For any statistic $W$ with finite expectation - 
+
+($|\EX_{\theta}[W]| < \infty \forall \theta$), $\frac{d}{d\theta}\EX_{\theta}[W] = \frac{d}{d\theta} \int_{\mathbb{X}}W(x)f(x|\theta)dx = \int_{\mathbb{X}}\frac{\partial}{\partial\theta}W(x)f(x|\theta)dx$
+
+Notice: $\frac{\partial f(x|\theta)}{\partial \theta} = \frac{\partial f(x|\theta)}{\partial \theta}\frac{f(x|\theta)}{f(x|\theta)} = \frac{\partial ln(f(x|\theta))}{\partial \theta}f(x|\theta) = \psi(x;\theta)f(x|\theta)$
+
+Thus: $\underline{\frac{d}{d \theta} \EX_{\theta}[W] = \int_{\mathbb{X}} W(x)\psi(x;\theta)f(x|\theta)dx}$
+
+
+\underline{Definition}: The Information Number (Fisher Information) is: 
+
+$I_n(\theta) = \EX_{\theta}[\psi^2(x;\theta)]$ (Scalar)
+
+$I_n(\theta) = \EX_{\theta}[\psi(x;\theta)\psi(x;\theta)^{\top}]$ (Vector)
+
+\underline{Fact}: If CR condition holds, then the Fisher Information is the variance of the score: 
+
+$I_n(\theta) = Var_{\theta}(\psi(x;\theta))$ (note: this means that $\EX_{\theta}[\psi(x;\theta)] = 0$)
+
+\underline{Theorem}: CRLB
+
+Suppose the CR Condition holds and $0 < I_n(\theta) < \infty$. If $W$ is a statistic satisfying:
+
+i) $\EX_{\theta}[W] = \tau(\theta), |\tau(\theta)| < \infty$ (unbiased estimator for $\tau(\theta)$) and 
+
+ii) $Var_{\theta}(W) < \infty \forall \theta$
+
+then $Var_{\theta}(W) \ge \frac{(\tau'(\theta))^2}{I_n(\theta)}$ (for scalar $\theta$)
+
+
+Remember: Cauchy-Schwartz: $|x^{\top}y| \le \norm{x}\norm{y} \implies |\EX[xy] \le \EX[x^2]^{1/2}\EX[y^2]^{1/2}$. Equality only happens when $x = ay$
+
+
+\underline{Proof}: CRLB
+
+Apply CS inequality to $Y_{\theta} = W - \tau(\theta), z_{\theta} = \psi(x;\theta)$
+
+$|\tau'(\theta)| = |\frac{d}{d\theta}\EX_{\theta}[W]| = |\int_{\mathbb{X}} W(x)\psi(x;\theta)f(x|\theta)dx| = |\EX_{\theta}W \psi(x;\theta)|$ (here, because $\psi$ has mean zero we can add constant on $W$) $ = |\EX_{\theta}[Y_{\theta}z_{\theta}]| \le [Var_{\theta}(Y_{\theta})Var_{\theta}(z_{\theta})]^{1/2} = [Var_{\theta}(W)I_n(\theta)]^{1/2} \implies Var_{\theta}(W) \ge \frac{(\tau'(\theta))^2}{I_n(\theta)}$
+
+
+\underline{Comments}: 
+
+1) To apply this result, recall that we have equality in the CRLB iff $W(X) - \tau(\theta)  = k(\theta)\psi(x;\theta)$ (some constant times the score, refer to Cauchy Schwartz again). \boldred{THIS IS VERY IMPORTANT!!!!!}
+
+2) In the iid case, let $I_1(\theta) = Var_{\theta}(\frac{d}{d\theta}ln(f(x_1|\theta)))$. Then, 
+
+$$
+\begin{aligned}
+    I_n(\theta) 
+    &= Var_{\theta}(\frac{d}{d\theta}ln(f(\statvec{x}|\theta))) \\
+    &= Var_{\theta}(\sum_{i=1}^n \frac{\partial}{\partial \theta} ln(f(\statvec{x}|theta))) \\
+    &= \sum_{i=1}^n Var_{\theta}(\frac{\partial}{\partial \theta} ln(f(x_i|\theta))) \\
+    &= nI_1(\theta)
+\end{aligned}
+$$
+
+3) If $\frac{d}{d \theta} \EX_{\theta}[\psi(x;\theta)] = \int_{\mathbb{X}} \frac{\partial}{\partial \theta}[\psi(x;\theta)f(x|\theta)]dx$ then: $I_n(\theta) = -\EX_{\theta}[\frac{\partial}{\partial \theta} \psi(x;\theta)]$ (when iid:) $= -n\EX_{\theta}[\frac{\partial^2}{\partial \theta^2} ln(f(x_1|\theta))]$
+
+4) If $\tau(\theta)$ is a vector, $Var_{\theta}(W) \succeq \tau'(\theta)^{\top}I_n^{-1}(\theta)\tau'(\theta)$ ($A \succeq B$ means $A-B$ is Positive Definite)
+
+\underline{Example}: $X_i \iiddist Pois(\theta), i = 1, ..., n$
+
+a) Consider $\tau(\theta) = \theta$. 
+
+$$
+\begin{aligned}
+\psi(x;\theta) 
+&= \frac{\partial}{\partial \theta}ln[e^{-n\theta}\frac{\theta^{\sum x_i}}{\prod x_i !}] \\
+&= \frac{\partial}{\partial \theta}[-n\theta + ln(\theta)\sum x_i - \sum ln(x_i !)] \\
+&= -n + \frac{\sum x_i}{\theta} \\
+&= \frac{n}{\theta}(\bar{x} - \theta) \\
+&\implies \frac{\theta}{n} \psi(x;\theta) \\
+&= \bar{x} - \theta \implies \bar{x} \text{ is the MVUE of } \theta.
+\end{aligned}
+$$
+
+To find $Var_{\theta}(\bar(x))$, we know that $Var_{\theta}(\bar(x)) = \frac{\theta}{n}$. We can also use the CRLB since it's an equality: $\tau'(\theta) = 1, I_n(\theta) = nI_1(\theta) = n(-\EX_{\theta}[\frac{\partial}{\partial \theta} ln(f(x_1|\theta))]) = -n\EX_{\theta}[\frac{\partial}{\partial \theta}(-1 + \frac{x_1}{\theta})] = n\EX_{\theta}[\frac{x_1}{\theta^2}] = \frac{n\theta}{\theta^2} = \frac{n}{\theta} \implies CRLB = \frac{1}{n/\theta} = \frac{\theta}{n}$
+
+
+b) Consider $\tau(\theta) = \theta^2$
+
+Done in class on paper: 
+$\bar{x}^2$ is a biased estimator: $\EX[\bar{x}^2] = Var(\bar{x}) + \EX[\bar{x}]^2 = Var(\bar{x}) + \theta^2$. The bias is $Var(\bar{x}) = \theta/n$
+
+
+
+
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2), \theta = (\mu, \sigma^2)$
+
+$$
+I_n(\theta) = \begin{bmatrix}
+n/\sigma^2 & 0 \\
+0 & n/(2\sigma^4)
+\end{bmatrix} 
+$$
+
+$\tau(\theta) = \mu, \tau'(\theta) = \left( \begin{smallmatrix} 1\\ 0 \end{smallmatrix} \right)$
+
+If $W$ is unbiased for $\mu$, $Var_{\theta}(W) \ge [\tau'(\theta)]^{\top}I_n^{-1}(\theta)\tau'(\theta) = \left( \begin{smallmatrix} 1 & 0 \end{smallmatrix} \right) \left( \begin{smallmatrix} \sigma^2/n & 0 \\ 0 & 2\sigma^4/n \end{smallmatrix} \right) \left( \begin{smallmatrix} 1 \\ 0 \end{smallmatrix} \right) = \sigma^2/n \implies \bar{x}$ is MVUE.
+
+
+$\tau(\theta) = \sigma^2 \implies \tau'(\theta) = \left( \begin{smallmatrix} 1 \\ 0 \end{smallmatrix} \right)$
+
+If $W$ is unbiased for $\sigma^2$: $Var_{\theta}(W) \ge 2\sigma^2/n$
+
+$Var_{\theta}(s^2) = 2\sigma^4/(n-1) > 2\sigma^4/n$
+
+
+\underline{Example}: (CR Condition Fails)
+
+$X_i \iiddist Unif(0, \theta) (\text{ implicitly assuming } \tau(theta) = \theta)$
+
+$\psi(x;\theta) = \frac{\partial}{\partial\theta}ln[f(x|\theta)] = \frac{\partial}{\partial\theta}ln[\theta^{-n}I(0 < X_{(n)} \le \theta)]$
+
+We can still compute $\EX_{\theta}[\psi^2(x;\theta)] = \EX_{\theta}[(\frac{\partial}{\partial\theta}(-n ln(\theta)))^2] = \frac{n^2}{\theta^2} \implies \text{The CRLB would be: } \frac{1}{n^2/\theta^2} = \frac{\theta^2}{n^2}$
+
+$W(x) = \frac{n+1}{n}X_{(n)}$ is unbiased for $\theta$. However, $Var_{\theta}(W) = \frac{\theta^2}{n(n+2)} < \frac{\theta^2}{n^2}$. This is possible because the CR Condition didn't hold in the first place, so the CRLB wasn't actually a valid representation of the lower bound. 
+
+
+\section{Constructing MVUEs using Completeness and Sufficiency}
+
+Let $W$ be an unbiased estimator of $\tau(\theta)$ and $T$ be any statistic. Consider $\EX_{\theta}[W|T]$ as a new random variable.
+
+$\EX_{\theta}[\EX_{\theta}(W|T)] = \EX_{\theta}[W]$
+
+If I condition in a way that I still get a statistic, it remains an unbaised estimator.
+
+$Var_{\theta}(W) = Var_{\theta}(\EX_{\theta}[W|T]) + \EX_{\theta}[Var_{\theta}(W|T)] \ge Var_{\theta}(\EX_{\theta}[W|T])$
+
+Questions moving forward:
+\begin{enumerate}
+    \item How can we choose $T$ so that $\EX_{\theta}[W|T]$ doesn't depend on $\theta$? (sufficiency)
+    \item How can we choose $T$ to maximally reduce the variance? (completeness)
+\end{enumerate}
+
+
+
+\subsection{Sufficiency}
+
+Because $W$ is a statistic, if $x|T$ does not depend on $\theta$, then neither will $W$. 
+
+\underline{Definition}: A statistic $T$ is sufficient if the distribution of $X|T$ does not depend on $\theta$.
+
+Interpretation: If $T$ is sufficient, then two data points $x, y$ should lead to the same inference if $T(x) = T(y)$.
+
+Obvious Sufficient Statistics include: 
+\begin{itemize}
+    \item $x = (x_1, ..., x_n)$
+    \item $(x_{(1)}, ..., x_{(n)})$
+\end{itemize}
+
+\underline{Fact}: If I know $T(x)$ I can generate a new dataset $Y$ with the exact same distributionas $X$ and $T(x) = T(y)$.
+
+\underline{Example}: $x_1, ..., x_n \sim Bern(\theta)$. Then $\sum x_i$ is sufficient.
+
+Generate $Y$ using $\sum x_i$ such that $Y_i \iiddist Bern(\theta)$
+
+$P(Y = y|\sum x_i = t) = \begin{cases} 0 & \sum y_i \neq t \\ \frac{1}{\binom{n}{t}} & \sum y_i = t \end{cases}$
+
+$P_{\theta}(Y = y) = \sum_{t=0}^n \frac{1}{\binom{n}{t}} I(\sum y_i =t)P_{\theta}(\sum x_i = t) = \sum_{t=0}^n I(\sum y_i =t) \binom{n}{t} \theta^t (1-\theta)^{n-t} = \theta^{\sum y_i} (1-\theta)^{n - \sum y_i}$
+
+
+\section{Feb 10}
+
+Sufficiency: If we take an unbiased estimator, and condition it with a sufficient statistic, it will stay an unbiased estimator that does not depend on $\theta$. 
+
+
+If $T$ is sufficient (discrete case), $P_{\theta}(X=x|T(X) = t) = \frac{P_{\theta}(X=x \text{ and } T(X)=t)}{P_{\theta}(T(x)=t)} = \frac{P_{\theta}(X=x)I(t=T(x))}{P_{\theta}(T(X)=T(x))} = \begin{cases} 0 & t \neq T(x) \\ \frac{p(x|\theta)}{q(T(x)|\theta)} & t = T(x) \end{cases}$
+
+
+
+\underline{Theorem}: Factorization
+
+A statistic $T(X)$ is sufficient iff there are functions $h(X)$ and $g(t, \theta)$ such that $f(X|\theta) = h(x)g(T(x), \theta)$.
+
+\underline{Proof} (Discrete): 
+
+If $T$ is sufficient, take $g(t, \theta) = q(t|\theta), h(x) = \frac{p(x|\theta)}{q(T(x)|\theta)}$. That yields the same as above.
+
+Now, assume the factorization holds: $q(t|\theta) = P_{\theta}(T(X) = t) = \sum_{y:T(y)=t}p(y|\theta) = \sum_{y:T(y)=t}h(y)g(T(y), \theta) = [\sum_{y:T(y)=t}h(y)]g(t, \theta)$.
+
+Now, $\frac{p(x|\theta)}{q(T(x)|\theta)} = \frac{h(x)g(T(x), \theta)}{[\sum_{y:T(y)=T(x)}h(y)]g(T(x), \theta)} = \frac{h(x)}{\sum_{y:T(y)=T(x)}h(y)}$ which does not involve $\theta$.
+
+\underline{Example}:
+
+$X_i \iiddist N(\theta, 1)$
+
+$f(x|\theta) = \prod_{i=1}^n \frac{1}{\sqrt{2\pi}}e^{-\frac{1}{2}(x_i - \theta)^2} = (2\pi)^{-n/2}exp(-1/2\sum_{i=1}^n(x_i - \theta)^2)$
+
+Example factorizations
+
+1. 
+$(2\pi)^(-n/2): h(x)$ or could be absorbed into $g$ (doesn't really matter)
+
+$g(T(x), \theta)$ is the exponential: $T(x) = (x_1, ..., x_n)$
+
+2. $(2\pi)^{-n/2}exp(-1/2\sum_{i=1}^n(x_{(i)} - \theta)^2)$
+
+$T(x) = (x_{(1)}, ..., x_{(n)})$
+
+3. $(2\pi)^{-n/2}exp(-1/2 \sum x_i^2)exp(n \bar{x}\theta - \frac{n\theta^2}{2})$
+
+$\implies T(X) = \sum x_i$ or $T(X) = \bar{x}$ are sufficient
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2), \theta = (\mu, \sigma^2)$
+
+$f(x|\theta) = (2\pi\sigma^2)^{-n/2}exp(-\frac{1}{2\sigma^2}\sum(x_i-\mu)^2) = (2\pi)^{-n/2}\sigma^{-n}exp(-\frac{1}{2\sigma^2}\sum(x_i^2) + \frac{\mu}{\sigma^2}\sum x_i - \frac{n\mu^2}{2\sigma^2})$
+
+$T(x) = (\sum x_i, \sum x_i^2)$ is sufficient.
+
+\underline{Note}: Any 1:1 transformation of a sufficient statistic is sufficient!
+
+Set $t_1 = \sum x_i, t_2 = \sum x_i^2$: $\bar{x} = \frac{t_1}{n}, s^2 = \frac{1}{n-1}\sum(x_i - \bar{x})^2 = \frac{1}{n-1}(\sum x_i^2 - n\bar{x}^2) = \frac{1}{n-1}(t_2 - \frac{t_1^2}{n}) \implies (\bar{x}, s^2)$ is also sufficient.
+
+\underline{Example}: $X_i \iiddist Unif(\theta, \theta + 1)$
+
+$f(x|\theta) = \prod_{i=1}^n I(x_i > \theta)I(x_i < \theta + 1) = I(X_{(1)} > \theta)I(X_{(n)} < \theta) \implies T(X) = (X_{(1)}, X_(n))$ is sufficient.
+
+\underline{Example} (Exponential Families)
+
+$f(x|\theta) = (\prod h(x_i))exp[\sum_{i=1}^n \sum_{j=1}^k w_i(\theta)t_j(x_i) + n ln(c(\theta))] = \tilde{h}(x)exp[\sum_{j=1}^k w_j(\theta)T_j(x) + n ln(c(\theta))]$
+
+$\implies (T_1(x), ..., T_k(x))$ is a sufficient statistic.
+
+
+\section{Feb 12}
+
+\underline{Definition}: A sufficient statistic is is said to be minimal sufficient if it is a function of any other sufficient statistic.
+
+Note: a function $g(x)$ is a function of $f(x)$ iff $f(x) = f(y) \implies g(x) = g(y)$
+
+Let $T(X)$ be any sufficient statistic. Then by the factorization theorem, $f(x|\theta) = h(x)g(T(x), \theta)$. Therefore, when $T(x) = T(y), \frac{f(x|\theta)}{f(y|\theta)} = \frac{h(x)g(T(x), \theta)}{h(y)g(T(y), \theta)} = \frac{h(x)}{h(y)}$: doesn't depend on $\theta$. When minimally sufficient, this implies the ratio will not have a dependence on $\theta$. We also want this to go the other way.
+
+\underline{Theorem}: A sufficient statistic is minimal sufficient if $\frac{f(x|\theta)}{f(y|\theta)}$ is independent of $\theta$ implies $T(x) = T(y)$.
+
+\underline{Proof}: Define $T^*$ to be any sufficient statistic, and $T$ satisfies the above theorem condition. If $T^*(x) = T^*(y)$ then by factorization theorem, $\frac{f(x|\theta)}{f(y|\theta)} = \frac{h^*(x)g^*(T^*(x), \theta)}{h^*(y)g^*(T^*(y), \theta)} = \frac{h^*(x)}{h^*(y)}$ which doesn't depend on $\theta$.
+
+By the above theorem, $T(x) = T(y)$, so $T(x)$ is minimal sufficient.
+
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2)$
+
+1) $\sigma^2$ known: $f(x|\mu) = (2\pi \sigma^2)^{-n/2} exp(-\frac{1}{2\sigma^2}\sum (x_i - \mu)^2) = (2\pi \sigma^2)^{n/2}exp(1\frac{1}{2\sigma^2}+\frac{n\mu\bar{x}}{\sigma^2} - \frac{n\mu^2}{2\sigma^2})$
+
+$\frac{f(x|\mu)}{f(y|\mu)} = exp(-\frac{1}{\sigma^2}[\sum x_i^2 - \sum y_i^2])exp(\frac{n\mu}{\sigma^2}(\bar{x} - \bar{y}))$. The only way to have independence from $\mu$ is if $\bar{x} = \bar{y}$, so $T(x) = \bar(x)$ is minimal sufficient.
+
+\underline{Example}: $X_i \iiddist Unif(0, 1)$
+
+$f(x|\theta) = I(\theta < x_{(1)})I(\theta+1 > x_{(n)})$
+
+$\frac{f(x|\theta)}{f(y|\theta)} = \frac{I(\theta < x_{(1)})I(\theta+1 > x_{(n)})}{I(\theta < y_{(1)})I(\theta+1 > y_{(n)})}$. For this to be independent of $\theta$, the corresponding indicators must 'change' at the same values, meaning $x_{(1)} = y_{(1)}$ and $x_{(n)} = y_{(n)}$. Therefore, $T = (x_{(1)}, x_{(n)})$ is minimal sufficient.
+
+In this family, $T'(x) = (\frac{x_{(n)}- 1 + x_{(1)}}{2}, x_{(n)} - x_{(1)})$ is minimal sufficient. Notice $X_{(n)} - X_{(1)} = (X_{(n)} - \theta) - (X_{(1)} - \theta) \overset{D}{=} z_{(n)} - z_{(1)}, Z_i \iiddist Unif(0, 1)$ meaning that part of the minimal statistic does not depend on $\theta$: but the minimal statistic is supposed to be the minimal information to describe $\theta$: uh oh
+
+\underline{Definition}: A statistic S is ancillary to $\theta$ if its distribution does not depend on $\theta$.
+
+\underline{Finding Ancillary Statistics}:
+
+1. Location Families: $f(x|\theta) = g(x-\theta)$. $X_i - \theta \overset{D}{=} Z \sim g \implies X_i - X_j$ is ancillary. Or $X_{(i)} - X_{(j)}$, etc. Spacing between the data is anciallry in a location family
+
+2. Scale Families: $f(x|\theta) = \frac{1}{\theta}g(x/\theta), \theta > 0$. $\frac{X_i}{\theta} \overset{D}{=} Z \sim g \implies, \frac{X_i}{X_j}, \frac{X_{(i)}}{X_{(j)}}$.
+
+\section{Completeness}
+
+Want statistics that are "completely about $\theta$"
+
+\underline{Definition}: A statistic $T$ is complete for $\theta$ if, for a transformation $g(T), \EX_{\theta}[g(T)] = 0 \implies g(T) = 0$ with probability 1. 
+
+\underline{Example}: $X_i \iiddist f(x_i|\theta)$
+
+$T(X) = X$ is not complete. Let $g(T) = x_1 - x_2$. Then $P(g(T) \neq 0) > 0$, but $\EX_{\theta}[g(T)] = \EX_{\theta}[x_1] - \EX_{\theta}[x_2] = 0$.
+
+\underline{Example}: $X_i \iiddist Unif(\theta, \theta + 1)$
+
+$T = (x_{(1)}, x_{(n)})$ is not complete. Let $g(T) = x_{(n)} - x_{(1)} - \EX[X_{(n)} - x_{(1)}]$. Since $P(g(T) \neq 0) > 0, \EX_{\theta}(g(T)) = 0$, $T$ is not complete.
+
+\underline{Feb 19}
+
+\underline{Example}: $X_i \iiddist Unif(0, \theta), \theta > 0$
+
+$T = X_{(n)}$ is minimal sufficient. Is it complete?
+
+To show completeness, assume there exists a function $g(t)$ such that $\EX_{\theta}[g(T)] = 0 \forall \theta > 0$. We then need to show that this only happens when $g(t) = 0$.
+
+Assume $g(t)$ is continuous. Assume $0 = \EX_{\theta}[g(T)] = \int_{0}^{\theta}g(t)X_{(n)}dt = \int_{0}^{\theta}g(t)n\frac{t^{n-1}}{\theta^n}dt$
+
+Derivative of both sides:
+
+$0 = n\frac{d}{d\theta}\theta^{-n}\int_0^{\theta}g(t)t^{n-1}dt = n\left[-n\theta^{-n+1}\int_0^{\theta}g(t)t^{n-1}dt + \theta^{-n}g(\theta)\theta^{n-1}\right] = -n^2 \theta^{-1} \int_0^{\theta}g(t)\frac{t^{n-1}}{\theta^n}dt + \frac{n g(\theta)}{\theta} = \frac{n g(\theta)}{\theta}$
+
+$\implies 0 = \frac{n g(\theta)}{\theta} \implies 0 = g(\theta) \forall \theta > 0$, so $T=X_{(n)}$ is complete. 
+
+\underline{Example}: $X_i \iiddist Bern(\theta), 0<\theta<1$
+
+$T = \sum X_i$ is sufficient (+ minimal).
+
+Assume $g(t)$ satisfies $\EX_{\theta}[g(T)] = 0$
+
+$0 = \EX_{\theta}[g(T)] = \sum_{i=1}^n g(t)\binom{n}{t}\theta^t(1-\theta)^{n-t} = (1-\theta)^n \sum_{i=1}^n g(t)\binom{n}{t}\left(\frac{\theta}{1-\theta}\right)^t$ $\forall 0<\theta<1$
+
+This is a polynomial of degree n in $r = \frac{\theta}{1-\theta} \in (0, \infty)$
+
+$\implies$ the polynomial must be 0, meaning all of its coefficients must be 0.
+
+$\implies g(t)\binom{n}{t} = 0 \implies g(t) = 0, t=0, ..., n$
+
+$\implies T$ is complete. 
+
+\underline{Theorem}:
+
+Assume $X_i \iiddist f(x|\theta)$ where $f(x|\theta)$ is an exponential family:
+
+$F(x|\theta) = h(x) exp\{\sum_{j=1}^k w_j(\theta)t_j(x) + ln(c(\theta)) \}$
+
+The sufficient statistic $T = (\sum_{i=1}^n t_1(x_i), ..., \sum_{i=1}^n t_k(x_i))$ is also complete iff the parameter space $\Theta \subset \real^k$ contains an open set.
+
+Interval $(0, 1)$ is open. All intergers is not open. Open: can you 'draw' an infitessmally small 'circle' around some point in your set and still only contain things in your set?
+
+\underline{Example}: $X_i \iiddist N(\theta_1, \theta_2), T = (\bar{X}, S^2)$
+
+i) $\Theta = \real x (0, \infty)$ is open. Then $T$ is complete
+
+ii) $\Theta = \real x \{1, 2\}$ is not open. The second set is not open, so $T$ is not complete.
+
+iii) $\Theta = \{(\theta_1, \theta_2): \theta_2 = \theta_1^2 + 1 \}$ which is not an open set, so $T$ is not complete.
+
+For (ii) and (iii), try drawing out the support and see if you can draw a circle around any point and still be in the set. 
+
+\underline{Facts}: Facts about complete statistics:
+
+1) If a minimal sufficient statistic exists, then any complete sufficient statistic is also minimal sufficient
+
+2) Any complete sufficient statistic is independent of any ancillary statistic
+
+\underline{Example}: $X_i \iiddist N(\theta, 1), \theta \in \real$
+
+Then $T = \bar{X}$ is complete and sufficient.
+
+Since $S^2 = \frac{1}{n-1}\sum (X_i - \bar{X})^2 = \frac{1}{n-1} \sum [(x_i - \theta) - (\bar{x} - \theta)]^2 \overset{D}{=} \frac{1}{n-1} \sum (z_i - \bar{z})^2, z_i \iiddist N(0, 1)$
+
+$\implies S^2$ is anciallary, $\implies \bar{X} \indep S^2$
+
+If instead $Y_i \iiddist N(\theta, \sigma^2), \sigma^2 > 0$ now not known.
+
+What about $(\bar{Y}, S_Y^2)$
+
+$X_i overset{D}{=} Z_i + \theta \implies \bar{X} \overset{D}{=} \bar{Z} + \theta$
+
+$Y_i \overset{D}{=} \sigma Z_i + \theta \implies \bar{Y} \overset{D}{=} \sigma \bar{Z} + \theta \implies \bar{Y} \overset{D}{=} \sigma(\bar{X} - \theta) + \theta$
+
+$S^2 \overset{D}{=} S_Z^2$
+
+$S_Y^2 \overset{D}{=} \sigma^2 S_Z^2 \implies (\bar{Y}, S_Y^2) \overset{D}{=} (\sigma(\bar{X} - \theta) + \theta, \sigma^2 S^2) \implies$ these are independent. 
+
+
+\section{Returning to MVUEs}
+
+Assume $W$ is an unbiased estimator for $\tau(\theta)$ and that $T$ is an sufficient statistic. 
+
+
+\underline{Theorem}: Rao-Blackwell
+
+The statistic $\phi(T) = \EX[W|T]$ is unbiased for $\tau(\theta)$ and $Var_{\theta}(\phi(T)) \le Var_{\theta}(W)$
+
+\underline{Proof}:
+
+i) $\phi(T)$ is a statistic because T is sufficient
+
+ii) $\phi(T)$ is unbiased because $\EX_{\theta}[\phi(T)] = \EX_{\theta}[\EX(W|T)] = \EX_{\theta}[W] = \tau(\theta)$
+
+iii) $Var_{\theta}(W) = Var_{\theta}(\phi(T)) + \EX_{\theta}[Var_{\theta}(W|T)] \ge Var_{\theta}(\phi(T))$
+
+\underline{Theorem}:
+
+If an MVUE exists, then it is unique
+
+\underline{Proof}: 
+
+Let $W_1, W_2$ be MVUEs. Define $W_3 = \frac{1}{2}(W_1 + W_2)$ (unbiased), $Var_{\theta}(W_3) = \frac{1}{4}[Var_{\theta}(W_1) + Var_{\theta}(W_2) + 2 Cov_{\theta}(W_1, W_2)] = \frac{1}{2}[Var_{\theta}(W_1) + 2 Cov_{\theta}(W_1, W_2)] \le Var_{\theta}(W_1)$
+
+Must have equality on the last step (otherwise $W_1, W_2$ would not be MVUEs), implying $W_1 = W_2$.
+
+\underline{Theorem}: 
+
+An unbiased estimator $W$ is the MVUE iff it is uncorrelated with any $U$ satistfying $\EX_{\theta}[U] = 0, \forall \theta$ (unbiased estimators of 0).
+
+
+\section{Feb 24}
+
+\underline{Theorem}:
+
+If $W$ is unbiased for $\tau(\theta)$, then $W$ is the MVUE iff it is uncorrelated with any unbiased estimator of 0. 
+
+\underline{Proof}:
+
+Assume $W$ is uncorrelated with any $U$ satisfying $\ext[U] = 0$. Then if $W'$ is any unbiased estimator of $\tau(\theta)$, then $U = W - W'$ is unbiased for 0. $Var_{\theta}(W') = Var_{\theta}(W - U) = \vart(W) + \vart(U) - 2 Cov_{\theta}(W, U) = \vart(W) + \vart(U) \ge \vart(W)$ 
+
+Hint for HW: Assume the $Cov_{\theta}(W, U) \neq 0$ for some unbiased $U$ for 0. Then consider $W' = W + aU$. Then use contrapositive to show we can find something with lower variance. 
+
+\underline{Theorem}: (Lehman-Scheffe)
+
+Suppose W is a function of a complete sufficient statistic. Then it is the MVUE of $\tau(\theta) = \ext(W)$.
+
+\underline{Proof}:
+
+Let $U$ be unbiased for 0. $Cov_{\theta}(W, U) = \ext(WU) = \ext[\ext[WU|T]] = \ext[W \ext[U|T]]$. Because T is sufficient, $g(T) = \ext(U|T)$ doe snot depend on $\theta$. However, $\ext[g(T)] = \ext[U] = 0$. By completeness, $P(g(T) = 0) = 1$.
+
+$\implies Cov_{\theta}(W, U) = \ext[W (0)] = 0$
+
+
+\underline{Example}: $X_i \iiddist Pois(\theta), \tau(\theta) = \theta^2, \theta > 0$
+
+We showed previously that $W = \bar{X}^2 - \frac{\bar{X}}{n}$ is unbiased for $\theta^2$.
+
+Why is it the MVUE? Because $\bar{X}$ is complete (exponential family, open set) and sufficient (factorization theorem). 
+
+
+\underline{Example}: $X_i \iiddist N(\theta, 1), \theta \in \real$. Find MVUE for $\tau(\theta) = \theta^2$. 
+
+$\bar{X}$ was the MVUE for $\tau(\theta) = \theta$, so we'll start with a guess of $W = \bar{x}^2$. $\ext[W] = \vart(\bar{x}) + \ext[\bar{x}]^2 = \frac{1}{n} + \theta^2$. So the bias is $\frac{1}{n}$. 
+
+So, $W = \bar{x}^2 - \frac{1}{n}$ is the MVUE.
+
+Remember, for any distribution, $\ext[\bar{x}] = \theta$ (population mean) and $\vart(\bar{x}) = \frac{\sigma^2}{n}$.
+
+\underline{Example}: $X_i \iiddist Exp(\theta), \theta > 0$. $P(X_1 \le 1) = \tau(\theta) = 1-e^{-\frac{1}{\theta}}$.
+
+1. What is the complete sufficient statistic?
+
+$\theta^{-n}e^{-\frac{\sum X_i}{\theta}} \implies \sum X_i$ is CSS (Complete Sufficient Statistic). 
+
+2. Start with any unbiased estimator
+
+$W = I(X_1 \le 1)$ is unbiased, so $W^* = \EX[W|T]$ is the MVUE.
+
+$\frac{X_1}{\sum X_i} \sim Beta(1, n-1)$ is independent of $T$
+
+$\EX[I(X_1 \le 1)|T] = P(\frac{X_1}{T} \le \frac{1}{T} | T) = \begin{cases} 1 & T < 1 \\ 1-(1-\frac{1}{T})^{n-1} & T \ge 1 \end{cases}$
+
+
+Summary:
+
+Can use Cramer-Rao lower bound to find MVUE if you're able to factor the Score. Otherwise, dont get a whole lot.
+
+Exponential Family: Sufficiency is automatic, completeness depends on support
+
+Suffifiency: Factorization Theorem. Simplify correctly, end with Minimal Sufficient
+
+Lehman-Scheffe: If something is Complete and Suffificient, it is the MVUE
+
+
+\section{Asymptotic Evaluation of Estimators}
+
+Looking at 'as n goes to infinity', or large sample theory.
+
+\underline{Definition}: Let $W_n$ be an estimator based on sample of size n of $\tau(\theta)$. $W_n$ is said to be consistent for $\tau(\theta)$ if $W_n \overset{P_{\theta}}{\to} \tau(\theta) \forall \theta$
+
+$P_{\theta}(|W_n - \tau(\theta)| > \epsilon) \underset{n \to \infty}{\to} 0$ for all $\theta$ and any $\epsilon > 0$. 
+
+
+\section{Feb 26}
+
+Methods for showing consistency: 
+
+1. Tail/Concentration Bounds to control the probabilities
+
+Markov's Inequality, Chebychev, Chernoff
+
+2. If $W_n = g(\bar{x})$, we can apply LLN ($\bar{x} \pto \mu$) then CMT (Continous Mapping Theorem) ($G(\bar{x} \pto g(\mu)$)) if g is continous.
+
+3. M-estimation (Maiximizer/Minimizer of some function, ie. MLE)
+
+$\frac{1}{n}l(\theta|x) \overset{P_{\theta_0}}{\to} E_{\theta_0}[ln(f(x_1|\theta))]$
+
+Basically, we know the right side is min/max at $\theta_0$, so we need to show that the left side approcahes that same min/max as the overeall distirbutions converge
+
+\underline{Example}: 
+
+Suppose $W_n$ satisfies: 
+
+1) $\ext[W_n] \underset{n\to\infty}{\to} \tau(\theta)$ ($W_n$ is asymptocially unbiased for $\tau(\theta)$) 
+
+2) $Var_{\theta} \underset{n\to\infty}{\to} 0$
+
+In this case, $W_n$ is consistent: 
+
+$P_{\theta}(|W_n - \tau(\theta)| > \epsilon) \le \frac{\ext[(W_n - \tau(\theta))^2]}{\epsilon^2} \text{ Chebychev's! }= \frac{MSE_{\tau(\theta)}(W_n)}{\epsilon^2} \to 0$ by (1) and (2).
+
+\underline{Example}: $X \iiddist Beta(\alpha, 1)$
+
+1) Method of Moments: $\bar{x} = \frac{\alpha}{\alpha + 1} \leftrightarrow \hat{\alpha} = \frac{\bar{x}}{1 - \bar{x}}$
+
+$\bar{X} \pto \frac{\alpha}{\alpha + 1}$ as $n \to \infty$
+
+Define $g(x) = \frac{x}{1-x}$, continious on (0, 1). By CMT: $g(\bar{x}) \pto g(\frac{\alpha}{\alpha + 1}) = \frac{\frac{\alpha}{\alpha + 1}}{1 - \frac{\alpha}{\alpha + 1}} = \alpha$
+
+Thus, MoM estimator converges to $\alpha$ so it is consistent.
+
+2) The MLE is $\hat{\alpha} = \frac{n}{-\sum ln(x_i)} = \frac{-1}{\bar{Y}}, \bar{Y} = \frac{-1}{n}\sum ln(x_i)$
+
+$\bar{Y} \pto \EX_{\alpha}[-ln(x_i)], -ln(x_i) \sim Exp(\frac{a}{\alpha}) \implies \bar{Y} \pto \frac{1}{\alpha}$
+
+$g(x) = \frac{1}{x}$ continous at $\frac{1}{\alpha}$, so $g(\bar{Y}) \pto \alpha$
+
+
+
+
+The CLT says as $\sqrt{n}(\bar{X} - \mu) \dto N(0, \sigma^2)$ 
+
+$P(|\bar{X} - \mu| > \frac{C}{\sqrt{n}}) = P(\sqrt{n}|\bar{X} - \mu| > C) \to 1 - \Phi(\frac{C}{\sigma})$
+
+\underline{Example}: $X \iiddist Unif(0, \theta)$
+
+$\frac{X_{(n)}}{\theta} \sim Beta(n, 1)$, so $P_{\theta}(|X_1 - \theta| > Cn^{-1}) = P_{\theta}(\theta - X_{(n)} < C n^{-1}) = P_{\theta}(\frac{X_{(n)}}{\theta} < 1 - \frac{C}{n\theta}) = (1 - \frac{C}{n})^n \to e^{-C}$
+
+
+\underline{Definition}: If $\lim_{n\to\infty} b_n Var(W_n) \to \gamma^2$, then $\gamma^2$ is called the limiting variance of $W_n$
+
+$Var(W_n) \approx \frac{\gamma^2}{n}$
+
+eg. $Var(\bar{X}) = \frac{\sigma^2}{n} \implies b_n = n, b_n Var(\bar{X}) = \sigma^2 \to \sigma^2$
+
+\underline{Example}: $X \iiddist N(\mu, \sigma^2)$
+
+$Var(\frac{1}{\bar{X}}) = \infty$
+
+\underline{Definition}: Suppose $\sqrt{n}(W_n - \tau(\theta)) \dto Y, E(Y) = 0,$ and $Var(Y) < \infty$. Then, $\sigma^2 = Var(Y)$ is the asymptotic variance of $W_n$
+
+
+\section{Mar 3}
+
+\underline{Definition} (same as end of last class, but restated) If $\sqrt{n}(W_n - \tau(\theta)) \dto Y_{\theta}, \forall \theta$, where $\ext[Y_{\theta}] = 0$, then $\vart(Y_{\theta})$ is called the asymptotic variance of $W_n$.
+
+$\vart(W_n) = \frac{1}{n}\vart(\sqrt{n}(W_n - \tau(\theta))) \approx \frac{\vart(Y_{\theta})}{n}$
+
+\underline{Example}: $X \iiddist Pois(\lambda), \lambda > 0$
+
+The MLE of $\tau(\lambda) = \lambda^2$ is $\bar{X}^2$, while the MVUE is $\bar{X}^2 - \frac{\bar{X}}{n}$
+
+Notice: $\bar{X}^2 - (\bar{X}^2 - \frac{\bar{X}}{n}) = \frac{\bar{X}}{n} \pto 0$ meaning the MLE and MVUE converge as n increases. Even if you multiply by $\sqrt{n}$ this still converges in probability to 0. 
+
+"1-2" punch for MVUEs: Law of Large numbers, continous mapping theorem
+
+"1-2" punch for Asymptotics: Central Limit Theorem, Delta Method
+
+In this case, CLT: $\sqrt{n}(\bar{X} - \lambda) \dto N(0, \lambda)$ (Note, n cannot appear in the limiting distribution)
+
+Delta Method: $\sqrt{n}(g(\bar{x}) - g(\lambda)) \dto N(0, \lambda[g'(\lambda)]^2), g(x)$ in our case is $x^2$, $g'(x) = 2x$.
+
+$\implies \sqrt{n}(\bar{X}^2 - \lambda^2) \dto N(0, 4\lambda^3)$
+
+Thus the asymptotic variance is $4\lambda^3$, and the asymptotic variance approximation is: $Var_{\lambda}(\bar{X}) \approx \frac{4\lambda^3}{n}$
+
+The CRLB is: $\frac{(2\lambda)^2}{n/\lambda} = \frac{4\lambda^3}{n}$
+
+\underline{Define}: An estimator $W_n$ is said to be:
+
+i) Asymptotically unbiased if $\sqrt{n}(W_n - \tau(\theta)) \dto Y_{\theta}, \ext[Y_{\theta}] = 0$
+
+ii) Asymptotically efficient if its asymptotic varaince is $\frac{[\tau'(\theta)]^2}{I_1(\theta)}$ (the CRLB, Fischer information calculated for 1 sample)
+
+\underline{Theorem}: Under regularity conditions, if $X \iiddist f(x|\theta)$, then:
+
+i) the MLE $(\hat{\theta}_n)$ will exist and be unique with probability converging to 1
+
+ii) $\sqrt{n}(\hat{\theta}_n - \theta_0) \dto N(0, I_1^{-1}(\theta_0))$
+
+\underline{Proof}: 
+
+$l(\theta|x) = \sum_{i=1}^n ln(f(x_i|\theta)) \implies l'(\theta|x) = \psi(X; \theta) = l'(\theta_0|x) + l''(\theta_0|x)(\theta - \theta_0) + R_n(\theta, \theta_0)$
+
+By regularity conditions, $\frac{R_n(\hat{\theta}_n, \theta_0)}{\sqrt{n}} \pto 0$
+
+Plug in $\theta = \hat{\theta}_n$, by MLE: $0 = l'(\theta_0|x) + l''(\theta_0|x)(\hat{\theta}_n - \theta_0) + R_n(\hat{\theta}_n, \theta_0)$
+
+$\implies \sqrt{n}(\hat{\theta}_n - \theta_0) = \frac{\sqrt{n}l'(\theta_0|x)}{-l''(\theta_0|x)} + \frac{\sqrt{n}R_n(\hat{\theta}_n, \theta_0)}{-l''(\theta_0|x)}$
+
+Look at $-l''(\theta_0|x) = -\sum_{i=1}^n \frac{\partial^2}{\partial \theta^2}ln(f(X_i|\theta))|_{\theta = \theta_0} \implies \frac{1}{n}(-l''(\theta_0|x)) \overset{P_{\theta_0}}{\to} \EX_{\theta_0}[-\frac{\partial^2}{\partial \theta^2}ln(f(X_i|\theta))|_{\theta = \theta_0}] = I_1(\theta_0)$
+
+Now examine: $\frac{1}{\sqrt{n}} \sum_{i=}^n l'(\theta_0|x) = \frac{1}{\sqrt{n}}(\sum_{i=1}^n \psi(X_i; \theta_0)) = \sqrt{n}(\frac{1}{n}\sum_{i=1}^n \psi(X_i; \theta_0))$
+
+We know $\EX_{\theta_0}(\psi(X_i; \theta_0)) = 0$, $Var_{\theta_0}(\psi(X_i;, \theta_0)) = I_1(\theta_0)$
+
+Apply CLT to $Y_i = \psi(X_i; \theta_0): \sqrt{n}\bar{Y} = \frac{1}{\sqrt{n}}l'(\theta|x) \dto N(0, I_1(\theta_0))$ 
+
+By Slutsky's theorem (as n inreases, anything that converges to something with mean 0 dissappears): 
+
+$\frac{\sqrt{nl'(\theta_0|x)}}{-l''(\theta_0|x)} = \frac{\frac{1}{\sqrt{n}}l'(\theta_0|x)}{-\frac{1}{n}l''(\theta_0|x)} \dto \frac{N(0, I_1(\theta_0))}{I_1(\theta_0)} = N(0, I_1^{-1}(\theta_0))$
+
+$\frac{\sqrt{n}R_n(\hat{\theta}_n, \theta_0)}{-l''(theta_0|x)} = \frac{\frac{1}{\sqrt{n}}R_n(\hat{\theta}_n, \theta_0)}{-\frac{1}{n}l''(\theta_0|x)} \overset{P_{\theta_0}}{\to} 0$
+
+\section{Mar 10}
+
+\underline{Example}: $X \iiddist Bern(\theta), 0 < \theta < 1$
+
+The MLE is $\bar{X}_n$ as long as $\bar{X} \cancel{\in} \{0, 1\}$
+
+The CLT says $\sqrt{n}(\bar{X}_n-\theta) \dto N(0, \theta(1-\theta))$
+
+The MLE result says that $\sqrt{n}(\bar{X}_n-\theta) \dto N(0, I_1^{-1}(\theta))$
+
+Recall that $I_1(\theta) = -\ext[\frac{\partial^2}{\partial \theta^2} ln(\theta^x(1-\theta)^{1-x})] = -\ext[\frac{\partial^2}{\partial\theta^2}(Xln(\theta) + (1-X)ln(1-\theta))] = \ext[\frac{X}{\theta^2} + \frac{1-X}{(1-\theta)^2}] = \frac{1}{\theta} + \frac{1}{1-\theta} = \frac{1}{\theta(1-\theta)}$
+
+
+What about MLE for $\eta = \tau(\theta) = ln(\frac{\theta}{1-\theta})$
+
+$\tau'(\theta) = \frac{1}{\theta} + \frac{1}{1-\theta} = \frac{1}{\theta(1-\theta)} \implies \sqrt{n}(\hat{\eta} - \eta) \dto N(0, \frac{1}{\theta(1-\theta)})$
+
+\subsection{Relative Efficiency}
+
+Suppose $W_n$ and $V_n$ are both asymptocially unbiased and have asymptotic variances $\sigma^2_W, \sigma^2_V$
+
+\underline{Definition}: The relative asymptotic efficiency  of $V_n$ compared to $W_n$ is $ARE(V_n, W_n) = \frac{\sigma^2_W}{\sigma^2_V}$ (an estimator is better when it's asymptotic variance is smaller, so this says that relative efficiency increases as the target estimator's variance decreases comapred to another's).
+
+\underline{Example}: $X \iiddist Pois(\lambda), \lambda > 0, \tau(\lambda) = P_{\lambda}(X_1 = 0) = e^{-\lambda}$
+
+Get some naive estimates for $\lambda$:
+
+$W_n = \frac{1}{n}\sum_{i=1}^n I_{(X_J = 0)}, V_n = e^{-\bar{X}}$
+
+Now find the asymptotic variances:
+
+We know that $\sqrt{n}(W_n - e^{-\lambda}) \dto N(0, e^{-\lambda}(1-e^{-\lambda}))$. Also, $\sqrt{n}(V_n - e^{-\lambda}) \dto N(0, e^{-\lambda}I_1(\theta)) = N(0, \lambda e^{-2\lambda})$
+
+$\implies ARE(V_n, W_n) = \frac{e^{-\lambda}(1-e^{-\lambda})}{\lambda e^{-2\lambda}} = \frac{e^{\lambda}(1-e^{-\lambda})}{\lambda} = \frac{e^{\lambda} - 1}{\lambda} > 1$
+
+\underline{Example}: Mean vs. Median: $X \iiddist f$, f is symmetric about some point $\theta$, and $\EX[X_i] = \theta$
+
+$\sqrt{n}(\bar{X} - \theta) \dto N(0, \sigma^2), \sigma^2 = Var(x_i)$
+
+$\sqrt{n}(\tilde{X} - \theta) \dto N(0, \frac{1}{2f(\theta)^2})$
+
+$ARE(\tilde(X), \bar{X}) = 4\sigma^2f^2(\theta)$
+
+i) Normal: $ARE(\tilde{X}, \bar{X}) = 4\sigma^2(2\pi \sigma^2)^{-1} = \frac{2}{\pi} \approx 0.64$
+
+ii) Laplace: $f(x|\beta, \theta) = \frac{1}{2\beta}e^{\frac{-|x-\theta|}{\beta}}: ARE(\tilde{X}, \bar{X}) = 4(2\beta^2)(\frac{1}{2\beta})^2 = 2$ (smaller tails, median is more efficient)
+
+\subsection{Hypothesis Testing}
+
+$X_1, ..., X_n \sim f(X|\theta)$
+
+\underline{Definition}: Let $\theta \in \Theta$. A null hypothesis is a statement $H_0: \theta \in \Theta_0 \subset \Theta$. The corresponding alternative hyposthesis is: $H_1: \theta \in \Theta_1 = \Theta \setminus \Theta_0$
+
+\underline{Example}: $X \iiddist N(\mu, \sigma^2)$
+
+i) $\sigma^2$ known, $\theta = \mu, \Theta = \{0, 1\}$
+
+$H_0: \mu = 0 : [\theta \in \Theta_0 = \{0\}]$
+
+$H_1: \mu = 1 : [\theta \in \Theta_1 = \{1\}]$
+
+ii) $\sigma^2$ known, $\theta = \mu$
+
+$H_0: \theta \in \Theta_0 = [0, \infty)$
+
+$H_1: \theta \in \Theta_1 = (-\infty, 0)$
+
+iii) $\sigma^2$ unknown: $\theta = (\mu, \sigma^2)$
+
+$H_0: \mu = 0 : [\theta \in \Theta_0 = \{0\} \times (0, \infty)]$
+
+$H_1: \mu \neq 0 : [\theta \in \Theta_1 = (R \setminus \{0\}) \times (0, \infty)]$
+
+
+\underline{Definition}: Let $\mathbb{X}$ be the sample space. A test funciton is a statistic $\phi(x) \in [0, 1]$ such that if $x \in \mathbb{X}$, we reject $H_0$ with probability $\phi(x)$.
+
+\underline{Example}: $X \iiddist Bin(n, \theta)$
+
+Some test functions:
+
+$\phi_1(x) = I(X > 5)$
+
+$\phi_2(x) = \frac{X}{n}$
+
+$\phi_3(x) = \begin{cases} 0, & x < k \\ \gamma, & x = k \\ 1, & x > k \end{cases}$
+
+\underline{Definition}: A simple test function satisfies $\phi(x) \in \{0, 1\} \forall x \in \mathbb{X}$
+
+In this case, define Rejection Region: $R_{\phi} = \{x \in \mathbb{X}: \phi(x) = 1\}$
+
+In this case, define Acceptance Region: $A_{\phi} = \{x \in \mathbb{X}: \phi(x) = 0\}$
+
+Type I Error: $P_{\theta}(\text{Reject } H_0), \theta \in \Theta_0$
+
+Type II Error: $1 - P_{\theta}(\text{Reject } H_0), \theta \in \Theta_1$
+
+\underline{Note}: Probability I reject:
+
+$P_{\theta}(\text{Reject } H_0) = \EX[\phi(X)] =: \beta_{\phi}(\theta)$
+
+Here, $\beta_{\phi}(\theta)$ is called the power function.
+
+\underline{Define}: Let $\phi$ be a test function
+
+1. The size of $\phi$ is $\underset{\theta \in \Theta_0}{sup}\beta_{\phi}(\theta)$
+
+2. $\phi$ is a level $\alpha$ test if its size is no more than $\alpha$
+
+\section{12 Mar}
+
+\underline{Example}: $X_1, ..., X_5 \sim Exp(\theta)$
+
+$H_0 : \theta = 1$ vs. $H_1 : \theta < 1$
+
+$\phi(x) = \begin{cases} 1, & \bar{X} < 1 \\ 0, \bar{X} \ge 1 \end{cases}$
+
+What is the power function? 
+
+$\beta_{\phi}(\theta) = \EX_{\theta}[\phi(x)] = P_{\theta}(\bar{X} < 1)$
+
+Since $\bar{X} \sim Gamma(n, \theta/n), \chi^2_{\nu} \overset{D}{=} Gamma(\frac{\nu}{2}, 2) \implies \frac{2n\bar{X}}{\theta} \sim \chi^2_{2n} \implies \beta_{\phi}(\theta) = P(\chi^2_{10} < \frac{10}{\theta})$
+
+Size of $\phi$: $\beta_{\phi}(1) = P(\chi^2_{10} < 10) \approx 0.56$
+
+Type II Error: What is the probability of a Type II Error if $\theta = 1/3$?
+
+$1 - \beta_{\phi}(1/3) = P(\chi^2_10 > 30) \approx 0.001$
+
+\subsection{Most Powerful Tests}
+
+For a particular $H_0$, define for $\alpha \in (0, 1), \Phi_{\alpha} = \{\phi:\phi \text{ is a test function with size }\le \alpha \}$
+
+\underline{Define}: A test $\phi^* \in \Phi_{\alpha}$ is said to be (uniformly) most powerful (MP - Simple $H_0$ or UMP - Composite $H_0$) for $H_0: \theta \in \Theta_0$ vs. $H_1: \theta \in \Theta_1$ if $\beta_{\phi^*}(\theta) \ge \beta_{\phi}(\theta) \forall \phi \in \Phi_{\alpha}$ and all $\theta \in \Theta_1$.
+
+\underline{Example}: $X_i \iiddist N(\theta, \sigma^2), \sigma^2$ known
+
+$H_0: \theta = \theta_0$ vs. $H_1: \theta = \theta_1, \theta1 > \theta_0$
+
+The z-tests has test function: $\phi(x) = I(\bar{X} > \theta_0 + z_{1-\alpha} * \frac{\sigma}{\sqrt{n}}) = I(\bar{X} > \theta_0 + k)$
+
+To enforce a size contstraint:
+
+$\beta_{\phi}(\theta_0) = P_{\theta_0}(\bar{X} > \theta_0 + k) = P(\frac{\bar{X} - \theta_0}{\sigma/\sqrt{n}} > \frac{k}{\sigma/\sqrt{n}}) = 1 - \Phi(\frac{k}{\sigma/\sqrt{n}})$, $\Phi$ is the $N(0, 1)$ CDF
+
+Want this to be $\le \alpha \implies \Phi(\frac{k}{\sigma/\sqrt{n}}) \ge 1-\alpha \implies \frac{k}{\sigma/\sqrt{n}} \ge z_{1-\alpha} \implies k \ge z_{1-\alpha}\frac{\sigma}{\sqrt{n}}$
+
+$\beta_{\phi}(\theta_1) = P_{\theta_1}(\bar{X} > \theta_0 + k) = P(Z > \frac{\theta_0 - \theta_1 + k}{\sigma/\sqrt{n}}) = 1 - \Phi(\frac{\theta_0 - \theta_1 + k}{\sigma/\sqrt{n}})$
+
+To get a required size, we can pick any k as highlighted above. However, power goes down as k increases. Thus, to maximize power under $H_1$ and satisfy the level constraint, $k = \frac{\sigma}{\sqrt{n}}z_{1-\alpha}$
+
+\underline{Theorem (Neyman-Pearson Lemma)}:
+
+Consider testing $H_0:\theta = \theta_0$ vs. $H_1: \theta = \theta_1$ (both are simple). Then any test of the form (with $k > 0, \gamma \in [0,1]$):
+
+$\phi(x) = \begin{cases} 1, & f(x|\theta_1) > kf(x|\theta_0) \\ \gamma, & f(x|\theta_1) = kf(x|\theta_0) \\ 0, & f(x|\theta_1) < kf(x|\theta_0) \end{cases}$
+
+is an MP test of a level equal to its size. 
+
+\underline{Proof}: $\frac{f(x|\theta_1)}{f(x|\theta_0)}$ has a continuous distribution (the likelihood ratio).
+
+Let $\alpha = \beta_{\phi}(\theta_0)$ and $\tilde{\phi}$ be any other test function with $\beta_{\tilde{\phi}}(\theta_0) \le \alpha$
+
+$$
+\begin{aligned}
+\beta_{\phi}(\theta_1) - \beta_{\tilde{\phi}}(\theta_1) 
+& \ge \beta_{\phi}(\theta_1) - \beta_{\tilde{\phi}}(\theta_1) - k[\beta_{\phi}(\theta_0) - \beta_{\tilde{\phi}}(\theta_0)] \\
+& = \EX_{\theta_1}[\phi(x) - \tilde{\phi}(x)] - k\EX_{\theta_0}[\phi(x) - \tilde{\phi}(x)] \\
+& = \int_{\mathbb{X}}[\phi(x) - \tilde{\phi}(x)]f(x|\theta_1)dt - k\int_{\mathbb{X}}[\phi(x) - \tilde{\phi}(x)]f(x|\theta_0)dx \\
+& = \int_{A_{\phi}}-\tilde{\phi}(x)[f(x|\theta_1) - kf(x|\theta_0)]dx + \int_{R_{\phi}}[1-\phi(x)][f(x|\theta_1) - kf(x|\theta_0)]dx \\
+& \ge 0
+\end{aligned}
+$$
+
+\underline{Example}: (normal revisited)
+
+$f(x|\theta) = (2\pi \sigma^2)^{-n/2}e^{-\frac{1}{2\sigma^2}\sum(x_i - \theta)^2}$
+
+$\frac{f(x|\theta_1)}{f(x|\theta_0)} = e^{\frac{n\bar{X}(\theta_1 - \theta_0)}{\sigma^2} - \frac{n(\theta_1^2 - \theta_0^2)}{2\sigma^2}} = c_1 e^{c_2\bar{X}}$, ($c_1, c_2 > 0$)
+
+The test $\phi(x) = \begin{cases} 1, & c_1 e^{c_2 \bar{X}} > k \\ 0, & c_1 e^{c_2 \bar{X}} < k \end{cases}$ is an MP test relative to other tests of smaller size. 
+
+There exists $\tilde{k}$ (1-1 function with k) such that $\phi(x) = \begin{cases} 1, & \bar{X} > \tilde{k} \\ 0, & \bar{X} < \tilde{k} \end{cases}$
+
+
+\section{Mar 17}
+
+\underline{Example}: $X_i \iiddist Bern(\theta), H_0: \theta = \theta_0$ vs. $H_1: \theta = \theta_1, 0 < \theta_0 < \theta_1 < 1$
+
+$\frac{f(x||\theta_1)}{f(x|\theta_0)} = \frac{\theta_1^{\sum x_i}(1-\theta_1)^{n-\sum x_i}}{\theta_0^{\sum x_i}(1-\theta_0)^{n-\sum x_i}} = \left( \frac{1 - \theta_1}{1 - \theta_0} \right)^n \left( \frac{\frac{\theta_1}{1-\theta_1}}{\frac{\theta_0}{1-\theta_0}} \right)^{\sum x_i}$
+
+The ratio within the exponent of $\sum x_i$ is monotonically increasing (due to $\theta_1 > \theta_0$, etc.)
+
+$\implies$ the NP test is: $\begin{cases} 1, & \frac{f(x|\theta_1)}{f(x|\theta_0)} > k \\ \gamma, & \frac{f(x|\theta_1)}{f(x|\theta_0)} = k \\ 0, & \frac{f(x|\theta_1)}{f(x|\theta_0)} < k \end{cases} = \begin{cases} 1, & \sum x_i > c \\ \gamma, & \sum x_i = c \\ 0, & \sum x_i < c \end{cases}$
+
+Take $n=2, c=1, \theta_0 = 1/2, \theta_1 = 3/4, \gamma = 0$
+
+$\beta_{\phi} = P_{\theta}(\sum x_i > 1) \implies P_{\theta_0}(\sum x_i > 1) = \theta_0^2 = 1/4 = size(\phi)$
+
+$\implies P_{\theta_1}(\sum x_i > 1) = \theta_1^2 = 9/16 = 1 - P(\text{Type II Error})$
+
+Find c such that the size is $\alpha > 0.3$
+
+$\beta_{\phi}(\theta) = P_{\theta}(\sum x_i > c) + \gamma P_{\theta}(\sum x_i = c) \implies \beta_{\phi}(1/2) = P_{1/2}(\sum x_i > c) + \frac{\gamma}{4} \binom{2}{c}I_{c \in \{0, 1, 2\}}$
+
+$P_{1/2}(\sum x_i > c) \begin{cases} 3/4, & c = 0 \\ 1/4, & c = 1 \\ 0, & c = 2 \end{cases}$
+
+Need to choose c such that the first piece is as close to, but not exceeding, $\alpha$. 
+
+Take $c = 1$ and set $\gamma = \frac{\alpha - P_{1/2}(\sum x_i > 1)}{1/4(2)} = 2(0.3 - 1/4) = .6 - .5 = .1$
+
+
+
+\underline{In Class Example}: $X_i \iiddist Pois(\theta), H_0: \theta = \theta_0, H_1: \theta = \theta_1, 0 < \theta_0 < \theta_1$
+
+$\frac{f(x|\theta_1)}{f(x|\theta_0)} = \frac{\theta_1^{\sum x_i} e^{-n\theta_1}}{\theta_0^{\sum x_i} e^{-n\theta_0}}$ (the factorials cancel) $ = c(\frac{\theta_1}{\theta_0})^{\sum x_i}$
+
+Because $\theta_1 > \theta_0$, that function is monotonically increasing in terms of $\sum x_i$, so we can write $\phi(x) = \begin{cases} 1, &\sum x_i > t_0 \\ \gamma, &\sum x_i = t_0 \\ 0, &\sum x_i < t_0 \end{cases}$
+
+Power function: $\beta_{\phi}(\theta) = P_{\theta}(\sum x_i > t_0) + \gamma P(\sum x_i = t_0)$
+
+
+\underline{Example}: $X_i \iiddist Pois(\theta), H_0: \theta = \theta_0, H_1: \theta = \theta_1, 0 < \theta_1 < \theta_0$
+
+$\frac{x|\theta_1}{f(x|\theta_0)} = c(\frac{\theta_1}{\theta_0})^{\sum x_i} \implies \phi(x) = \begin{cases} 1, &\sum x_i < t_0 \\ \gamma, &\sum x_i = t_0 \\ 0, &\sum x_i > t_0 \end{cases}$
+
+Let $n=10, \theta_0 = 3$, find $t_0, \gamma$ such that $\phi$ has size 0.05
+
+$\beta_{\phi}(\theta_0) = P_{\theta_0}(\sum x_i < t_0) + \gamma P_{\theta_0}(\sum x_1 = t_0)$
+
+These actually correspond to n=1
+
+$P_{\theta_0}(\sum x_i < 1) \approx 0.0497, P_{\theta_0}(\sum x_i < 2) \approx 0.1991$
+
+Thus we choose $t_0 = 1$ (remember, highest value where that prob is less than $\alpha$), $\implies \gamma = \frac{\alpha - 0.0497}{e^{-30}30^1} \approx 0.002$
+
+\underline{Example}: $X_i \iiddist N(\theta, \sigma^2), H_0: \theta = \theta_0, H_1: \theta = \theta_1, \theta_1 > \theta_0$
+
+$\phi(x) = I(\bar{X} > \theta_0 + \frac{\sigma}{\sqrt{n}}Z_{\alpha - 1})$. This test is MP for $H_0$ vs. $H_1$ (note that it does not depend on $\theta_1$). It is also uniformly MP (UMP) for $H_0: \theta = \theta_0, H_1': \theta > \theta_0$
+
+Recall that: $\beta_{\phi}(\theta) = 1 - \Phi(\frac{\sqrt{n}(\theta_0 - \theta)}{\sigma} + z_{1-\alpha}) \implies \underset{\theta \le \theta_0}{sup}\beta_{\phi}(\theta) = \alpha \implies $ It is UMP for $H_0': \theta \le \theta_0, H_1': \theta > \theta_0$
+
+
+\underline{Example}: $X_1, X_2 \sim Unif(\theta, \theta + 1), H_0: \theta = 0, H_1: 0 < \theta < 1$
+
+$\frac{f(x|\theta_1)}{f(x|\theta_0)} = \frac{I(\theta_1 < x_{(1)} < x_{(2)} < \theta_1 + 1)}{(\theta_0 < x_{(1)} < x_{(2)} < 1)} = \begin{cases} 1, & \theta_1 < x_{(1)} < x_{(2)} < 1 \\ 0, & 0 < x_{(1)} < \theta_1 \\ \infty, & x_{(2)} > 1 \end{cases}$
+
+Take $k=0$: the power function is $\beta_{\phi}(\theta_0) = (1-\theta_1)^2 + \gamma (1 - (1-\theta_1)^2)$
+
+Take $k=1$: the power function is $\beta_{\phi}(\theta_0) = \gamma (1-\theta_1)^2$
+
+Since the rejection region always depends on $\theta_1$, the NP test for a fixed $\theta_1$ can't be UMP.
+
+If I restrict $H_1': 0 < \theta < 1-\sqrt{\alpha}$, then the UMP test is is: $\phi^*(x) = \begin{cases} 1, & X_{(2)} > 1 \text{ or } X_{(1)} > 1 - \sqrt{\alpha} \\ 0, & \text{ otherwise } \end{cases}$
+
+
+\section{19 Mar}
+
+Suppose $T$ is a sufficient statistic:
+
+$\frac{f(x|\theta_1)}{f(x|\theta_0)} = \frac{h(x)g(T(x); \theta_1)}{h(x)g(T(x); \theta_0)} = \frac{g(T(x); \theta_1)}{g(T(x); \theta_0)} >, =, < k$
+
+\underline{Definition}: Let $T$ be any univariate statistic and $g(t|\theta)$ be its PDF/PMF. We say $g(t|\theta)$ has the monotone likelihood ratio (MLR) property if: $\frac{g(t|\theta_2)}{g(t|\theta_1)}$ is non-decreasing in $t$ whenever $\theta_2 > \theta_1$.
+
+\underline{Example}: $X_i \iiddist Gamma(\theta, scale=\beta), \beta$ is known. 
+
+The sufficient statistic $T = \sum ln(x_i)$. $f(x|\theta) = \frac{1}{(\Gamma(\theta)\beta^{\theta})^n}e^{(\theta-1)T - \frac{\sum x_i}{\beta}} = e^{-\frac{1}{\beta}\sum x_i} * \frac{1}{\Gamma^n(\theta)\beta^{n\theta}}e^{(\theta-1)T}$
+
+Let $\theta_2 > \theta_1 \implies \frac{g(t|\theta_2)}{g(t|\theta_1)} = \left[ \frac{\Gamma(\theta_1)}{\Gamma(\theta_2)} \right]^n \beta^{-n(\theta_2 - \theta_1)} e^{(\theta_2 - \theta_1)t} \implies T = \sum ln(x_i)$ has the MLR property.
+
+\underline{Theorem} - (Karlin-Rubin): $\Theta \in \real^1$
+
+Let $f(x|\theta)$ be a family with univariate sufficient statistic T that has MLR. Then any test function of the form $\phi(x) = \begin{cases} 1, & T(X) > t_0 \\ \gamma, & T(X) = t_0 \\ 0, & T(X) < t_0 \end{cases}$ is the UMP test of level $\gamma = P_{\theta_0}(T > t_0)$ for $H_0: \theta \le \theta_0, H_1: \theta > \theta_0$.
+
+\underline{Proof}: Let $\bar{\phi}$ be any test function with size at most $\alpha$. 
+
+Step 1: Show that $\underset{\theta \le \theta_0}{sup} \beta_{\phi}(\theta) = \alpha$. See Problem 8.26(c) (it's long)
+
+Step 2: Consider $H'_0: \theta = \theta_0, H'_1: \theta = \theta', \theta' > \theta_0$. Then, $T(x) >, =, < t_0 \implies \frac{g(T(x)|\theta')}{g(T(x)|\theta_0)} >, =, < k' \implies \frac{f(x|\theta')}{f(x|\theta)} >, =, k'$
+
+Therefore for any test function $\phi'$ satisfying $\beta_{\phi'} \le \beta_{\phi}(\theta_0) = \alpha$, $\beta_{\phi'}(\theta') \le \beta_{\phi}(\theta')$
+
+Since $\theta'$ is arbitrary, $\phi$ must be UMP for $H'_0: \theta = \theta_0, H_1: \theta > \theta_0$
+
+Step 3: $\beta_{\bar{\phi}} \le \underset{\theta \le \theta_0}{sup}\beta_{\bar{\phi}}(\theta) \le \alpha$
+
+By step 2 $\implies \beta_{\bar{\phi}}(\theta') \le \beta_{\phi}(\theta')$ for any $\theta' > \theta_0$
+
+\underline{Example}: $X_i \iiddist Unif(0, \theta)$
+
+$T = X_{(n)}$ is sufficient. Let $\theta_2 > \theta_1 > 0, H_0: \theta \le \theta_0, H_1: \theta > \theta_0$
+
+$\frac{f(x|\theta_2)}{f(x||\theta_1)} = \frac{\theta_2^{-n}}{I(X_{(n)} \le \theta_2)}{\theta_1^{-n}}{I(X_{(n)} \le \theta_1)} = \begin{cases} (\frac{\theta_1}{\theta_2})^n, & X_{(n)} \le \theta_1 \\ \infty, & \theta_1 < X_{(n)} \le \theta_2 \end{cases}$ which is a non-decreasing function. 
+
+Since $T = X_{(n)}$ has MLR, any test of the form $\phi(x) = \begin{cases} 1, & X_{(n)} > t_0 \\ 0, & X_{(n)} < t_0 \end{cases}$ is UMP of its size.
+
+Set the Type I Error Rate to $\alpha$ and find $t_0$. 
+
+$\beta_{\phi}(\theta_0)  = P_{\theta_0}(X_{(n)} > t_0) = 1 - P_{\theta_0}(X_1 < t_0)^n = \begin{cases} 1, & t_0 > \theta_0 \\ 1 - (\frac{t_0}{\theta_0})^n, & t_0 < \theta_0 \end{cases} \implies 1 - (\frac{t_0}{\theta_0})^n = \alpha \implies t_0 = \theta_0(1-\alpha)^{1/n}$
+
+If you switch the conditions on the hypostheses, you switch the order of the test function. 
+
+Defaults: MLR non-decreasing, $H_0: \theta \le \theta_0$
+
+\begin{center}
+\begin{tabular}{ c c c }
+ $H_0$/MLR & Non-Dec & Non-Inc \\ 
+ $\theta \le \theta_0$ & $T > t_0$ & $T < t_0$ \\  
+ $\theta \ge \theta_0$ & $T < t_0$ & $T > t_0$    
+\end{tabular}
+\end{center}
+
+indicates when we reject. 
+
+\underline{Example}: (Non-existence of UMP for two-sided tests)
+
+$X_i \iiddist N(\theta, \sigma^2), \sigma^2$ known. 
+
+Let $\phi^+(x)$ be UMP for $H^+_0: \theta \le \theta_0, H^+1_1: \theta > \theta_0$, and let $\phi^-(x)$ be UMP for $H^-_0: \theta \ge \theta_0, H^-_1L \theta < \theta_0$ for level $\alpha$. 
+
+Now suppose $\phi$ is UMP for level $\alpha$ for $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+Note that $\beta_{\phi^+}(\theta_0) = \beta_{\phi^-}(\theta_0) = \alpha \implies \beta_{\phi}(\theta') \le \beta_{\phi^+}(\theta'), \theta' > \theta_0$ because both $\phi$ and $\phi^+$ are size $\alpha$ for $H_0$ vs. $H^+_1$
+
+Similarly, $\beta_{\phi}(\theta') \le \beta_{\phi^-}(\theta'), \theta' < \theta_0$. By NP, $\phi = \phi^+ = \phi^-$ (contradiction since $\phi^- \neq \phi^+$).
+
+\section{Likelihood Ratio Tests}
+
+$H_0: \theta \in \Theta_0, H_1: \theta \in \Theta_1, \Theta = \Theta_0 \cup \Theta_1$
+
+\underline{Definte}: The (generalized) Likelihood ratio is $\lambda(x) = \frac{\underset{\theta \in \Theta_0}{sup} L(\theta|x)}{\underset{\theta \in \Theta}{sup} L(\theta|x)}$
+
+Define $\hat{\theta}$ to be the ordinary MLE and $\hat{\theta_0} = \underset{\theta \in \Theta_0}{argmax}L(\theta|x)$. Then $\lambda(x) = \frac{L(\hat{\theta}_0|x)}{L(\hat{\theta}|x)}$
+
+\underline{Example}: $X_i \iiddist N(\theta, \sigma^2), \sigma^2$ known.
+
+$H_0: \theta \le \theta_0, H_1: \theta > \theta_0$
+
+We know $\hat{\theta} = \bar{X}$. $l'(\theta|x) = \frac{n}{\sigma^2}(\bar{x}- \mu) = \begin{cases} <0, & \theta > \bar{x} \\ =0, & \theta = \bar{x} \\ >0, & \theta < \bar{x} \end{cases}$ 
+
+$\implies \hat{\theta}_R$ (Restricted MLE, MLE under $\Theta_0$) $= \begin{cases} \bar{X}, & \bar{X} \le \theta_0 \\ \theta_0, & \bar{X} > \theta_0 \end{cases}$
+
+$\lambda(x) = \frac{L(\hat{\theta}_R)|x}{L(\hat{\theta}|x)} = \begin{cases} 1, & \bar{X} \le 0 \\ \frac{e^{-\frac{1}{2\sigma^2}\sum (x_i - \theta_0)^2}}{e^{-\frac{1}{2\sigma^2}\sum (x_i - \bar{X})^2}}, & \bar{X} > \theta_0 \end{cases}$
+
+Reject if $\lambda(x) < c, 0 < c < 1$
+
+Simplifying: $ln(\lambda(x)) < ln(c) \iff \frac{-n}{2\sigma^2}(\bar{X} - \theta_0)^2 < ln(c)$
+
+Reject if $\bar{X} > \theta_0$ (because the likelihood ratio indicates we only don't reject when $\bar{X} > \theta_0$) and $\bar{X} - \theta_0 > \sqrt{\frac{-2\sigma^2}{n}ln(c)} = k \implies$ Reject when $\bar{X} > \theta_0 + k$. This is basically just the Karlin-Rubin.
+
+\underline{Example}:
+
+Same as above, $\sigma^2$ is known, but now, $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+For the likelihood ratio, no maximiazation under null because it is simple, and we already did that part above. 
+
+We know $ln(\lambda(x)) = \frac{-2\sigma^2}{n}(\bar{X} - \theta_0)^2$. When is this $< ln(c)$
+
+$\frac{-2\sigma^2}{n}(\bar{X} - \theta_0)^2 < ln(c) \iff |\bar{X} - \theta_0| > \sqrt{\frac{-2\sigma^2}{n}ln(c)} \iff \bar{X} > \theta_0 + k$ or $\bar{X} < \theta_0 - k$
+
+In fact, this is UMP unbiased
+
+\underline{Example}
+
+Now, $\sigma^2$ unknown
+
+$H_0:\theta = \theta_0, H_1: \theta \neq \theta_0$ ($\theta$ is now the full paramater space, both $\theta$ and $\sigma^2$)
+
+$\hat{\theta} = \bar{X}, \hat{\sigma}^2 = \frac{n-1}{n}S^2$
+
+$\hat{\theta}_R = \theta_0, \hat{\sigma}^2_R = \frac{1}{n}\sum (x_i - \theta_0)^2$
+
+$\lambda(x) = \frac{(2\pi \hat{\sigma}^2_R)^{-n/2}e^{-\frac{1}{2\hat{\sigma}^2_R}\sum(x_i - \theta_0)^2}}{(2\pi \hat{\sigma}^2)^{-n/2}e^{-\frac{1}{2\hat{\sigma}^2}\sum(x_i - \bar{X})^2}}$ 
+
+$-\frac{1}{2\hat{\sigma}^2_R}\sum (x_i - \theta_0)^2 = \frac{-1}{2(1/n)} = \frac{-n}{2}$
+
+$S^2 = \frac{1}{n}\sum(x_i - \bar{X})^2$
+
+$\implies \lambda(x) = (\frac{\hat{\sigma}^2_R}{\hat{\sigma}^2})^{-n/2} = a_n(1 + \frac{(\bar{X} - \theta_0)^2}{S^2})^{-n/2}$
+
+When $T = \frac{\bar{X} - \theta_0}{S/\sqrt{n}}, \lambda(x) = a_n(1 + \frac{T^2}{n})^{-n/2} \implies \lambda(x) < c \iff |T| > t_0$
+
+$\implies$ the Likelihood ratio test (LRT) is the two-sided t-test
+
+For size $\alpha$, we want: $P_{\theta_0}(|T| > t_0) = \alpha \implies t_0 = qt(1-\frac{\alpha}{2}, df = n-1)$
+
+\underline{Example} $X_i \iiddist Unif(0, \theta), \theta > 0, H_0: \theta = \theta_0, H_1:\theta \neq \theta_0$
+
+$\lambda(x) = \frac{L(\theta_0|x)}{L(X_{(n)}|x)} = \frac{\theta_0^{-n}I(X_{(n)} \le \theta_0)}{X_{(n)}^{-n}I(X_{(n)} \le X_{(n)})} = (\frac{X_{(n)}}{\theta_0})^n I(X_{(n)} \le \theta_0) = \begin{cases} (\frac{X_{(n)}}{\theta_0})^n, & X_{(n)} \le \theta_0 \\ 0, & X_{(n)} > \theta_0 \end{cases}$
+
+We reject when $X_{(n)} > \theta_0$ or if $X_{(n)} < \theta_0$ and $(\frac{X_{(n)}}{\theta_0})^n < c$
+
+$\alpha = P_{\theta_0}(X_{(n)} \le \theta_0 c^{1/n}) = (P_{\theta_0}(X_1 < \theta_0 c^{1/n}))^n = (\frac{\theta_0 c^{1/n}}{\theta_0 - 0}) = c$
+
+$\implies \phi(x) = I(\lambda(x) < \alpha) = \begin{cases} 1, & X_{(n)} > \theta_0 \text{ or } X_{(n)} < \theta_0 \alpha^{1/n} \\ 0, & \text{ otherwise} \end{cases}$
+
+\underline{Example}: $X_i \iiddist Gamma(\gamma, scale = \theta), \gamma$ is known
+
+$H_0: \theta=\theta_0, H_1: \theta \neq \theta_0$
+
+$\hat{\theta} = \frac{\sum x_i}{n\gamma} = \frac{1}{\gamma}\bar{X}$
+
+$$
+\begin{aligned}
+\implies \lambda(x) 
+& = \frac{L(\theta_0|x)}{L(\hat{\theta}|x)} \\
+& = \frac{[\Gamma(\gamma)\theta_0^{\gamma}]^{-n} e^{-\frac{1}{\theta_0}\sum x_i}}{[\Gamma(\gamma)\hat{\theta}^{\gamma}]^{-n} e^{-\frac{1}{\hat{\theta}} \sum x_i}} \\ 
+& = (\frac{\bar{X}}{\theta_0 \gamma})^{n\gamma} e^{n\gamma [1 -\frac{\bar{X}}{\theta_0 \gamma}]} \\
+& = h(\frac{\bar{X}}{\theta_0 \gamma})^n \text{ where } h(y) = y^{\gamma} e^{\gamma (1-\gamma)} \\ 
+& \implies h'(y) = \gamma y^{\gamma -1} e^{\gamma(1-y)} - \gamma y^{\gamma} e^{\gamma(1-y)} = \gamma y^{\gamma - 1} e^{\gamma(1-y)}[1-y]
+\end{aligned}
+$$
+
+This is increasing from $y \in (0, 1)$, then decreasing from $y \in (1, \infty)$. 
+
+We want to find some c such that $h(y_1) = c$ and $h(y_2) = c$ and the total region between those points is $\alpha$
+
+To find a size $\alpha$ test of the form: $\phi(x) = \begin{cases} 1, & \bar{X} > b_2 \text{ or } \bar{X} < b_1 \\ 0, & \text{ otherwise} \end{cases}$
+
+We need:
+
+(1) $P_{\theta_0}(\bar{X} > b_2) + P_{\theta_0}(\bar{X} < b_1) = \alpha$
+
+(2) $h(\frac{b_1}{\theta_0 \gamma}) = h(\frac{b_2}{\theta_0 \gamma})$
+
+System of equations, use root finding methods to find the cutoffs.
+
+\subsection{Large-Sample Testing}
+
+\underline{Example}: $X_i \iiddist N(\theta, \sigma^2)$ \underline{study 2 variable version for EXAM}, $\sigma^2$ known, $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+$\lambda(x) = e^{-\frac{n}{2\sigma^2}(\bar{X} - \theta_0)^2}$
+
+$-2ln(\lambda(x)) = (\frac{\sqrt{n}(\bar{X} - \theta_0)}{\sigma})^2 = (N(0, 1))^2 \overset{D}{=} \chi^2_1$
+
+\underline{Example}: $X_i \iiddist Exp(\theta), H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+$\lambda(x) = \frac{\frac{1}{\theta_0^n}e^{-\frac{n\bar{X}}{\theta_0}}}{\frac{1}{\bar{X}}e^{-n}} = e^{n[1 - \frac{\bar{X}}{\theta_0} + ln(\frac{\bar{X}}{\theta_0})]}$
+
+$-2ln(\lambda(x)) = 2n[g(\bar{X}) - g(\theta_0)], g(x) = \frac{x}{\theta_0} - ln(x)$
+
+$g'(x) = \frac{1}{\theta_0} - \frac{1}{x} \implies g'(\theta_0) = 0$
+
+Need to use the 2nd order Delta Method. Since $\sqrt{n}(\bar{X} - \theta_0) \dto N(0, \theta_0^2)$, the 2nd order delta method says: $2n(g(\bar{X}) - g(\theta_0)) \approx g''(\theta_0)[\sqrt{n}(\bar{X} - \theta_0)]^2 = [\frac{\sqrt{n}(\bar{X} - \theta_0)}{\theta_0}]^2 \dto \chi^2_1$
+
+$\phi(x) = \begin{cases} 1, & \lambda(x) < c \\ 0, & \lambda(x) \ge c \end{cases} = \begin{cases} 1, & -2ln(\lambda(x)) > k \\ 0, & -2ln(\lambda(x)) \le k \end{cases}$
+
+Choosing $k = \chi^2_{1, 1-\alpha}: \beta_{\phi}(\theta_0) \dto \alpha$
+
+
+\underline{Theorem}: Wilks'
+
+Under regularity assumptions, if $H_0: \theta = \theta_0$ is true, $\Theta \subset \real^k$: $-2ln(\lambda(x)) \dto \chi^2_k$. 
+
+\underline{Proof}: (k=1)
+
+$l(\theta|x) = l(\hat{\theta}|x) + (\theta - \hat{\theta})l'(\hat{\theta}|x) + \frac{(\theta - \hat{\theta})^2}{2}l''(\hat{\theta}|x) + R_n (\theta, \hat{\theta})$
+
+The regularity conditions imply that $R_n(\theta_0, \hat{\theta}) \pto 0$. We also found MLE setting first derivate equal to 0, so that part drops out as well. 
+
+$-2ln(\lambda(x)) = -2 ln(\frac{L(\theta_0|x)}{L(\hat{\theta}|x)}) = -2[l(\theta_0|x) - l(\hat{\theta|x})] = 2[l(\hat{\theta}|x) - l(\theta_0|x)] = (-\frac{1}{n}l''(\hat{\theta}|x))[\sqrt{n}(\hat{\theta} - \theta_0)]^2 - R_n(\theta_0, \hat{\theta})$
+
+1) $-\frac{1}{n}l''(\hat{\theta}|x) \pto I_1(\theta_0)$
+
+2) $\sqrt{n}(\hat{\theta} - \theta_0) \dto N(0, I_1^{-1}(\theta_0))$
+
+$\implies -2ln(\lambda(x)) = \left[ (-\frac{1}{n}l''(\hat{\theta}|x))^{1/2} \sqrt{n}(\hat{\theta} - \theta_0) \right]^2 - R_n(\theta_0, \hat{\theta}) \dto [\sqrt{I_1(\theta_0)} N(0, I_1^{-1}(\theta_0))]^2 = [N(0,1)]^2 = \chi^2_1$
+
+\underline{Notes}:
+
+1) Wilks' original theorem only works for simple Null hypotheses
+
+2) Intuitively, I should just be able to reject if i) $|\hat{\theta} - \theta_0|$ is large or ii) $|\psi(x;\theta_0)|$ is large
+
+\subsection{Expanded Wilks' Theorem}
+
+Remember Wilks' Theorem: For $H_0: \theta = \theta_0, \Theta_0 \in \real^k: -2 ln(\lambda(x)) \dto \chi^2_k$
+
+\underline{Theorem}: Wilks' Theorem part 2
+
+$X_i \iiddist f(x|\theta), H_0:\theta \in \Theta_0, H_1: \theta \notin \Theta_0, \Theta_0 = \{ \theta \in \real^k: \theta_j = \theta_{0,j}, j=1, ..., r \}$
+
+Then, under $H_0: -2ln(\lambda(x)) \dto \chi^2_{r}$
+
+\underline{Example}: $X_i \iiddist Beta(\alpha, \beta)$
+
+$H_0: \alpha = \beta, H_1: \alpha \neq \beta$
+
+Let $\theta_1 = \alpha - \beta, \theta_2 = \beta$
+
+Now, $H_0: \theta_1 = 0, H_1: \theta_1 \neq 0$
+
+$\hat{\alpha}_R = argmax L(\alpha, \alpha|X)$ is the null-constrained MLE. Remeber the null asumes $\alpha = \beta$
+
+$\lambda(x) = \frac{L(\hat{\alpha}_R, \hat{\alpha}_R | X)}{L(\hat{\alpha}, \hat{\beta}|X)}$
+
+Then $-2ln(\lambda(x)) \dto \chi^2_1$
+
+In this example, a natural test statistic might also be based on $T(x) = \hat{\alpha} - \hat{\beta}$
+
+In this case, $\sqrt{n}(\hat{\alpha} - \hat{\beta}) \dto_{H_0} N(0, V_0)$
+
+We know, $\sqrt{n}(\begin{pmatrix} \hat{\alpha} \\ \hat{\beta} \end{pmatrix} - \begin{pmatrix} \alpha \\ \beta \end{pmatrix}) \dto N(0, I^{-1}(\alpha, \beta))$
+
+Take $g(x, y) = x - y: $
+$$
+\begin{aligned}
+\sqrt{n}(\begin{pmatrix} \hat{\alpha} \\ \hat{\beta} \end{pmatrix} - \begin{pmatrix} \alpha \\ \beta \end{pmatrix}) 
+& = \sqrt{n}(\hat{\alpha} - \hat{\beta} - (\alpha - \beta)) \\
+& = \text{ (taking null to be true) } \sqrt{n}(\hat{\alpha} - \hat{\beta} - 0) \\
+& \dto N(0, (1,-1)I_1^{-1}(\alpha, \alpha)\begin{pmatrix} 1 \\ -1 \end{pmatrix})
+\end{aligned} 
+$$
+
+In general, this is what Wald tests do. 
+
+The Wald Statistic is $Z_w = \sqrt{n I_!(\hat{\theta})}(\hat{\theta} - \theta_0)$
+
+$Z_w = \frac{\sqrt{n}(\hat{\theta} - \theta)}{\sqrt{1/I_1(\hat{\theta})}} \frac{\dto}{\pto} \frac{N(0, I_1^{-1}(\theta))}{I_1^{-1/2}(\theta)} = N(0, 1)$
+
+The Wald test rejects when $|Z_w| > Z_{1-\alpha/2}$
+
+Another test statistic is the score statistic based on: $\psi(x;\theta) = \frac{\partial}{\partial \theta} ln(f(x|\theta))$
+
+When we proved normality of MLEs, we showed: $\sqrt{n} \psi(x;\theta_0) \dto N(0, I_1(\theta_0))$
+
+The score test uses: $Z_s = \frac{\psi(x;\theta_0)}{\sqrt{n I_1(\theta_0)}}$
+
+\underline{Example}: $X_i \iiddist Bern(\theta), H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+Wald test: $\hat{\theta} = \bar{X}$ is the MLE, $I_1(\theta) = \frac{1}{\theta(1-\theta)}$
+
+$Z_w = \sqrt{\frac{n}{\hat{\theta}(1-\hat{\theta})}}(\hat{\theta} - \theta) = \frac{\sqrt{n}(\bar{X} - \theta_0)}{\sqrt{\bar{X}(1-\bar{X})}}$
+
+Score test: $\psi(x;\theta) = \frac{n(\bar{X} - \theta)}{\theta(1-\theta)}$
+
+$Z_s = \frac{n(\bar{X} - \theta_0)}{\theta_0(1-\theta_0)\sqrt{\frac{n}{\theta_0(1-\theta_0)}}} = \frac{\sqrt{n} (\bar{X} - \theta_0)}{\sqrt{\theta_0(1-\theta_0)}}$
+
+\underline{Hypothesis Testing}
+
+1) Definitions: $H_0$, test functions ($\phi$), power functions, size, level, etc.
+
+2) Uniformly Most Powerful
+
+- Neyman-Pearson (simplie $H_0, H_1$)
+
+- Karlin-Rubin (one-sided w/ MLR)
+
+- Beyond that no guarantee for UMP
+
+3) Likelihood Ratio Tests
+
+- Reframe the test $\phi(x) = I(\lambda(x) < c)$ as $\phi(x) = I(T(X) < b_1) + I(T(X) > b_2)$
+
+4) Asymptotic Tests
+
+- Wilks' theorem
+
+- Wald/Score Tests
+
+\section{Confidence Intervals}
+
+\underline{Definition}: An interval estimate for $\theta$ is a pair of statistics ($L(X), U(x)$) such that $L(X) \le U(X)$ almost surely. 
+
+\underline{Example}: $X_i \iiddist Exp(\theta), \hat{\theta} = \bar{X}$
+
+Example intervals:
+
+$L(X) = \bar{X} - c, U(X) = \bar{X} + d; c, d > 0$
+
+$L(X) = \frac{\bar{X}}{a}, U(X) = b\bar{X}; a, b > 1$
+
+\underline{Definition}: The Coverage Probability of an interval estimate ($L(X), U(X)$) at $\theta \in \Theta$ is $P_{\theta}(L(X) \le \theta \le U(X))$
+
+\underline{Example}: (cont'd)
+
+$P_{\theta}(\bar{X} - c \le \theta \le \bar{X} + d) = P_{\theta}(\theta - d \le \bar{X} \le \theta + c), \bar{X} \sim Gamma(n, \frac{\theta}{n})$. Coverage depends on $\theta$.
+
+For the other interval:
+
+$P_{\theta}(\frac{\bar{X}}{a} \le \theta \le b \bar{X}) = P_{\theta}(\frac{\theta}{b} \le \bar{X} \le a\theta) = P_{\theta}(\frac{1}{b} \le \frac{\bar{X}}{\theta} \le a), \frac{\bar{X}}{\theta} \sim Gamma(n, \frac{1}{n})$
+
+\underline{Definition}: For an interval estimate $(L(x), U(x))$, its confidence coefficient is: $\underset{\theta}{inf} P_{\theta}(L(x) \le \theta \le U(x))$
+
+Note: We say an interval estimate is level $100(1-\alpha)\%$ if its confidence coefficient is atleast $1-\alpha$.
+
+\underline{Example}: $X_i \iiddist U(0,\theta)$
+
+$T = X_{(n)}$ Some options for condfidence interval:
+
+$L_1(x) = X_{(n)}, U_1(x) = X_{(n)} + c$
+
+$L_2(x) = X_{(n)}, U_2(x) = aX_{(n)}, a > 1$
+
+$P_{\theta}(L_1(x) \le \theta \le U_1(x)) = P_{\theta}(X_{(n)} \le \theta \le X_{(n)} + c) = P_{\theta}(\theta - c \le X_{(n)} \le \theta) = P_{\theta}(\theta - c \le X_{(n)}) = 1 - P_{\theta}(X_{(n)} \le \theta - c) = 1 - (1-\frac{c}{\theta})^n$
+
+Confidence Coefficient: $\lim_{\theta \to \infty} P_{\theta}(L_1(x) \le \theta \le U_1(x)) = 0$
+
+$P_{\theta}(L_2(x) \le \theta \le U_2(x)) = P_{\theta}(aX_{(n)} \ge \theta) = P_{\theta}(X_{(n)} \ge \frac{\theta}{a}) = 1 - (\frac{1}{a})^n = 1 - \frac{1}{a^n}$
+
+Confidence Coefficient is constant! Does not depend on $\theta$
+
+If I want a coefficient of $1-\alpha$, set: $1-\alpha = 1 - \frac{1}{a^n} \implies a = \alpha^{-1/n}$
+
+\subsection{Pivotal Intervals}
+
+\underline{Definition}: A random variable $Q(x, \theta)$ is said to be pivotal (or a pivotal quantity) if its distribution does not depend on $\theta$.
+
+\underline{Location}: $f(x|\theta) = g(x-\theta)$
+
+Pivots: $X_i - \theta$, then any function of that value: $\bar{X} - \theta$, $\tilde{X} - \theta$ (median), etc. ie. Any $h(X_1 - \theta, ..., X_n-\theta)$
+
+\underline{Scale}: $f(x|\theta) = \frac{1}{\theta}g(\frac{x}{\theta})$
+
+Pivots: $\frac{X_i}{\theta}$, then any function of that: $\bar{x}{\theta}, \frac{X_{(i)}}{\theta}$, etc. Any $h(\frac{X_1}{\theta}, ..., \frac{X_n}{\theta})$
+
+For lcoation scale, do the location centering first, then the scale (ie. $\frac{X_1 - \theta}{\sigma}$)
+
+\underline{Definition}: A confidence set $C(x) \subset \real$ has level $1-\alpha$ is $P(\theta \in C(x)) \ge 1-\alpha$
+
+If $Q(X,\theta)$ is a pivot, then $C(x) = \{\theta: a \le Q(x, \theta) \le b \}; a < b$ forms a confidence set. 
+
+Why? Let D be the CDF of $Q(x,\theta)$. Then $P_{\theta}(\theta \in C(x)) = P_{\theta}(a \le Q(x,\theta) < b) = D(b) - D(a)$
+
+To ensure $C(x)$ has level $1-\alpha$ choose $\alpha_1, \alpha_2 > 0$ such that $\alpha_1 + \alpha_2 = \alpha; a = D^{-1}(\alpha_1), b = D^{-1}(1-\alpha_2)$
+
+Typically, $Q(x,\theta)$ is decreasing in $\theta$ (for any fixed x). This means that for $Q(x)$ between a and b, there are corresponding values for $\theta: L(x), U(x)$
+
+\underline{Example} $X_i \iiddist N(\theta, \sigma^2), \sigma^2$ is known
+
+$Q(x,\theta) = \bar{x}-\theta \sim N(0, \frac{\sigma^2}{n})$
+
+$a = \frac{\sigma}{\sqrt{n}}\Phi^{-1}(\alpha_1), b = \frac{\sigma}{\sqrt{n}}\Phi^{-1}(1-\alpha_2)$
+
+Solve $\bar{X} - L(x) = \Phi^{-1}(\frac{\sqrt{n}(1-\alpha_2)}{\sigma}), \bar{x} - U(x) = \Phi^{-1}(\frac{\sqrt{n}\alpha_1}{\sigma}) \implies (L(x), U(x)) = (\bar{X} -\frac{\sigma}{\sqrt{n}}Z_{1-\alpha_2}, \bar{X} - \frac{\sigma}{\sqrt{n}}Z_{\alpha_1})$
+
+\underline{Example}: $X_i \iiddist N(0,\theta)$
+
+$Q(x,\theta) = \frac{\sum x_i^2}{\theta} \sim \chi^2_n$
+
+$a = \chi^2_{n,\alpha_1}, b = \chi^2_{n,1-\alpha_2} \implies \frac{\sum x_i^2}{L(x)} = \chi^2_{n,1-\alpha_2}, \frac{\sum x_i^2}{U(x)} = \chi^2_{n,\alpha_1}$
+
+$\implies (L(x), U(x)) = \left( \frac{\sum x_i^2}{\chi^2_{n,1-\alpha_2}}, \frac{\sum x_i^2}{\chi^2_{n,\alpha_1}} \right)$
+
+\underline{Example}: $X_i \iiddist N(\mu, \sigma^2)$. Task for us: how do we build an interval on $\mu$ that doesn't depend on $\sigma$, etc.?
+
+Pivot for $\mu$: $\frac{\bar{x} - \mu}{S/\sqrt{n}} \sim t_{n-1}$
+
+Pivot for $\sigma^2$: $\frac{(n-1)S^2}{\sigma^2} \sim \chi^2_{n-1}$
+
+For next class: For $Y \sim F_Y$ continuous, $U = F_Y(Y) \sim Unif(0,1)$. This is a pivot. 
+
+\section{7 Apr}
+
+Recall that, if $T$ is some statistic with a continuous CDF $F_T (t|\theta)$, then $U = F_T (t|\theta) \sim U(0,1)$
+
+Choose $Q(x,\theta) = F_T (T|\theta)$ as a pivot. 
+
+$C(x) = \{ \theta: a \le Q(x,\theta) \le b\}$ is a confidence set with coefficient $b-a$ for $0 \le a < b \le 1$
+
+\underline{Example}: $X_i \iiddist Exp(\theta)$ 
+
+Start with $T = \bar{x} \sim Gamma(n, \frac{\theta}{n})$
+
+We could theoretically divide by $\theta$ to get a Gamma which does not depend on $\theta$. Assuming we don't know that, we'll use the CDF method. 
+
+Define $F_T(t|\theta) = pgamma(t,n,\frac{\theta}{n})$
+
+To get a level $1-\alpha$ CI, find all $\theta$ such that $\alpha_1 \le F_T(\bar{x}|\theta) \le 1-\alpha_2$, with $\alpha_1 + \alpha_2 = \alpha; \alpha_1,\alpha_2 > 0$
+
+\underline{Example}: $X_i \iiddist$ with PDF $f(x|\theta) = e^{-(x-\theta)}, x > \theta$. 
+
+In this case, $\theta$ is a lower bound on x. Due to that, a reasonable estimator is $X_{(1)}$. You could also say that this is a location family, so a pivot would be $x-\theta$.
+
+$T = X_{(1)} \overset{D}{=} \theta + Y_{(1)}m Y_i \iiddist Exp(1) \implies F_T(t|\theta) = 1 - e^{-n(t-\theta)}$
+
+Set $\alpha_1, \alpha_2$ before and solve: $\alpha_1 \le 1 - e^{-n(t-\theta)} \le 1-\alpha_2 \implies C(x) = \{\theta: \alpha_1 \le F_T(X_{(1)}|\theta) \le 1-\alpha_2\} = [x_{(1)} + \frac{1}{n}ln(\alpha_2), X_{(1)} + \frac{1}{n}ln(1-\alpha_1)]$
+
+\subsection{Inverting Tests}
+
+Given a confidence set $C(x)$, we can define a test function $\phi(x) = \begin{cases} 1, & \theta_0 \notin C(x) \\ 0, & \theta_0 \in C(x) \end{cases}$ for $H_0:\theta = \theta_0$. 
+
+The size is $P_{\theta_0}(\theta_0 \notin C(x)) = 1 - P_{\theta_0}(\theta_0 \in C(x))$
+
+We can also operate in the reverse order
+
+\underline{Example}: $X_i \iiddist N(\theta, \sigma^2),\sigma^2$ is known. 
+
+The UMP unbiased size $\alpha$ test has acceptance region (for $H_0: \theta = \theta_0, H_1:\theta \neq \theta_0)$, $A(\theta_0) = \{x: |\bar{x} - \theta_0| \le \frac{\sigma}{\sqrt{n}}Z_{\alpha/2}\}$
+
+We know $P_{\theta_0}(x \notin A(\theta_0)) = \alpha$ (true for any $\theta_0$)
+
+Then we can construct $C(x) = \{\theta_0: x \in A(\theta_0)\}$
+
+The coverage probability is $P_{\theta_0}(\theta_0 \in C(x)) = P_{\theta_0}(x \in A(\theta_0)) = 1-\alpha$ (for any $\theta_0$)
+
+\underline{Theorem} For each $\theta_0 \in \Theta$, let $A(\theta_0)$ be the acceptnace region of a size $\alpha$ test of $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$. 
+
+Then $C(x) = \{\theta_0: x \in A(\theta_0)\}$ is a level $100(a-\alpha)\%$ confidence set. 
+
+Example illustration of what the inverse test is doing:
+
+\includegraphics[width=0.5\textwidth, angle=-90]{Images/inverse_conf_test.jpeg}
+
+\underline{Example}: $X_i \iiddist Exp(\theta)$
+
+A size $\alpha$ LRT will accept when $\frac{\theta_0 e^{\frac{-n\bar{x}}{\theta_0}}}{\bar{x} e^{-n}} = \left[(\frac{\bar{x}}{\theta_0}e^{1-\frac{\bar{x}}{\theta_0}})\right]^n > c$
+
+In fact, $A(\theta_0) = \{x: a \le \bar{x} \le b\}, P_{\theta_0}(a \le \bar{x} \le b) = 1-\alpha, \frac{a}{\theta_0} e^{1-\frac{a}{\theta_0}} = \frac{b}{\theta_0}e^{1-\frac{b}{\theta_0}}; a = a(\theta_0), b = b(\theta_0)$
+
+$\implies C(x) = \{\theta_0: x \in A(\theta_0)\} = \{\theta_0: a(\theta_0 \le \bar{x} \le b(\theta_0))\}$
+
+\subsection{Length Minimization}
+
+\underline{Example} $X_i \iiddist N(\theta, \sigma^2), \sigma^2$ known
+
+Inverting the UMP inbiased test, $(\bar{X} - \frac{\sigma^2}{\sqrt{n}}Z_{1-\alpha/2}, \bar{X} + \frac{\sigma^2}{\sqrt{n}}Z_{1-\alpha/2})$
+
+Using the pivot method on $\bar{X} - \theta$, $(\bar{X} - \frac{\sigma^2}{\sqrt{n}}Z_{1-\alpha/2}, \bar{X} + \frac{\sigma^2}{\sqrt{n}}Z_{1-\alpha/2}); \alpha_1 + \alpha_2 + \alpha$
+
+To choose $\alpha_1, \alpha_2$, we can try to minimize the (expected) length .
+
+In this example: $L = L(\alpha_1, \alpha_2) = \frac{\sigma}{\sqrt{n}}(Z_{1-\alpha_2} - Z_{\alpha_1})$
+
+I need to minimize under the constraint that $\alpha_1 + \alpha_2 = \alpha$
+
+Rerwite: $a = Z_{\alpha_1}, b = Z_{1-\alpha_2}$, so that $\Phi(a) = \alpha_1, \Phi(b) = 1-\alpha_2 \implies \Phi(a) + 1 - \Phi(b) = \alpha \implies \Phi(b) - \Phi(a) = 1-\alpha$
+
+The Langrangian is $h(a,b,\lambda) = b-a + \lambda\{\Phi(b) - \Phi(a) - (1-\alpha)\}$ (the last term is just our condition written such that it equals 0)
+
+$\frac{\partial h}{\partial a} = -1 - \lambda \phi(a)$
+
+$\frac{\partial h}{\partial b} = 1 + \lambda \phi(b)$
+
+$\frac{\partial h}{\partial \lambda} = \Phi(b) - \Phi(a) - (1-\alpha)$
+
+Setting the first two to 0 implies $1+\lambda \phi(a) = 1 + \lambda \phi(b) \implies \phi(a) = \phi(b)$ since $\lambda \neq 0$. This means $b = \pm a$.
+
+Now, for the third equation to be 0, $\Phi(b) - \Phi(a) = 1-\alpha; (a < \alpha < 1)$
+
+We must have $a = -b = Z_{\alpha/2}$ since $\Phi(b) = \Phi(-a) = 1 - \Phi(a)$
+
+
+\underline{Example}: $X_i \iiddist Exp(\theta)$
+
+Pivot (scale family): $\frac{\bar{x}}{\theta} \sim Gamma(n, \frac{1}{n})$
+
+$C(x) = \{\theta:q_{\alpha_1} \le \frac{\bar{x}}{\theta} \le q_{1-\alpha_2}\}; \alpha_1 + \alpha_2 = \alpha \implies \left[\frac{\bar{x}}{q_{1-\alpha_2}}, \frac{\bar{x}}{q_{\alpha_1}}\right]$
+
+The length is $\bar{x}(\frac{1}{q_{\alpha_1}} - \frac{1}{q_{1-\alpha_2}})$. Note that this depends on $\bar{x}$ so we can't just minimize this because that would depend on $\theta$ which we don't want. 
+
+We can minimize $\ext(Length)$ at each $\theta$ by minimizing the function $g(a,b) = \frac{1}{a}-\frac{1}{b}$ subject to the contrsaint $F(b)-F(a) = 1-\alpha$ where $F$ is the $Gamma(n,\frac{1}{n})$ CDF.
+
+Lagrangian: The part we want to minimize, plus/minus (you can use either plus/minus because that part will just be 0)$\lambda$ times the constraint (where the constraint is written as being equal to 0).
+
+Set $h(a,b,\lambda) = [\frac{1}{a} - \frac{1}{b}] + \lambda[F(b) - F(a) - (1-\alpha)]$
+
+$\frac{\partial h}{\partial a} = -\frac{1}{a^2} - \lambda f(a) \implies \lambda = \frac{1}{a^2 f(a)}$
+
+$\frac{\partial h}{\partial b} = \frac{1}{b^2} + \lambda f(b) \implies \lambda = \frac{1}{b^2 f(b)}$
+
+$\implies a^2 f(a) = b^2 f(b)$
+
+$\frac{\partial h}{\partial \lambda} = F(b) - F(a) - (1-\alpha)$
+
+So we have a two piece system of equations:
+
+$a^2 f(a) - b^2 f(b) = 0$
+
+$F(b) - F(a) - (1-\alpha) = 0$
+
+Given an $\alpha$, we can use a variety of techniques to solve this for $a$ and $b$, such as root finding (R). 
+
+\subsection{Large Sample Intervals}
+
+When n is large it can be beneficial to use:
+
+1) Asymptotic Pivots
+
+2) Invert large samples test
+
+\underline{Wald Intervals}
+
+For testing $H_0:\theta=\theta_0, H_1:\theta \neq \theta_0$, 
+
+$Z_w = \frac{\hat{\theta} - \theta_0}{Std.Error(\hat{\theta})} \underset{H_0}{\dto} N(0,1)$
+
+This gives us an acceptance region of $A(\theta_0) = \{x: |Z_w| \le Z_{1-\alpha/2}\}$
+
+The corresponding confidence set is: $C(x) = \{\theta_0: |Z_w| \le Z_{1-\alpha/2}\} = \{\theta_0: |\frac{\hat{\theta} - \theta_0}{SE(\hat{\theta})}| \le Z_{1-\alpha/2}\} = [\hat{\theta} - Z_{1-\alpha/2}SE(\hat{\theta}), \hat{\theta} + Z_{1-\alpha/2}SE(\hat{\theta})]$
+
+Remember that this is the asymptotic, so as n gets larger, the test approaches the $N(0,1)$ and approaches the size $\alpha$ test.
+
+Note: $Q(x,\theta) = \frac{\hat{\theta} - \theta}{SE(\hat{\theta})} \underset{\text{large n}}{\overset{D}{\approx}} N(0,1)$
+
+This leads to a large sample pivotal interval: $[\hat{\theta} - SE(\hat{\theta})Z_{1-\alpha/2}, \hat{\theta} - SE(\hat{\theta})Z_{\alpha_1}]$
+
+\underline{Score-based Intervals}
+
+To test $H_0: \theta = \theta_0, H_1: \theta = \theta_0$, use:
+
+$Z_s = \frac{\psi(x;\theta)}{\sqrt{n I_1(\theta_0)}} \underset{H_0}{\dto} N(0,1)$
+
+Either using this as an asymptotic pivot or inverting an asymptotic size $\alpha$ test (the score test) gives:
+
+$C(x) = \{\theta_0: |\frac{\psi(x;\theta_0)}{\sqrt{n I_1(\theta_0)}}| \le Z_{1-\alpha/2}\}$
+
+This is usually an interval, but often difficult to solve exactly. 
+
+\underline{LR Intervals}
+
+For testing $H_0: \theta = \theta_0, H_1:\theta \neq \theta_0$, $-2 ln(\lambda(x)) \underset{H_0}{\dto} \chi^2_1$ (for one parameter).
+
+Test-based confidence set: $C(x) = \{\theta_0: -2ln(\lambda(x)) \le \chi^2_{1-\alpha}\}$ ($\theta_0$ is in numerator of $\lambda(x)$)
+
+The pivot-based confidence set is $C(x) = \{\theta_0: \chi^2_{a,\alpha_1} \le -2ln(\lambda(x)) \le \chi^2_{1,1-\alpha_2}\}$
+
+\underline{Transformation-based Interval}
+
+Attempt to avoid estimating the standard error for Wald methods.
+
+For MLEs, the standard error is: $Var{\hat{\theta}} \approx \frac{1}{n I_1(\theta)} \approx \frac{1}{n I_1(\hat{\theta})}$. In this case we'd say $SE(\hat{\theta}) = \sqrt{\frac{1}{n I_1(\hat{\theta})}}$
+
+If $I_1(\theta)$ is not known, we can use $I\hat{I}_1(\theta) = -\frac{1}{n}\sum_{i=1}^n \frac{\partial^2}{\partial \theta^2} ln(f(x_i|\theta))$ so we could use $SE(\hat{\theta}) = \sqrt{\frac{1}{n \hat{I}_1(\hat{\theta})}}$
+
+This can be messy and lead to poor coverage. 
+
+Recall: $\sqrt{n}(\hat{\theta} - \theta) \dto N(0, \sigma^2) \implies \sqrt{n}(g(\hat{\theta}) - g(\theta)) \dto N(0, \sigma^2_{\theta}\{g'(\theta)\}^2)$
+
+We want $g$ to satisfy $g'(\theta) = \frac{1}{\sigma_{\theta}} \implies g(\theta) = \int \frac{1}{\sigma_\theta}d\theta$
+
+This is a monotonic (increasing) transformation $\implies C(x) = \{\theta: |\sqrt{n}(g(\hat{\theta}) - g(\theta))| \le Z_{1-\alpha/2}\} = \{\theta: g(\hat{\theta}) - \frac{1}{\sqrt{n}}Z_{1-\alpha/2} \le g(\theta) \le g(\hat{\theta}) + \frac{1}{\sqrt{n}}Z_{1-\alpha/2}\}$
+
+$\implies [g^{-1}(g(\hat{\theta}) - \frac{1}{\sqrt{n}}Z_{1-\alpha/2}), g^{-1}(g(\hat{\theta}) + \frac{1}{\sqrt{n}}Z_{1-\alpha/2})]$
+
+$g$ is called a variance stabilizing transformation for $\hat{\theta}$
+
+\end{document}

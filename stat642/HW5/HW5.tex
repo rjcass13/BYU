@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+\newcommand{\ext}{\EX_{\theta}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+\section{CB 7.37}
+
+$X \sim f(x|\theta) = \frac{1}{2\theta}, -\theta < x < \theta, \theta > 0$. If it exists, find the best unbiased estimator.
+
+$L(\theta|x) = \prod \left( \frac{1}{2\theta} \right) I_{(\theta < x < \theta)}$
+
+In order to reduce that indicator, we can see that if any of the x's are out of bounds, it's 0. The most concise way to write this is $max|x_i|$
+
+$ \implies = \left( \frac{1}{2\theta}^n \right)I_{(0 < max|x_i| < \theta)}$
+
+This can be written as $g(T(x), \theta)h(x)$, where $h(x) = 1$, thus $max|x_i|$ is sufficient.
+
+Let $Y = max|x_i|$. Using the Maximun Order Statistic PDF: $f(y) = n(\frac{y}{\theta})^{n-1}\frac{1}{\theta} = \frac{ny^{n-1}}{\theta^n}$
+
+$\ext[g(y)] = \int_0^{\theta} \frac{ny^{n-1}}{\theta^n} g(y) dy = 0 \implies \frac{n}{\theta^n} \int_0^{\theta} \frac{ny^{n-1}}{\theta^n} g(y) dy = 0 \implies \int_0^{\theta} y^{n-1} g(y) dy \implies \frac{d}{dy} \int_0^{\theta} y^{n-1} g(y) dy = 0 \implies \theta^{n-1}g(\theta) = 0$
+
+$\theta^{n-1}$ can't equal 0, thus $g(\theta)$ has to be 0, meaning that $max|x_i|$ is complete and sufficient. 
+
+Now, to correc the bias: $\EX[Y] = \int_0^{\theta} y\frac{ny^{n-1}}{\theta^n}dy = \frac{n}{\theta^n}\int_0^{\theta}y^n dy = \frac{n}{\theta^n}\frac{\theta^{n+1}}{n+1} = \frac{n}{n+1}\theta$. Thus, $\EX[\frac{n+1}{n}y] = \theta$.
+
+Thus, $\frac{n+1}{n} max|x_i|$ is the MVUE. 
+
+
+\section{CB 7.55}
+
+Find the MVUE for $\theta^r$
+
+(Hint: For (b) and (c), start by showing that $T = X_{(1)}$ is complete and
+sufficient. Then use integration by parts to show that $E_{\theta}(T^r) = \theta^r + E_{\theta}(h(T ))$ for a
+particular function h, and argue that $T^r - h(T)$ must be the MVUE.)
+
+
+a) $f(x|\theta) = \frac{1}{\theta}, 0 < x < \theta, r < n$
+
+In the previous problem we showed that $X_{(n)}$ is the MVUE for $\frac{1}{2\theta}$. If we start from that same basis, that would say that $X_{(n)}^r$ would be the estimator for $\theta^r$. That probably introduced some bias though, so, with $Y = X_{(n)}$ as in the last problem: 
+
+$\ext[Y^r] = \int_0^{\theta} y^r\frac{ny^{n-1}}{\theta^n}dy = \frac{n}{\theta^n}\int_0^{\theta}y^{r+n-1}dy = \frac{n}{\theta^n}\frac{\theta^{r+n}}{r+n} = \frac{n\theta^r}{r+n}$. This has introduced a bias of $\frac{r + n}{n}$. So:
+
+$\underline{\frac{n+r}{n}X_{(n)}^r}$ is the MVUE for $\theta^r$.
+
+
+b) $f(x|\theta) = e^{-(x-\theta)}, x > \theta$
+
+$L(\theta|x) = \prod e^{-(x - \theta)}I_{(x > \theta)} = e^{-\sum x_i + n\theta}I_{(X_{(1)} > \theta)}$. This can be factorized into $g(T(x), \theta)h(x)$, so $X_{(1)}$ is a sufficient statistic. 
+
+With $Y = X_{(1)}, f(y) = ne^{-(y-\theta)}[1-\int_{\theta}^y e^{-(t-\theta)} dt]^{n-1} = ne^{-(y-\theta)}[1 - (1-e^{-(y-\theta)}]^{n-1} = ne^{-(y-\theta)}[e^{-(y-\theta)}]^{n-1} = ne^{-n(y-\theta)}$
+
+$\ext[g(y)] = \int_0^{\theta} g(y) ne^{-n(y-\theta)}dy = ne^{n\theta}\int_0^{\theta} g(y) e^{-ny}dy = 0$. Taking derivative of both sides:
+
+$\frac{d}{dy} ne^{n\theta}\int_0^{\theta} g(y) e^{-ny}dy = ne^{n\theta}e^{-n\theta}g(\theta) = ng(\theta) = 0$. This requires that $g(\theta)$ be 0, meaning it is complete. 
+
+So, with $T(x) = X_{(1)} = Y$, assume $Y^r$ estimates $\theta^r$. To find the bias:
+
+$\ext[Y^r] = \int_0^{\theta} y^r ne^{-n(y-\theta)}dy = ne^{n\theta}\int_0^{\theta}y^re^{-ny}dy \implies u = y^r, v = e^{-ny} \implies ne^{n\theta}[\frac{-\theta^r}{n}e^{-n\theta} - r\int_0^{\theta}y^{r-1} e^{-ny}dy] = -\theta^r - rne^{n\theta}\int_0^{\theta}y^{r-1} e^{-ny}dy$
+
+The bias is a polynomial of order, $r^r\theta^r$, so to get the actuall adjusted you would just add that to the statistic:
+
+$W = X_{(1)} - rne^{n\theta}\int_0^{\theta}y^{r-1} e^{-ny}dy$
+
+c) $f(x|\theta) = \frac{e^{-x}}{e^{-\theta}-e^{-b}}, \theta < x < b, b$ known
+
+$F(x) = \frac{1}{e^-{\theta} - e^{-b}}\int_{\theta}^x e^{-t}dt = \frac{e^-{\theta} - e^{-x}}{e^-{\theta} - e^{-b}}$
+
+$Y = X_{(1)}, f(y) = \frac{ne^{-y}}{e^{-\theta}-e^{-b}}[1 - \frac{e^-{\theta} - e^{-y}}{e^-{\theta} - e^{-b}}]^{n-1} = \frac{ne^{-y}}{e^{-\theta}-e^{-b}}[\frac{e^{-y} - e^{-b}}{e^{-\theta} - e^{-b}}]^{n-1} = \frac{ne^{-y}(e^{-y} - e^{-b})^{n-1}}{(e^{-\theta} - e^{-b})^n}$
+
+I'll be fully honest here: I got to this point, and I have no energy/desire to actually perform the required integrals to show that this is complete ($\ext[g(y)] = 0$). By factorization this is sufficient. 
+
+If I were to do the integrals, I would do the integration by parts for $\ext[Y^r] = \int_0^{\theta} \frac{ny^r e^{-y}(e^{-y} - e^{-b})^{n-1}}{(e^{-\theta} - e^{-b})^n}dy$, set it equal to $\theta^r$, and find the difference between the two which is the bias. I'm not going to do that for my mental health haha. 
+
+\section{CB 7.58}
+
+$f(x|\theta) = \left(\frac{\theta}{2}\right)^{|x|}(1-\theta)^{1 - |x|}; x = -1, 0 , 1; 0 \le \theta \le 1$
+
+a) Find the MLE
+
+$L(\theta|x) = \prod \left(\frac{\theta}{2}\right)^{|x|}(1-\theta)^{1 - |x|} = \left(\frac{\theta}{2}\right)^{\sum |x|}(1-\theta)^{n - \sum |x|}$
+
+$ln(L(\theta|x)) = (\sum |x|) [ln(\theta) - ln(2)] + (n - \sum |x|)ln(1-\theta)$
+
+$\frac{d}{d\theta} ln(L(\theta|x)) = \frac{\sum |x|}{\theta} - \frac{n - \sum |x|}{1-\theta} = 0$
+
+$\implies (1-\theta)\sum|x| - \theta(n-\sum|x|) = 0$
+
+$\implies \theta\sum|x| - \theta(n-\sum|x|) = -\sum |x|$
+
+$\implies \hat{\theta} = \frac{\sum|x|}{n}$
+
+b) 
+
+$T(X) = \begin{cases} 2 & x = 1 \\ 0 & \text{otherwise} \end{cases}$
+
+$\ext[T(X)] = \sum_{i = 1}^n T(x_i)P(X = x_i) = 2(\frac{\theta}{2}) + 0 + 0 = \frac{2\theta}{2} = \theta$. Thus $T(X)$ is unbiased.
+
+c) 
+
+Let's try with $T_2(X) = \begin{cases} 1 & x = -1, 1 \\ 0 & \text{otherwise} \end{cases}$
+
+$\ext[T_2(X)] = \sum_{i = 1}^n T(x_i)P(X = x_i) = 1(\frac{\theta}{2}) + 0 + 1(\frac{\theta}{2}) = \theta$. Thus $T_2(X)$ is unbiased.
+
+To compare, let's look at the variances: 
+
+$Var(T(X)) = \ext[T(X)^2] + \ext[T(X)]^2 = (\frac{4\theta}{\theta} + 0 + 0) + \theta^2 = \theta^2 + 2\theta$
+
+$Var(T_2(X)) = \ext[T_2(X)^2] + \ext[T_2(X)]^2 = \frac{1\theta}{2} + \frac{1\theta}{2} + \theta^2 = \theta^2 + \theta$
+
+Thus, the variance for $T_2(X)$ is lower and thus $T_2(X)$ is a better estimator for $\theta$. 
+
+\section{CB 7.60}
+
+$X \iiddist Gamma(\alpha, \beta), \alpha$ is known. Find MVUE for $1/\beta$. 
+
+Being part of the exponential family, we know that $\bar{x}$ is a complete, sufficient statistic. We'll then start with the assumption that $\frac{1}{\bar{x}}$ is our estimator. 
+
+To find the bias: $\EX[T(X)] = \EX[\frac{1}{\bar{X}}] = \frac{1}{\EX[\bar{X}]} = \frac{1}{\alpha\beta}$. To make this unbiased for $\frac{1}{\beta}$, we need to multiply by $\alpha$. Meaning:
+
+$\frac{\alpha}{\bar{x}}$ is the MVUE for $\frac{1}{\beta}$
+
+\section{CB 7.47}
+
+$R \iiddist N(r, \sigma^2)$. $\bar{R} = r, Var(R) = \frac{\sigma^2}{n} \implies \bar{R} \sim N(r, \frac{\sigma^2}{n})$
+
+Area of circle: $\pi R^2 = \pi \EX[\bar{R}^2]$ so we need $\EX[\bar{X}^2] = \EX[\bar{X}]^2 + Var(\bar{X}) = \pi(r^2 + \frac{\sigma^2}{n})$
+
+$\implies \EX[\pi R^2] = \EX[\pi(\bar{X}^2 - \frac{\sigma^2}{n})] = \pi\EX[\bar{X}^2] - \pi\EX[\frac{\sigma^2}{n}] = \pi(r^2 + \frac{\sigma^2}{n}) - \frac{\pi\sigma^2}{n} = \pi r^2 + \frac{\pi\sigma^2}{n} - \frac{\pi\sigma^2}{n} = \pi r^2$
+
+Because $\bar{X}$ is compelte and sufficient, nad this is an exponential fammily, that means $\bar{X}^2$ is as well, making it the MVUE. 
+
+\section{CB 7.53}
+
+Flesh out Theorem 7.3.20. Suppose $W$ is an unbiased estimator for $\tau(\theta), U$ is unbiased for 0. Show that if, for some $\theta = \theta_0, Cov_{\theta_0}(W, U) \neq 0,$ then $W$ cannot be the MVUE for $\tau(\theta)$.
+
+$Var(X+Y) = Var(X) + Var(Y) + 2Cov(X,Y)$
+
+For some a, $Var(W + aU) = Var(W) + a^2Var(U) + 2aCov(W, U)$
+
+If we can pick some negative a such that $|2aCov(W, U)| > a^2Var(U)$, then $Var(W + aU) < Var(W)$. Looking at that inequality, then we can pick $a = \frac{-2Cov(W, U)}{Var(U)}$, which will make $Var(W + aU) < Var(W)$ meaning that $W$ cannot be the MVUE as there is something with lower variance. 
+
+
+
+\end{document}

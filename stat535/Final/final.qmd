@@ -1,0 +1,585 @@
+---
+title: "Final"
+subtitle: "STAT 535"
+author: "RJ Cass"
+date: "21 Apr. 2026"
+execute:
+  echo: false
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption, bm, amsmath, xcolor}
+        \setlength{\parindent}{0pt}
+        \captionsetup{textfont={it}, font=small} 
+        \newcommand{\statvec}[1]{\underset{\sim}{#1}}
+geometry: "margin=1in"
+---
+
+```{r init, include = FALSE}
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(torch))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(fastDummies))
+
+set.seed(1337)
+
+dt <- read.csv('SpeedrunningSuperMario64.csv')
+dt$chat_messages <- as.numeric(dt$chat_messages)
+dt$covid <- case_when(
+    dt$year <= 2019 ~ 'Before',
+    dt$year >= 2023 ~ 'After',
+    TRUE            ~ 'During'
+)
+dt$covid <- as.factor(dt$covid)
+dt$covid <- relevel(factor(dt$covid), ref = "Before")
+```
+
+```{r impute_na}
+# Impute the missing chat_messages value
+# This is described in the data portion, but I want the code at the top
+quant_aug_chat <- quantile(dt$chat_messages[dt$month_num == 8], probs = .25, na.rm = TRUE)
+dt$chat_messages[which(is.na(dt$chat_messages))] <- quant_aug_chat
+```
+
+# Introduction
+
+Speedrunning is a form of playing video games with the goal of reaching a certain target or milestone in the fastest time possible. It has a large following across a wide swath of genres, and has very dedicated communities. While it's possible to develop some form of a speedrun in almost any game the current most popular games to speedrun are in the Mario franchise. Within a given game, there may be multiple speedrun categories: in the case of Super Mario 64, there are different categories based on the number of stars you collect throughout the game before defeating the final boss/triggering the end-game screen. 
+
+The speedrunning community participates in speedrunning in 1 of 2 ways: watching, or playing. Those who do the speedrunning will typically do so while recording themselves, either live or to post a video later, and if they have a particularly fast run they will often upload their run to 'speedrun.com' which is regarded as the official website tracking the best times for various targest in different games. Those who watch speedrunning either watch the live streams on platforms such as Twitch or Kick, or by watching uploaded videos on platforms such as YouTube. 
+
+While I have not spent much time watching speedrunning myself, I have spent a decent amount of type watching general videogame-playing content. Many people have asked me why I watch someone else playing the videogame instead of just playing it myself, and I imagine the speedrunning community receives a lot of the same criticism. While I can't speak for everyone's motiviation, I like to watch videogame content for 2 reasons. For one, the people playing the game have usually spent countless hours honing their skill, and akin to watching a professional athlete excel in their sport, I find pleasure in watching a master of their craft exectue it well. Another reason I watch is that many of my favorite content creators are genuinely hilarious, and I have a lot of fun watching their content. Due to the highly skilled and precise nature of many speedruns, I imagine most people who watch speedrunners fall into the first category. 
+
+While for many, speedrunning is just a hobby, there are some who are able to make speedrunning their career. Through partnerships with streaming/hosting platforms, speedrunners are able to establish consistent viewer-bases for their content, to whom the platform will show ads to generate revenue. This revenue is shared between the platform and the speedrunner. If a speedrunner has a large enough viewer-base, they can make enough money to make this their career. Of the streaming platforms, Twitch is generally considered the most popular, though in recent years has faced significant competition from other platforms (particularly Kick) which offers better revnue-splits for content creators. 
+
+For a streaming platform, being able to understand the viewership of a certain creator, or speedrunning category, is essential to knowing where to invest their money (ie. seek partnerships with certain creators). Viewer interest is influenced by a wide-variety of factors. For example, the game's age matters significantly: games will often have a viership spike when first released, then dip significantly, but if it becomes one of the few games with a storng enough community, it may become a 'legacy' and have long term high viewership. The quality of the content created by the speedrunner also matters a lot. As mentioned before, I watch a lot of content due to the humor and skill of the player. If the creator is unskilled, or creates rather drab content, less people are likely to watch it. If a streaming platform is able to correctly identify which streamers or events will generate popular content, they will know who to invest in, or which events to improve or remove. 
+
+To this end, we have a dataset of the Super Mario 64 speedrunning categories. We want to use this dataset to develop a model to predicit speedrunning popularity and identify which areas platforms should invest in to increase viewership. In this analysis we will be using 'Viewership' as a method of measuring popularity, though other metrics could be used as well. For example, one could use 'in-stream donations' (viewers have the option to donate money directly to the creator during the stream, of which the platform gets a small cut). You could also use metrics around total viewing time (ie. sum of total minutes watched by all viewers).
+
+# Data
+
+A summary of our dataset is provided in @tbl-summary. The dataset is monthly aggregated data from March 2017 to January 2026 consisting of the variable of interest (avg_viewers) stream metrics (chat_messages, chatters), a google search metric (search_interest), and speedrun.com metrics (everything else). The average viewers is the monthly average number of people watching a Super Mario 64 stream at any given time. The chat metrics indicate the number (in thousands) of unique viewers who sent at least one message in a Super Mario 64 stream per month, and the toal chat messages in millions. The google interest metric indicates search popularity compared to the highest value. The speedrun.com metric include the number of speedrun submissions in a given month, and the number of world record-breaking submissions for the different Super Mario 64 categories that month. 
+
+```{r tbl-summary}
+#| tbl-cap: Summary of variables
+mySummary <- function(x) {
+  c(mean = round(mean(x[x != 0]), 2), sd = round(sd(x[x != 0]), 2), q25 = round(quantile(x[x != 0], .25), 2), q75 = round(quantile(x[x != 0], .75), 2))
+}
+
+reg_summ <- t(apply(dt[-c(1,2, 13, 14)], 2, mySummary))
+reg_var_summ <- as.data.frame(cbind(colnames(dt[-c(1,2, 13, 14)]), reg_summ))
+colnames(reg_var_summ) <- c('Variable', 'Mean', 'SD', 'Q25', 'Q75')
+rownames(reg_var_summ) <- NULL
+kable(reg_var_summ)
+```
+
+The dataset we are using has 1 missing value: the 'chat_messages' quantity for August 2019. Determining how to handle this response is a bit complex. we could impute the datapoint using the surrounding months; however, the month immediately following has the lowest 'chat_messages' value, which would liekly bring the number below what it should actually be. Looking at how the rest of 2019 performed compared to the other years in the dataset, most of the months in 2019 were in the bottom quartile of overall viewership that month, so I chose to impute the missing datapoint as the lower 25th quantile of the other August data points. 
+
+An important aspect of the data to explore is the impact of the Covid-19 pandemic. Examining @fig-covid_plot, we can see that there does appear to be some effect due to Covid (for this analysis, we labelled years 2020 and 2021 as 'During', and years before that as 'Before', and years after that as 'After'). The highest values appear to have occured during Covid, and visually, it appears that when compared to the 'Before' values, the 'During' and 'After' seem to be a decent amount higher. 
+
+```{r fig-covid_plot}
+#| fig-cap: "Viewership by month for periods before, during, and after the Covid-19 Pandemic"
+ggplot(dt, aes(x = month_num, y = avg_viewers, color = covid)) +
+  geom_point(size = 3) +
+  labs(color = "Covid", title = "Effect of Covid on Viewership", x = "Month", y = "Viewership") +
+  scale_x_continuous(breaks = c(1:12)) + 
+  theme_minimal()
+```
+
+```{r chat_r2}
+chat_r2 <- round(cor(dt$chatters, dt$chat_messages), 3)
+```
+
+In exploring the data, we identified strong collinearity between the 'chat_messages' variable and the 'chatters' variable, as shown in @fig-collinearity. With such a high collinearity ($R^2$ of `r chat_r2`), we feel confident including only one of these variables in our analysis. As such, we will remove the 'chat_messages' and only include the 'chatters' variable. 
+
+```{r fig-collinearity}
+#| fig-cap: "Plot showing the strong collinearity between the number of chatters, and chat messages, within a given month."
+plot(dt$chatters, dt$chat_messages, main = "Collinearity of Chatters and ChatMessages", 
+    xlab = 'Chatters', ylab = 'Chat Messages')
+
+# Remove the 'chat_messages' variable
+dt <- dt[, -4]
+```
+
+We also have one data point (January 2024, index 83) which appears to have a potential outlier in the number of speedrun submissions (1139). However, after fitting some preliminary models this value did not appear to strongly influence the effect of the 'submissions' variable so we chose to leave it in. 
+
+# Model
+
+### Model 1
+
+```{r nn_dt}
+nn_dt <- dt
+nn_dt <- dummy_cols(nn_dt, select_columns = c("covid"), remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+```
+
+```{r nn_funcs}
+generate_torch_objects <- function(train, test) {
+  # Define Test and Train splits
+  y_train <- train$avg_viewers
+  y_test <- test$avg_viewers
+  x_train <- train[, -3]
+  x_test <- test[, -3]
+
+  # Standardize and convert into tensors
+  x_train_mean <- apply(x_train, 2, mean)
+  x_train_sd <- apply(x_train, 2, sd)
+  x_train_stand <- sweep(sweep(x_train, 2, x_train_mean, "-"), 2, x_train_sd, "/")
+  x_test_stand <- sweep(sweep(x_test, 2, x_train_mean,"-"), 2, x_train_sd, "/")
+
+  x_train <- torch_tensor(as.matrix(x_train_stand))
+  x_test <- torch_tensor(as.matrix(x_test_stand))
+
+  # Convert to tensor and reshape to (N, 1)
+  y_train <- torch_tensor(y_train)$view(c(-1, 1))
+  y_test  <- torch_tensor(y_test)$view(c(-1, 1))
+  y_train <- y_train$to(dtype = torch_float())
+  y_test <- y_test$to(dtype = torch_float())
+
+  list(y_train = y_train, y_test = y_test, x_train = x_train, x_test = x_test)
+}
+
+run_neural_net <- function(train, test, epochs) {
+  # Generate torch objects
+  torch_obj <- generate_torch_objects(train, test)
+  x_train <- torch_obj$x_train
+  x_test <- torch_obj$x_test
+  y_train <- torch_obj$y_train
+  y_test <- torch_obj$y_test
+
+  net = nn_module(
+    "class_net",
+    initialize = function(){
+      self$linear1 = nn_linear(13,36) # Start with columns in the X matrix
+      self$linear2 = nn_linear(36, 22)
+      # self$linear3 = nn_linear(22,22)
+      self$linear4 = nn_linear(22,1) # End with 1 because it's regression
+      
+    },
+    forward = function(x) {
+      x %>%
+        self$linear1() %>%
+        nnf_relu() %>% # using relu because viewers cannot be negative
+        self$linear2() %>%
+        # nnf_relu() %>%
+        # self$linear3() %>%
+        nnf_relu() %>%
+        self$linear4()
+    }
+  )
+
+  #### INITIALIZE THE MODEL
+  torch_manual_seed(2)
+  model = net()
+  # Create the cost function and the optimizer
+  criterion = nn_mse_loss() # MSE loss for regression
+  optimizer = optim_adam(model$parameters, lr = 0.005)
+  ### TRAIN THE MODEL
+  loss_values <- numeric()
+  accuracy_values <- numeric()
+  test_loss_values <- numeric()
+
+  for(i in 1:epochs){
+      optimizer$zero_grad()
+      y_pred <- model$forward(x_train)
+      y_pred_test <- model$forward(x_test)
+      loss <- criterion(y_pred, y_train)
+      test_loss <- criterion(y_pred_test, y_test)
+      loss$backward()
+      optimizer$step()
+      
+      ### administration:
+      # Append loss and accuracy values to vectors
+      loss_values <- c(loss_values, as.numeric(sqrt(loss)))
+      test_loss_values <- c(test_loss_values, as.numeric(sqrt(test_loss)))
+  }
+  list(model = model, loss = loss_values, test_loss = test_loss_values, x_train, x_test, y_train, y_test)
+}
+```
+
+As one of the goals of the analysis is accurate prediction, we first fit a neural net to the data. A neural net allows for high prediction accuracy, but at the cost of low explainability of the model. We fit a neural net with 3 layers, the first layer having 36 nodes, the second layer having 22 nodes, and the last layer having 1 (for regression output). On each layer we used the 'ReLU' activation function which enforces a positive output (the number of viewers has to be a positive number). We used a Mean-Squared Error loss for our fitting algorithm. 
+
+To determine the ideal iterations over which to fit the model, we ran a small simulation study comparing the in-sample and out-of-sample loss over epochs. We ran 10 samples (one for each of the cross-fold validations we will run later). An example loss plot is shown in @fig-example_nn_loss. Based on this study, we concluded that the ideal number of epochs to run the neural net was ~600.
+
+```{r fig-example_nn_loss}
+#| fig-cap: "Example neural-net loss plot, showing the in-sample and out-of-sample loss. The ideal number of epochs minimizes that number"
+folds <- 10
+epochs <- 2000
+# Create equal-sized folds
+folds_lab <- cut(seq(1, nrow(nn_dt)), breaks = folds, labels = FALSE)
+
+# Example Loss Plot
+test_ind <- which(folds_lab == 4, arr.ind = TRUE)
+train <- nn_dt[-test_ind, ]
+test <- nn_dt[test_ind, ]
+
+res <- run_neural_net(train, test, epochs)
+plot(1:epochs, res$loss, type = 'l', col = 'red', main = 'Example Loss-plot', xlab = 'Epoch', ylab = 'Loss')
+lines(1:epochs, res$test_loss, col = 'blue')
+legend(x = 'topright', legend = c('In Sample', 'Out of Sample'), col = c('red', 'blue'), lty = 1)
+```
+
+```{r nn_pred_tensor}
+year <- 2024
+month_num <- 6
+chatters <- seq(min(nn_dt$chatters), max(nn_dt$chatters), length = 100)
+search_interest <- mean(nn_dt$search_interest)
+submissions <- mean(nn_dt$submissions)
+wr_count <- 4
+wr_120star_count <- 1
+wr_70_star_count <- 1
+wr_16star_count <- 1
+wr_1star_count <- 1
+wr_0star_wr <- 1
+covid_During <- 0
+covid_After <- 1
+
+pred_dt <- as.data.frame(expand.grid(year, month_num, chatters, search_interest, submissions, wr_count, wr_120star_count, wr_70_star_count, wr_16star_count, wr_1star_count, wr_0star_wr, covid_During, covid_After))
+colnames(pred_dt) <- c('year', 'month_num', 'chatters', 'search_interest', 'submissions', 'wr_count', 'wr_120star_count', 'wr_70_star_count', 'wr_16star_count', 'wr_1star_count', 'wr_0star_wr', 'covid_During', 'covid_After')
+
+train_mean <- apply(nn_dt[, -3], 2, mean)
+train_sd <- apply(nn_dt[, -3], 2, sd)
+pred_dt_stand <- sweep(sweep(pred_dt, 2, train_mean, "-"), 2, train_sd, "/")
+pred_tensor <- torch_tensor(as.matrix(pred_dt_stand))
+```
+
+```{r neural_net_fit}
+full_x <- sweep(sweep(nn_dt[, -3], 2, train_mean, "-"), 2, train_sd, "/")
+full_x <- torch_tensor(as.matrix(full_x))
+
+epochs = 600
+models <- vector(mode = "list", length = folds)
+losses <- matrix(NA, nrow = epochs, ncol = folds)
+test_losses <- matrix(NA, nrow = epochs, ncol = folds)
+resids <- matrix(NA, nrow = nrow(nn_dt), ncol = folds)
+chatters_preds <- matrix(NA, nrow = nrow(pred_dt), ncol = folds)
+
+for (i in 1:folds) {
+  test_ind <- which(folds_lab == i, arr.ind = TRUE)
+  train <- nn_dt[-test_ind, ]
+  test <- nn_dt[test_ind, ]
+
+  res <- run_neural_net(train, test, epochs)
+  model <- res$model
+  models[[i]] <- model
+  losses[, i] <- res$loss
+  test_losses[, i] <- res$test_loss
+  resids[,i] <- as.numeric(model$forward(full_x))
+
+  # 1. Set to evaluation mode
+  model$eval()
+
+  # 2. Disable gradient tracking during inference
+  with_no_grad({
+    # 3. Pass input data (as a tensor) to the model
+    predictions_tensor <- model(pred_tensor)
+    
+    # 4. Convert output tensor to standard R numeric format
+    chatters_preds[,i] <- as.array(predictions_tensor)^2
+  })
+}
+
+is_rmse <- mean(sqrt(colMeans(resids)))
+mean_oos_rmse <- mean(test_losses[epochs,])
+```
+
+The In-sample RMSE and 10-fold Crossvalidation Out-of-Sample RMSE is provided in @tbl-nn_rmse. The model was fairly consistent across all folds, but there was one particular fold which had much higher OOS RMSE than the other (1710). 
+
+```{r tbl-nn_rmse}
+#| tbl-cap: "In-sample and 10-fold Crossvalidation Out-of-Sample RMSE values for the fitted linear model. The OOS RMSE is the mean over the 10 folds."
+
+tab <- round(as.data.frame(matrix(c(is_rmse, mean_oos_rmse), ncol = 2)), 3)
+colnames(tab) <- c('In-Sample RMSE', 'Out-of-Sample RMSE')
+kable(tab)
+```
+
+The difference between the predicted value for a month, and the actual, is provided in @fig-nn_pred. As shown, the largest prediction differences tended to occur during and after the Covid years, with the modeling generally overestimating the viewership in a month, but in some cases vastly underestimating the viewership. 
+
+```{r fig-nn_pred}
+names <- mapply(\(x,y) paste0(x, '-', y), dt$year, dt$month_num)
+mean_preds <- rowMeans(resids)
+upper_preds <- apply(resids, 1, quantile, probs = .975)
+lower_preds <- apply(resids, 1, quantile, probs = .025)
+
+pred_ints <- data.frame(point = names, pred = mean_preds, low = lower_preds, high = upper_preds, act = nn_dt$avg_viewers, diff = (mean_preds - nn_dt$avg_viewers))
+
+ggplot(pred_ints, aes(x = point, y = diff, col = factor(dt$year))) + 
+  geom_point() + 
+  scale_x_discrete(breaks = function(x) x[seq(1, length(x), by = 6)]) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  labs(title = 'Prediction Accuracy for the Neural Net', x = 'Month', y = 'Prediction Difference', color = 'Year')
+```
+
+\newpage
+
+The predicted marginal effect of chatters is shown in @fig-nn_chatter_effect. It is positive with a slight curve. 
+
+```{r fig-nn_chatter_effect}
+#| fig-cap: "Fitted effect of chatters on the average viewership, with corresponding 95% prediction intervals"
+
+mean_preds <- rowMeans(chatters_preds)
+upper_preds <- apply(chatters_preds, 1, quantile, probs = .975)
+lower_preds <- apply(chatters_preds, 1, quantile, probs = .025)
+
+pred_ints_chat <- data.frame(chatters = pred_dt$chatters, pred = mean_preds, low = lower_preds, high = upper_preds)
+
+ggplot(pred_ints_chat, aes(x = chatters, y = pred)) +
+  geom_point() + # Plots the mean
+  geom_errorbar(aes(ymin = low, ymax = high), width = 0.2, col = 'red') + # Plots the CI
+  labs(title = "Effect of Chatters with 95% Interval", x = "Chatters", y = "Predicted Average Viewers")
+```
+
+```{r neural_net_no_covid}
+run_neural_net_no_covid <- function(train, test, epochs) {
+  # Generate torch objects
+  torch_obj <- generate_torch_objects(train, test)
+  x_train <- torch_obj$x_train
+  x_test <- torch_obj$x_test
+  y_train <- torch_obj$y_train
+  y_test <- torch_obj$y_test
+
+  net = nn_module(
+    "class_net",
+    initialize = function(){
+      self$linear1 = nn_linear(11,36) # Start with columns in the X matrix
+      self$linear2 = nn_linear(36, 22)
+      # self$linear3 = nn_linear(22,22)
+      self$linear4 = nn_linear(22,1) # End with 1 because it's regression
+      
+    },
+    forward = function(x) {
+      x %>%
+        self$linear1() %>%
+        nnf_relu() %>% # using relu because viewers cannot be negative
+        self$linear2() %>%
+        # nnf_relu() %>%
+        # self$linear3() %>%
+        nnf_relu() %>%
+        self$linear4()
+    }
+  )
+
+  #### INITIALIZE THE MODEL
+  torch_manual_seed(2)
+  model = net()
+  # Create the cost function and the optimizer
+  criterion = nn_mse_loss() # MSE loss for regression
+  optimizer = optim_adam(model$parameters, lr = 0.005)
+  ### TRAIN THE MODEL
+  loss_values <- numeric()
+  accuracy_values <- numeric()
+  test_loss_values <- numeric()
+
+  for(i in 1:epochs){
+      optimizer$zero_grad()
+      y_pred <- model$forward(x_train)
+      y_pred_test <- model$forward(x_test)
+      loss <- criterion(y_pred, y_train)
+      test_loss <- criterion(y_pred_test, y_test)
+      loss$backward()
+      optimizer$step()
+      
+      ### administration:
+      # Append loss and accuracy values to vectors
+      loss_values <- c(loss_values, as.numeric(sqrt(loss)))
+      test_loss_values <- c(test_loss_values, as.numeric(sqrt(test_loss)))
+  }
+  list(model = model, loss = loss_values, test_loss = test_loss_values, x_train, x_test, y_train, y_test)
+}
+
+
+nn_dt_no_covid <- nn_dt[, -c(13, 14)]
+train_mean <- apply(nn_dt_no_covid[, -3], 2, mean)
+train_sd <- apply(nn_dt_no_covid[, -3], 2, sd)
+
+full_x <- sweep(sweep(nn_dt_no_covid[, -3], 2, train_mean, "-"), 2, train_sd, "/")
+full_x <- torch_tensor(as.matrix(full_x))
+
+epochs = 600
+models <- vector(mode = "list", length = folds)
+losses <- matrix(NA, nrow = epochs, ncol = folds)
+test_losses <- matrix(NA, nrow = epochs, ncol = folds)
+resids <- matrix(NA, nrow = nrow(nn_dt_no_covid), ncol = folds)
+
+for (i in 1:folds) {
+  test_ind <- which(folds_lab == i, arr.ind = TRUE)
+  train <- nn_dt_no_covid[-test_ind, ]
+  test <- nn_dt_no_covid[test_ind, ]
+
+  res <- run_neural_net_no_covid(train, test, epochs)
+  model <- res$model
+  models[[i]] <- model
+  losses[, i] <- res$loss
+  test_losses[, i] <- res$test_loss
+  resids[,i] <- as.numeric(model$forward(full_x))
+}
+
+names_no_covid <- mapply(\(x,y) paste0(x, '-', y), dt$year, dt$month_num)
+mean_preds_no_covid  <- rowMeans(resids)
+upper_preds_no_covid  <- apply(resids, 1, quantile, probs = .975)
+lower_preds_no_covid  <- apply(resids, 1, quantile, probs = .025)
+
+pred_ints_no_covid <- data.frame(point = names_no_covid , pred = mean_preds_no_covid , low = lower_preds_no_covid , high = upper_preds_no_covid , act = nn_dt_no_covid $avg_viewers, diff = (mean_preds_no_covid  - nn_dt_no_covid $avg_viewers))
+
+no_covid_rmse <- round(sqrt(mean(pred_ints_no_covid$pred)^2), 1)
+covid_rmse <- round(sqrt(mean(pred_ints$pred)^2), 1)
+```
+
+To investigate the effect of Covid on the Neural net, we fit the model both with and without the 'Covid' factor. The resulting residuals of the two models are shown in @fig-nn_covid_diff. On average, it appears that the 'Including Covid' tends to perform better on the 'extreme values' (ie. during Covid where the viewership spiked), but a little worse in the other periods, resulting in almost identical RMSE values (`r no_covid_rmse` excluding Covid, `r covid_rmse` including Covid).
+
+```{r fig-nn_covid_diff}
+#| fig-cap: "Plot of the residuals with and without taking into account Covid. When accounting for Covid, the residuals appear to be smaller on average."
+
+ggplot() + 
+  geom_point(data = pred_ints_no_covid, aes(x = point, y = diff, col = 'No')) + 
+  geom_point(data = pred_ints, aes(x = point, y = diff, col = 'Yes')) + 
+  scale_x_discrete(breaks = function(x) x[seq(1, length(x), by = 6)]) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  labs(title = 'Prediction Accuracy for the Neural Net', x = 'Month', y = 'Prediction Difference', color = 'Including Covid')
+```
+
+
+### Model 2
+
+```{r lm_funcs}
+get_coefs <- function(mod, sig = FALSE) {
+  coefs <- as.data.frame(summary(mod)$coefficients)
+  coefs$Variable <- rownames(summary(mod)$coefficients)
+  conf <- as.data.frame(confint(mod))
+  conf$Variable <- rownames(confint(mod))
+  actual_vars <- ifelse(startsWith(coefs$Variable, 'spacing'), FALSE, TRUE)
+  coefs <- coefs[actual_vars, ]
+  coefs$Lower <- conf$`2.5 %`
+  coefs$Upper <- conf$`97.5 %`
+  coefs$pValue <- coefs$`Pr(>|t|)`
+  if(sig) { coefs <- coefs[coefs$pValue <= .05, ]}
+  coefs <- coefs[c("Variable", "Estimate", "Lower", "Upper", "pValue")]
+  coefs[, 2:5] <- round(coefs[, 2:5], 3)
+  coefs
+}
+```
+
+For the second model, we want a model with high interpretability. I chose to do a linear model. After performing initial diagnostics of an untransformed linear model there appears to be some non-normality in the fitted residuals (see @fig-bad_resids). To fix this I decided to transform the response variable (avg_viewers) via SquareRoot. I also decided to perform BIC selection on the model to hone in on the most impactful factors. We further included an interaction term of Covid*Chatters to see if the impact of the number of chatters changed before, during, or after Covid. 
+
+```{r fig-lm_bad, include = FALSE}
+n <- nrow(dt)
+mod <- lm(avg_viewers ~ ., data = dt)
+mod <- stepAIC(mod, direction = "both", k = log(n)) # BIC Selection
+```
+
+```{r fig-bad_resids}
+plot(mod, which = 2)
+```
+
+```{r lm_mod, include = FALSE}
+
+mod <- lm(sqrt(avg_viewers) ~ . + chatters*covid, data = dt)
+mod <- stepAIC(mod, direction = "both", k = log(15)) # BIC Selection
+```
+
+```{r lm_10_fold, include = FALSE}
+folds <- 10
+folds_lab <- cut(seq(1, nrow(dt)), breaks = folds, labels = FALSE)
+
+models <- vector(mode = "list", length = folds)
+oos_rmse <- numeric(folds)
+is_rmse <- numeric(folds)
+
+for (i in 1:folds) {
+  test_ind <- which(folds_lab == i, arr.ind = TRUE)
+  train <- dt[-test_ind, ]
+  test <- dt[test_ind, ]
+
+  mod_fold <- lm(sqrt(avg_viewers) ~ . + chatters*covid, data = train)
+  mod_fold <- stepAIC(mod_fold, direction = "both", k = log(n)) # BIC Selection
+  preds <- predict(mod_fold, newdata = test)
+  oos_rmse[[i]] <- sqrt(mean((test$avg_viewers - preds)^2))
+  is_rmse[[i]] <- sqrt(mean(mod_fold$residuals^2))
+}
+
+mean_is_rmse <- mean(is_rmse)
+mean_oos_rmse <- mean(oos_rmse)
+```
+
+This linear model can be represented by the following equation:
+
+$$
+\sqrt{y_i} = x_i\underset{\sim}{\beta} + \epsilon_i
+$$
+
+where $y_i$ is a certain response, $x_i$ are the input variables, $\beta$ are the estimated coefficients for ecach effect, and $\epsilon_i$ is the random error, distributed as a $N(0, \sigma^2)$
+
+This model identified the most impactful drivers of Average Viewership to be 'Chatters', 'Search Interest', 'WR Submissions', 'Covid', and the interaction of 'Covid' and 'Chatters' as shown in @tbl-coefs. 
+
+```{r tbl-coefs}
+coefs <- get_coefs(mod)
+rownames(coefs) <- NULL
+kable(coefs)
+```
+
+The In-sample RMSE and Out-of-Sample 10 Crossvalidation RMSE are provided in @tbl-lm_rmse. The very low In-Sample and high Out-of-Sample indicates potential over-fitting, resulting in poor predictions. Diving deeper into the Out-of-Sample RMSE, we saw that for some folds the model performed mcuh better (RMSE of ~600), while for some it performed very poorly (RMSE ~3000).
+
+```{r tbl-lm_rmse}
+#| tbl-cap: "In-sample and 10-fold Crossvalidation Out-of-Sample RMSE values for the fitted linear model. The OOS RMSE is the mean over the 10 folds."
+
+tab <- round(as.data.frame(matrix(c(mean_is_rmse, mean_oos_rmse), ncol = 2)), 3)
+colnames(tab) <- c('In-Sample RMSE', 'Out-of-Sample RMSE')
+kable(tab)
+```
+
+The marginal effect of 'Chatters' is shown in @fig-chatter_effect. This also shows the 95% prediction intervals, which grows wider as the number of chatters increases (ie. the uncertainty in the expected number of viewers increases as the number of chatters increases). The slight curve to the graph is due to the transformed response variable (the model is fit to the squareroot of average viewers, so when scaled back to average viewers, there is a curve). 
+
+```{r fig-chatter_effect}
+#| fig-cap: "Fitted effect of chatters on the average viewership, with corresponding 95% prediction intervals"
+chatters <- seq(min(dt$chatters), max(dt$chatters), length = 100)
+wr_120star_count <- 1
+wr_70_star_count <- 1
+search_interest <- mean(dt$search_interest)
+covid <- 'After'
+
+
+pred_dt <- as.data.frame(expand.grid(chatters, wr_120star_count, wr_70_star_count, search_interest, covid))
+colnames(pred_dt) <- c('chatters', 'wr_120star_count', 'wr_70_star_count', 'search_interest', 'covid')
+
+preds <- as.data.frame(predict(mod, newdata = pred_dt, interval = 'prediction'))
+preds <- cbind(preds, chatters)
+colnames(preds) <- c('pred', 'lower', 'upper', 'chatters')
+preds$pred <- preds$pred^2
+preds$lower <- preds$lower^2
+preds$upper <- preds$upper^2
+
+ggplot(preds, aes(x = chatters, y = pred)) +
+  geom_point() + # Plots the mean
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.2, col = 'red') + # Plots the CI
+  labs(title = "Effect of Chatters with 95% Interval", x = "Chatters", y = "Predicted Average Viewers")
+```
+
+```{r covid}
+mod_no_covid <- lm(sqrt(avg_viewers) ~ wr_count + chatters + search_interest, data = dt)
+p_val <- anova(mod_no_covid, mod)
+```
+
+To examine the effect of Covid on the model, we fit a model with and without the Covid effect and comapred them using an ANOVA test. We found that the Covid effect was indeed significant, in that the models with and without 'Covid' were found to be significantly different. This is also alluded to in the model summary provided in @tbl-coefs, where the 'During' periods of Covid are signifcantly higher than the 'Before' period, and the interaction of 'chatters:covidDuring' indicates that during Covid, there was a significant change in the effect of number of chatters (during covid, the number of chatters had a less-positive effect than it did before Covid). 
+
+An interesting aspect of this model is that the coefficient for 'Search Interest' is negative. This implies that as more people are searching tersm related to 'Super Mario 64' in Google, less people are actually viewing the speedrunning streams. This could possibly be due to some event going on which is generating a lot of online traffic for Super Mario 64, but that is unrelated to speedrunning and thus pulls the viewers away from the streams. 
+
+# Model Comparison
+
+To compare the models, we can first examine the In-Sample and Out-of-Sample RMSE values. The Linear Model has a much lower In-Sample RMSE, but a much higher Out-of-Sample RMSE. This indicates the Neural Net is more capable of accurate predictions. However, the Neural Net is not very explainable - it's difficult to identify which specific variables are most important, and what their specific impact is.
+
+Both models had a similar shape of the effect of 'Chatters', though the slope of the curve from the Neural Net is magnitudes larger than that of the linear model, implying there are other things happening in the Neural Net which 'dampen' that effect. Both models took Covid into effect, though we don't have an interpretable effect from the Neural Net. 
+
+If we were to pick one model to use for the purposes of the analysis, balancing interpretability and prediction, we would pick the linear model. However, before using it to provide actualy predictions, we would perform more tuning to attempt to better the prediction accuracy. We prefer this model because it provides clear understanding of how each variable impacts the average viewership, as well as clearly indicates which variables are most important (ie. the variables included in the model are the most important). 
+
+# Conclusions / Next Steps
+
+Using the linear model, we identify that streaming platforms should focus their efforts on increasing the number of unique active chatters they have on their platform, and push for more World Record submissions. Both of these appear to drive higher viewership. We would also advise them to be aware of other events going on (perhaps game festivals, etc.) which may detract from their viewership for a time (potentially indicated by higher Google Search Interest resulting in lower viewership). We identified that Covid did have a significant impact on viewership in and of itself, as well as having a significant interaction with the number of chatters. We also identified that the most inaccurately-estimated months were during Covid, where in some months the viewership spiked. 
+
+The first improvement we would consider would be, as mentioned above, a deeper dive into tuning both models. We strongly prefer the interpretability of the linear model, which provides clear focus areas to action, but would want to improve its prediction accuracy before sending it to a platform for use in their programs. There are also several parameters we could tune on the Neural Net (number of layers, number of nodes per layer, activation functions on different layers, etc.), all of which could effective the predictive accuracy and potential influence of different factors. 
+
+We would also take a deeper look at the impact of that potential influential point (index 30), specifically on the neural net. While we did examine it in the context of a linear model, it may have a different effect on the Neural Net. 
+
+One piece of data I think would add to this analysis is the number of unique streamers, or perhaps the average viewers per streamer or the relative 'size' or each streamer. While it's reasonable to think that perhaps having one 'star' speedrunner would draw lots of views (building on the idea of 'star power' discussed in class), it may be that having a wide variety of small to mid-level streamers could attract a wider variety of viewers. 
+
+The last thing we would really want to spend time on would be doing a deep-dive into the feature importance of the Neural Net. We have never coded that, nor used the associated packages in R, and thus were unable to implement that within this analysis given the available time. The inability to understand the most important features was actually the reason we prefer the Linear Model, and it may that after identifying the feature importance of the Neural Net, we realize that it has some level of explainability that allows us to operate with that model instead. 

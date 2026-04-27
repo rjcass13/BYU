@@ -1,0 +1,205 @@
+---
+title: "Star Power"
+author: "RJ Cass"
+format: pdf
+---
+
+The NBA All-star game is a showcase basketball game focused on being a showcase of NBA talent. Given the NBA is a Professional League, this game is usually the best of the best showing off, and has the potential to be a spectale. This game is played around mid-February (middle of the NBA season). Being a professional league, the players do get paid, but the winning team also wins money for a charity of their choice. Because it's a showcase, the game tends to be more flashy, with players going for big moves (slam-dunks, etc.).
+
+The players for the All-star game are picked via voting, with fans having 50% of the vote, and media and players each having 25% of the vote. The NBA is split into two conferences (East and West), and for the All-star game 12 players from each conference are selected. Previously voting was limited to players in specific positions, but starting in 2026 the voting will not be limited to positions. 
+
+
+# Who was a 2003 All-Star?
+#Available at this site https://www.basketball-reference.com/allstar/NBA_2003.html
+Michael Jordan, Shaq, Kobe
+
+# In the 2011 game, what team did LeBron James represent?
+He was playing for the Heat at the time, and played for East Conference
+
+# What happened in 2016? Anybody from 2016 still playing?
+First All-star game outside the US (in Canada)
+East Conference head coach would have been one guy, but he was fired
+Steph Curry, Lebron James, and others played, and are still playing
+
+# Other questions about this time period: 
+Impact of Michael Jordan retiring in 2003?
+
+```{r}
+library(tidyverse)
+library(car)
+asg <- read_csv("https://grimshawville.byu.edu/BYUStat535/NBATVaudience.csv")
+
+summary(asg)
+```
+
+Nielsen TV Audience: uses devices in a sample of homes to track what's watched, then estimate to the population
+
+Hollinger's PER: Player Efficieny Rating. 15 is league average. (Positive Actions - Negative Actions)/minutes_player
+best10: the PER of the 10th
+- The provided PER values are calculated over the whole season
+
+Point Spread: betting +5 means that your team can lose by up to 5 points and you still win. Smaller values indicates an expected close game, which draws viewership
+
+```{r}
+# This install was not working
+# library(GCally)
+# install.packages('GCally')
+
+pairs(asg)
+
+plot(asg$Year, asg$TVaud) # Linearish, decreasing
+plot(asg$maxPER, asg$TVaud) # Not really any relationship
+plot(asg$best10PER, asg$TVaud) # Linearish, decreasing
+plot(asg$pointspread, asg$TVaud) # Linearish, weakly decreasing
+```
+
+
+
+Let's build a model:
+```{r}
+
+mod <- lm(sqrt(TVaud) ~ . + pointspread*maxPER + Year*maxPER, data = asg)
+plot(mod)
+# Other things to try: 
+cooks_d <- cooks.distance(mod)
+plot(cooks_d, type = "h", main = "Cook's Distance Plot", xlab = "Observation Index", ylab = "Cook's D")
+abline(h = 4/length(cooks_d), col = "red", lty = 2) # Common threshold
+text(which(cooks_d > 0.1), cooks_d[cooks_d > 0.1], labels = which(cooks_d > 0.1), pos = 3) # Label influential points
+
+# Index 9, Year 2011, seems to be an outlier/odd value
+# Indeces 11, and 1 are also rough (14 is also interesting)
+
+# From CAR package
+influenceIndexPlot(mod)
+outlierTest(mod)
+influencePlot(mod)
+vif(mod)
+
+summary(mod)
+```
+
+Looking at outliers, years 2003 and 2011 seem to be outliers. We will remove them from the dataset.
+
+```{r}
+# We're going to remove years 2003 and 2011
+asg1 <- asg[c(-1, -9), ]
+out <- lm(TVaud ~ maxPER + best10PER + pointspread + Year, data = asg1)
+# How do things change after removing those points?
+
+# Do the estimated coefficients have expected sign? Both Scatterplot and Theory
+summary(out)
+# What does 125054 mean?
+```
+
+
+How do we look at the effect of maxPER?
+```{r}
+# Pretty standard graph for effect: 
+ggplot(asg1, aes(x = maxPER, y = TVaud)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+# What's good, bad, ugly?
+# Good: Shows uncertainty
+# Possibly confusing: points outside gray
+# Misleading: Positive partial slope looks like 'no effect'
+
+
+# Graph I made
+# Uses the predictions
+# What can we plot instead to show effect of maxPER on TVAud?
+mPer <- seq(28, 32, by = .1)
+botPer <- 23
+year <- 2010
+point_spread <- 4
+data <- expand.grid(mPer, botPer, year, point_spread)
+colnames(data) <- c('maxPER', 'best10PER', 'Year', 'pointspread')
+p <- predict(out, data, interval = "prediction")
+plot(mPer, p[, 1], type = 'l', ylim = c(min(p[, 2]), max(p[,3])), xlab = 'maxPER', ylab = 'Predicted TVAud')
+lines(mPer, p[, 2], col = 'red', pch = 19)
+lines(mPer, p[, 3], col = 'blue')
+
+
+
+# Other plots people use: 
+# Component + Residual plots
+crPlots(out, terms = ~ maxPER) # Learn some of the details of how this works
+# Added Variable plot
+avPlots(out, terms = ~ maxPER) # yAxis: If I make a model wihtout that var. xAxis: If I use other variables to predict that variable
+# Other graph is actually exactly what I did above using the predictions
+```
+
+Thinking about other things we can do to the data:
+
+```{r}
+# Maybe log transform the response, consider correlation over time?
+
+ts.plot(asg1$TVaud)
+acf(asg1$TVaud)
+
+```
+
+Examining the actual vectors involved in our mathematical representation of the model
+```{r}
+out <- lm(I(TVaud / 10 ^ 6) ~ maxPER + best10PER + pointspread + Year,
+          data = asg1,
+          y = TRUE, x = TRUE)
+t(t(out$y))
+out$x
+```
+
+Quadratic form of matrices: Something transposed times itself
+
+
+WHat other factors are interesting?
+```{r}
+library(MASS)
+# Import
+asgMORE <- read_csv("https://grimshawville.byu.edu/BYUStat535/NBATVaudienceMORE.csv")
+
+##### Explore, make some models, make a graphic (challenge is to get down to 1, but more is ok), etc.
+
+pairs(asgMORE1)
+
+asgMORE$PER_DIFF <- asgMORE$maxPER - asgMORE$best10PER
+asgMORE$PER_MEAN_DIFF <- asgMORE$maxPER - asgMORE$meanPER
+asgMORE$PER_TOP_DIFF <- asgMORE$maxPER - asgMORE$best5PER
+asgMORE$PER_BOTT_DIFF <- asgMORE$best5PER - asgMORE$best10PER
+
+
+# We're going to remove years 2003 and 2011
+asgMORE1 <- asgMORE[c(-1, -9), ]
+mod <- lm(TVaud ~ Year + maxPER + pointspread + (best5PER + best10PER + meanPER)^2, data = asgMORE1)
+reduced_mod <- stepAIC(mod, direction = "both")
+summary(reduced_mod)
+plot(reduced_mod)
+
+best5 <- seq(21, 30, by = .1)
+mPer <- 30
+botPer <- 23
+year <- 2010
+point_spread <- 4
+meanPER <- 30
+data <- expand.grid(mPer, botPer, year, point_spread, meanPER, best5)
+colnames(data) <- c('maxPER', 'best10PER', 'Year', 'pointspread', 'meanPER', 'best5PER')
+p <- predict(reduced_mod, data, interval = "prediction")
+plot(best5, p[, 1], type = 'l', ylim = c(min(p[, 2]), max(p[,3])), xlab = 'best5PER', ylab = 'Predicted TVAud', main = 'Predicted TV Audience by best5PER')
+lines(best5, p[, 2], col = 'red', pch = 19)
+lines(best5, p[, 3], col = 'blue')
+
+
+# This is a negative relationship between Top5PER and TVAud: doesn't make sense
+mod <- lm(sqrt(TVaud) ~ (best5PER + PER_TOP_DIFF + PER_BOTT_DIFF)^2, data = asgMORE1)
+reduced_mod <- stepAIC(mod, direction = "both")
+summary(reduced_mod)
+plot(reduced_mod)
+
+best5 <- 26
+per_top_diff <- seq(0, 8, length = 100)
+per_bott_diff <- seq(1, 4, length = 100)
+data <- expand.grid(best5, per_top_diff, per_bott_diff)
+colnames(data) <- c('best5PER', 'PER_TOP_DIFF', 'PER_BOTT_DIFF')
+p <- predict(reduced_mod, data, interval = "prediction")^2
+preds <- cbind(data, p)
+ggplot(data = preds, aes(x = PER_TOP_DIFF, y = PER_BOTT_DIFF, color = fit)) +
+  geom_point()
+```

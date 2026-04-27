@@ -1,0 +1,375 @@
+---
+title: "HW5"
+subtitle: "STAT 651"
+author: "RJ Cass"
+date: "20 Feb. 2026"
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption, bm, amsmath, xcolor}
+        \setlength{\parindent}{0pt}
+        \captionsetup{textfont={it}, font=small} 
+        \newcommand{\statvec}[1]{\underset{\sim}{#1}}
+geometry: "margin=1in"
+---
+
+# 1
+
+Apply a normal approx. to the posterior of the Zero-Inflated Poisson. Plot the contour of the normal approx, with a scatterplot laid on top
+
+```{r}
+suppressPackageStartupMessages(library("MASS"))
+
+# Data
+y <- c(rep(0, 25), rep(1, 6), rep(2, 4), rep(3, 3), 5)
+
+log_lik <- function(p, lambda, x) {
+  # Log-likelihood components
+  loglik_zero <- log(p + (1 - p) * exp(-lambda))
+  loglik_nonzero <- log(1 - p) - lambda + x * log(lambda) - lgamma(x + 1)
+  
+  # Combine
+  sum(ifelse(x == 0, loglik_zero, loglik_nonzero))
+}
+
+logp_unnorm <- function(p, l, y) {
+  log_lik(p, l, y) + dbeta(p, 1, 1, log = TRUE) + dgamma(l, 2, 1, log = TRUE)
+}
+
+res <- optim(c(0.0, 1.0), \(par) -logp_unnorm(p = par[1], l = par[2], y=y), hessian = TRUE)
+
+appx_mean <- res$par
+appx_sigma <- solve(res$hessian)
+
+sim <- mvrnorm(n = 10e3, mu = appx_mean, Sigma = appx_sigma)
+dens <- kde2d(x = sim[, 1], y = sim[, 2])
+# Plotted below
+
+### Draws from posterior using Gibbs (same code from HW4, for comparison)
+logfc_pi <- function(p, lambda, x) {
+  log_lik(p, lambda, x) + dbeta(p, 1, 1, log = TRUE)
+}
+
+logfc_lambda <- function(p, lambda, x) {
+  log_lik(p, lambda, x) + dgamma(lambda, 2, 1, log = TRUE)
+}
+
+# Initialize things
+n_pi <- 200
+pi_seq <- seq(0, 1, length = n_pi)
+n_lambda <- 500
+lambda_seq <- seq(0, 30, length = n_lambda)
+
+state <- list(pi = .5, lambda = 1.5)
+n_iter <- 1000
+sims <- as.data.frame(matrix(NA, nrow = n_iter, ncol = length(state)))
+colnames(sims) <- names(state)
+
+for (i in 1:n_iter) {
+  ## Update Pi
+  lp_pi <- sapply(pi_seq, \(p) logfc_pi(p = p, lambda = state$lambda, x = y))
+  state$pi <- sample(pi_seq, 1, prob = exp(lp_pi - max(lp_pi))) # It auto-standardizes the probabilities. Max(lp_pi) is to prevent overflow
+
+  ## Update Lambda
+  lp_lambda <- sapply(lambda_seq, \(l) logfc_lambda(p = state$pi, lambda = l, x = y))
+  state$lambda <- sample(lambda_seq, 1, prob = exp(lp_lambda - max(lp_lambda))) # It auto-standardizes the probabilities. Max(lp_alpha) is to prevent overflow
+
+  sims[i, 'pi'] <- state$pi
+  sims[i, 'lambda'] <- state$lambda
+}
+
+# Plot the sampled posterior points
+plot(sims$pi, sims$lambda, xlab = "pi", ylab = "lambda", main = 'Contour of Norm. Approx. vs. Plot of Sampled Post.') # draws from the joint posterior
+contour(dens$x, dens$y, dens$z, col = "red", lwd = 2, add = TRUE)
+```
+
+The normal approxiamation appears to be pretty good within the high-density areas: however, I have concerns that it would not capture the 'tail' behaviors of the sampled posterior very well (such as the bottom-left or top-middle of the scatterplot).
+
+
+# 2
+
+$f(y_i | \eta) = h(y_i)$
+
+Conjugate prior ($n_0, y_0$ are known):
+
+$\pi(\eta) \propto e^{-n_0 A(\eta) + n_0 y_0 \eta}$
+
+#### a) 
+
+$$
+\begin{aligned}
+\pi(\eta|y)
+&\propto L(\eta | y_i)\pi(\eta) \\
+&\propto \left[\prod e^{-A(\eta)+y_i \eta} \right] e^{-n_0 A(\eta) + n_0 y_0 \eta} \\
+&= e^{-nA(\eta)+ \sum y_i \eta}e^{-n_0 A(\eta) + n_0 y_0 \eta} \\
+&= e^{-(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta}
+\end{aligned}
+$$
+
+$\hat{\eta}$ occurs when $\frac{d}{d \eta} \pi_{post} = 0$
+
+For all the following, just assume on all my derivates I have the $|_{\eta = \hat{\eta}}$. I just don't feel like repeating that for every step. 
+
+$$
+\begin{aligned}
+\frac{d}{d \eta} \pi(\eta|y) 
+&= \frac{d}{d \eta}e^{-(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta} \\
+&= \left[\frac{d}{d \eta} -(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta \right] e^{-(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta} \\
+&= \left[-(n+n_0)[\frac{d}{d \eta} A(\eta)] + (n \bar{y} + n_0 y_0) \right]e^{-(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta} 
+&= 0
+\end{aligned}
+$$
+
+The exponential portion can never equal zero, so we need the coefficient to equal 0:
+
+$$
+\begin{aligned}
+-(n+n_0)[\frac{d}{d \eta} A(\eta)] + (n \bar{y} + n_0 y_0) &= 0 \\
+\implies \frac{d}{d \eta} A(\eta) &= \frac{n \bar{y} + n_0 y_0}{n+n_0} \\
+\implies \frac{d}{d \eta} A(\eta) &= \frac{n_0}{n_0 + n}y_0 + \frac{n}{n_0 + n}\bar{y}
+\end{aligned}
+$$
+
+Which matches the required value. 
+
+For the variance, we'll use $\hat{\Sigma} = \left[-\nabla^2 ln(\pi_{post}(\theta|x)) \right]^{-1}$
+
+$$
+\begin{aligned}
+-\frac{d^2}{d \eta^2} ln(\pi(\eta|y)) 
+&= -\frac{d^2}{d \eta^2} \left[ -(n+n_0)A(\eta)+ (n \bar{y} + n_0 y_0) \eta \right] \\
+&= -\frac{d}{d \eta} \left[ -(n+n_0)\frac{d}{d \eta}A(\eta) + (n \bar{y} + n_0 y_0) \right] \\
+&= (n + n_0) \frac{d^2}{d \eta^2} A(\eta)
+\end{aligned}
+$$
+
+Plugging this into the above function for $\hat{\Sigma}$:
+
+$\hat{\Sigma} = \left[(n + n_0) \frac{d^2}{d \eta^2} A(\eta) \right]^{-1}$
+
+which is what we needed to show.
+
+
+#### b) 
+
+$f(y_i | \theta) = Bernoulli(\theta)$. Find a normal approxiamation for posterior of $\eta = ln\left(\frac{\theta}{1-\theta}\right)$
+
+$$
+\begin{aligned}
+f(y_i | \theta) 
+&= \theta^y(1-\theta)^{1-y} = e^{y ln(\theta) + (1-y)ln(1-\theta)} \\
+&= e^{y(ln(\theta) - ln(1-\theta)) + ln(1-\theta)} \\
+&= e^{y\eta + ln(1 - \frac{e^{\eta}}{1+e^{\eta}})} \\
+&= e^{y\eta + ln(\frac{1}{1+e^{\eta}})} \\
+&= e^{y\eta - ln(1+e^{\eta})}
+\end{aligned}
+$$
+
+In this case, $A(\eta) = ln(1+e^{\eta})$
+
+$\frac{d}{d \eta} ln(1+e^{\eta}) = \frac{e^{\eta}}{1+e^{\eta}} = \hat{\theta} = \frac{n_0 y_0 + n \bar{y}}{n_0 + n}$
+
+$$
+\begin{aligned}
+\frac{d^2}{d \eta^2} ln(1+e^{\eta})
+&= \frac{d}{d \eta} e^{\eta}(1+e^{\eta})^{-1} \\
+&= e^{\eta}(1+e^{\eta})^{-1} - e^{\eta}e^{\eta}(1+e^{\eta})^{-2} \\
+&= \frac{e^{\eta}}{1+e^{\eta}} - \left(\frac{e^{\eta}}{1+e^{\eta}}\right)^2
+\end{aligned}
+$$
+
+We then have a normal approximation with mean:
+
+$\hat{\theta} = \frac{n_0 y_0 + n \bar{y}}{n_0 + n}$, 
+
+$\hat{\eta} = ln\left(\frac{\hat{\theta}}{1 - \hat{\theta}}\right)$
+
+and variance: 
+
+$\hat{\Sigma} = \left[\frac{e^{\hat{\eta}}(n_0 + n)}{1+e^{\hat{\eta}}} - (n_0 + n)\left(\frac{e^{\hat{\eta}}}{1+e^{\hat{\eta}}}\right)^2 \right]^{-1}$
+
+#### c)
+
+$n_0 = 2, y_0 = 0.5, \sum_{1=1}^8 y_i = 5 \implies n = 8, \bar{y} = \frac{5}{8}$
+
+```{r}
+n0 <- 2
+y0 <- 0.5
+n <- 8
+y_bar <- 5/8
+sum_y <- 5
+
+
+theta_hat <- (n0*y0 + n*y_bar)/(n0 + n)
+eta_hat <- log(theta_hat/(1-theta_hat))
+sigma_hat <- ((n0 + n)*(exp(eta_hat)/(1+exp(eta_hat)) - (exp(eta_hat)/(1+exp(eta_hat)))^2))^(-1)
+
+# Simulate samples
+nsim <- 10e3
+x <- rnorm(nsim, eta_hat, sqrt(sigma_hat))
+w <- exp(-(n0+n)*log(1+exp(x)) + (n0*y0 + sum_y)*x) / dnorm(x, eta_hat, sqrt(sigma_hat))
+wn <- w/sum(w)
+
+# P(theta > 0)
+p_eta_0 <- sum((x > 0)*wn)
+```
+
+Thus, $P(\eta > 0 | y) =$ `r p_eta_0`. 
+
+#### d)
+
+Use a transformation to show the conjugate prior for $\eta$ in the Bernoulli model is same as a Beta prior for $\theta = (1 + e^{-\eta})^{-1}$. Identify shape params as functions of $n_0, y_0$.
+
+$$
+\begin{aligned}
+\pi(\eta)
+&= e^{-n_0 ln(1+e^{\eta}) + n_0y_0\eta} \implies \\
+\pi(\theta) &= e^{-n_0 ln(1+e^{ln(\frac{\theta}{1-\theta})}) + n_0y_0ln(\frac{\theta}{1-\theta})}e^{ln(\frac{\theta}{1-\theta})} \\
+&= (1+\frac{\theta}{1-\theta})^{-n_0}\left(\frac{\theta}{1-\theta}\right)^{n_0y_0}\frac{\theta}{1-\theta} \\
+&= (1-\theta)^{n_0}\theta^{n_0 y_0}(1-\theta)^{-n_0 y_0}\theta(1-\theta)^{-1}\\
+&= \theta^{n_0 y_0 + 1}(1-\theta)^{n_0 (1 - y_0) + 1} \\
+&= \underline{Beta(n_0 y_0, n_0(1 - y_0))}
+\end{aligned}
+$$
+
+
+#### e)
+
+$\pi(\theta|y) \propto \theta^{\sum y_i} (1-\theta)^{n-\sum y_i}\theta^{n_0 y_0}(1-\theta)^{n_0(1-y_0)} = Beta(\sum y_i + n_0 y_0 + 1, n - \sum y_i + n_0(1 - y_0) + 1)$
+
+```{r}
+# Transform the previously drawn Etas into Thetas
+theta <- 1/(1 + exp(-x))
+# Plot densities of sampled thetas and Beta posterior
+hist(theta, freq = FALSE, xlim = c(0, 1), ylim = c(0, 3))
+curve(dbeta(x, sum_y + n0*y0 + 1, n - sum_y + n0 * (1 - y0) + 1), add = TRUE)
+```
+
+
+
+# 3
+
+#### a) 
+
+If we take the sum of each row we get: $0 + .4 + .6 = 1, .1 + .3 + .6 = 1, .7 + .2 + .1 = 1$
+
+Thus all rows sum to 1, and this is a valid transition matrix.
+
+#### b) 
+
+To show this is ergodic for MCMC, we need to show that we can get everywhere from anywhere. Basically, we need to show that as n increases, there are no 0s in the transition matrix. 
+
+```{r}
+p = matrix(c(0, 0.4, 0.6, 0.1, 0.3, 0.6, 0.7, 0.2, 0.1), nrow = 3, byrow = TRUE)
+
+p%*%p
+```
+
+Going just one step in the future we lose the '0' in the transition matrix, so yes, this is a valid transition matrix. 
+
+#### c)
+
+```{r}
+p%*%p
+```
+
+$P(Y_3 = 3 | Y_1 = 1) = .3$ (the top right cell going from (1) to (3))
+
+#### d)
+
+```{r}
+simulate <- function(n_sim, final_step, starting_pos) {
+    res <- vector(mode = 'list', length = n_sim)
+    for (i in 1:n_sim) {
+        pos <- starting_pos
+        for (j in 1:(final_step-1)) {
+            pos <- sample(c(1, 2, 3), size = 1, prob = p[pos, ])
+        }
+        res[[i]] <- pos
+    }
+    res
+}
+
+p_y_3 <- mean(simulate(n_sim = 10e3, final_step = 3, starting_pos = 1) == 3)
+```
+
+By simluation, $P(Y_3 = 3 | Y_1 = 1) \approx$ `r p_y_3`
+
+#### e) 
+
+```{r}
+mult_p <- function(n) {
+    p_next <- p
+    for (i in 1:(n-1)) {
+        p_next <- p_next%*%p
+    }
+    p_next
+}
+
+mult_p(n = 12)
+```
+
+Per the matrix, $P(Y_{12} = 1 | Y_1 = 2) = .309$ (left-middle cell: starting at (2), going to (1)).
+
+
+#### f)
+
+```{r}
+p_y_12 <- mean(simulate(n_sim = 10e3, final_step = 12, starting_pos = 2) == 3)
+```
+
+By simulation, $P(Y_{12} = 1 | Y_1 = 2) \approx$ `r p_y_12`
+
+#### g)
+
+$P^5$:
+```{r}
+mult_p(n = 5)
+```
+
+$P^{10}$:
+```{r}
+mult_p(n = 10)
+```
+
+$P^{100}$:
+```{r}
+mult_p(n = 100)
+```
+
+#### h)
+
+```{r}
+mult_p(n = 10000)
+```
+
+The distribution as $n \to \infty$ is $P(1) = .309, P(2) = .2909, P(3) = .4$
+
+#### i)
+
+```{r}
+n_sim <- 10000
+steps <- vector(mode = 'list', length = n_sim)
+steps[[1]] <- 1
+for (i in 2:(n_sim)) {
+    steps[[i]] <- sample(c(1, 2, 3), size = 1, prob = p[steps[[i-1]], ])
+}
+p1 <- mean(steps == 1)
+p2 <- mean(steps == 2)
+p3 <-  mean(steps == 3)
+```
+
+By simulation: the longer term probabilities are: $P(1) \approx `r p1`, P(2) \approx `r p2`, P(3) \approx `r p3`$
+
+This appears to be the same as the calculated limit in part (h)
+
+# Acknolwedgements
+
+#### Estimated time
+
+I estimate this assignment took me in total around 5 hours to complete
+
+#### Resources Used
+
+I used some googling to try to understand what Question 2 was asking about in some of the steps (specifically to clarify the different transformations I was supposed to do), as well as class code/slides. 

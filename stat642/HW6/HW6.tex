@@ -1,0 +1,147 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+\newcommand{\ext}{\EX_{\theta}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+\section{CB 10.1}
+
+$f(x|\theta) = \frac{1}{2}(1 + \theta x), -1 < x < 1, -1 < \theta < 1$
+
+Find a consistent estimator of $\theta$ and show it is consistent.
+
+Find the moments:
+
+$\EX[X] = \int_{-1}^1 x[\frac{1}{2}(1 + \theta x)] dx = \frac{1}{2} \int_{-1}^1 x + \theta x^2 dx = \frac{1}{2}[\frac{1}{2}x^2 + \frac{1}{3}\theta x^3]|_{-1}^1 = \frac{1}{2}[\frac{1}{2}+\frac{\theta}{3} - \frac{1}{2} + \frac{\theta}{3}] = \frac{1}{2}\frac{2\theta}{3} = \frac{\theta}{3}$
+
+$\EX[X^2] = \int_{-1}^1 x^2[\frac{1}{2}(1 + \theta x)] dx = \frac{1}{2} \int_{-1}^1 x^2 + \theta x^3 dx = \frac{1}{2}[\frac{1}{3}x^3 + \frac{1}{4}\theta x^4]|_{-1}^1 = \frac{1}{2}[\frac{1}{3}+\frac{\theta}{4} + \frac{1}{3} - \frac{\theta}{4}] = \frac{1}{2}\frac{2}{3} = \frac{1}{3}$
+
+$Var(X) = \EX[X^2] - \EX[X]^2 = \frac{1}{3} - (\frac{\theta}{3})^2 = \frac{1}{3} - \frac{\theta^2}{9}$
+
+Using $\EX[X]$, we can see that $3\bar{X}_n$ is an unbiased estimator for $\theta$.
+
+Plugging that estimator into the Variance:
+
+$Var(3\bar{X}_n) = \frac{9Var(X)}{n} = \frac{\frac{9}{3} - \frac{9\theta^2}{9}}{n} = \frac{3 - \theta^2}{n}$
+
+Because the variance of the estimator goes to 0 as n goes to $\infty$ (and as shown earlier it is unbiased), $3\bar{X}_n$ is consistent.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+$X_i \iiddist Exponential, \ext(X_1) = \frac{1}{\theta}$. Show the MLE for $\theta$ is mean-squared error consistent, meaning its bias and variance decay to 0. 
+
+$f(x|\theta) = \theta e^{-\theta x} \implies L(\theta|x) = \prod[\theta e^{-\theta x_i}] \implies l(\theta|x) = \sum[ln(\theta e^{-\theta x})] = \sum ln(\theta) - \sum \theta x_i = n ln(\theta) - \theta \sum x_i$
+
+$\frac{d}{d\theta} l(\theta|x) = \frac{n}{\theta} - \sum x_i = 0 \implies \hat{\theta} = \frac{n}{\sum x_i}$
+
+$\EX[\hat{\theta}] = \EX[\frac{n}{\sum x_i}]$. Because $X_i$ are iid exponential, $\sum x_i \sim Gamma(n, \theta) \implies \frac{1}{\sum x_i} \sim Inv-Gamma(n, \theta) \implies \EX[\frac{n}{\sum x_i}] = n(\frac{\theta}{n-1}) \implies \lim_{n\to \infty} n(\frac{\theta}{n-1}) = \theta$
+
+Thus the MLE bias decays to 0 as n increases. 
+
+$Var(\frac{n}{\sum x_i}) = n^2 Var(\frac{1}{\sum x_i}) = \frac{n^2 \theta^2}{(n-1)^2 (n-2)}$
+
+In n, this is a 2nd degree polynomial divided by a 3rd degree polynomial, so this will decay with rate O(n), meaning that as n increases, the variance decays to 0. 
+
+Because the bias and variance both decay to 0 as n approaches infinity, this is mean-squared error consistent. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+$f(x|\theta) = \theta(1-\theta)^x, 0 < \theta < 1, x = 0, 1, 2,...$
+
+a) Find asymptotic distribution of MLE $\hat{\theta} = (1 + \bar{X})^{-1}$, where $\bar{X}$ is the sample mean
+
+(Note: You can use the theorem about asymptotic normality and asymptotic efficiency of MLEs.)
+
+We know that under regularity conditions, for the MLE $\hat{\theta}_n : \sqrt{n}(\hat{\theta}_n - \theta_0) \dto N(0, I_1^{-1}(\theta_0))$
+
+$I_1(\theta) = -\ext[\frac{\partial^2}{\partial \theta^2} ln(\theta(1-\theta)^x)] = -\ext[\frac{\partial^2}{\partial \theta^2} ln(\theta) + x ln(1-\theta)] = -\ext[\frac{\partial}{\partial \theta} \frac{1}{\theta} - \frac{x}{1-\theta}] = -\ext[-\frac{1}{\theta^2} - \frac{x}{(1-\theta)^2}] = \ext[\frac{1}{\theta^2}] + \ext[\frac{x}{(1-\theta)^2}] = \frac{1}{\theta^2} + \frac{\frac{1-\theta}{\theta}}{(1-\theta)^2} = \frac{1}{\theta^2} + \frac{1-\theta}{\theta(1-\theta)^2} = \frac{1}{\theta^2} + \frac{1}{\theta(1-\theta)} = \frac{\theta - \theta^2 + \theta^2}{\theta^3(1-\theta)} = \frac{1}{\theta^2(1-\theta)}$
+
+Which says that: $\underline{\sqrt{n}(\hat{\theta}_n - \theta_0) \dto N(0, \theta^2(1-\theta))}$
+
+b) Find a statistic $Q$ such that $\frac{\sqrt{n}(\hat{\theta} - \theta)}{Q} \dto N(0, 1)$
+
+We want to get to Variance = 1, so we just need to divide by the square root of the current variance: 
+
+$\sqrt{\theta^2(1-\theta)} = \sqrt{(1 + \bar{X})^{-2}(1 - (1 + \bar{X}^{-1}))} = \sqrt{\frac{1 - \frac{1}{1 + \bar{X}}}{(1 + \bar{X})^2}} = \frac{\sqrt{\frac{1 + \bar{X} - 1}{1 + \bar{X}}}}{1 + \bar{X}} = \bar{X}^{1/2}(1 + \bar{X})^{-3/2}$
+
+$Q = \bar{X}^{1/2}(1 + \bar{X})^{-3/2}$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+(Compare CB 10.3). $X_i \iiddist N(\theta, \theta)$, $\theta$ represents both mean and variance. 
+
+a) Find MLE of $\theta$
+
+$L(\theta|x) = (2\pi\theta)^{-n/2}e^{-\frac{1}{2\theta}\sum(x_i - \theta)^2} \implies $
+
+$$
+\begin{aligned}
+l(\theta|x) 
+& = -\frac{n}{2}ln(2\pi) - \frac{n}{2}ln(\theta) - \frac{1}{2\theta}\sum(x_i - \theta)^2 \\
+& = -\frac{n}{2}ln(2\pi) - \frac{n}{2}ln(\theta) - \frac{1}{2\theta}\sum x_i^2 - 2\theta \sum x_i - n\theta^2 \\
+& = -\frac{n}{2}ln(2\pi) - \frac{n}{2}ln(\theta) - \frac{\sum x_i^2}{2\theta} - \sum x_i - \frac{n\theta}{2}
+\end{aligned}
+$$
+
+$\frac{d}{d\theta}l(\theta|x) = -\frac{n}{2\theta} + \frac{\sum x_i^2}{2\theta^2} + \frac{n}{2} = 0 \implies -\theta + \frac{\sum x_i^2}{n} - \theta^2 = 0$
+
+Using the quadratic formula: $\hat{\theta} = \frac{1 + \sqrt{1 + 4W_n}}{2}, W_n = \frac{\sum x_i^2}{n}$ (excluding the case of 1-stuff in the numerator because it must be positive)
+
+b) Show that $\sqrt{n}(\hat{\theta}_n - \theta)$ is asymptotically normal and derive the asymptotic variance. 
+
+$\sqrt{n}(W_n - \mu) \dto N(0, \sigma^2)$
+
+$\hat{\theta} = g(W_n) \implies $ (via delta-method) $\sqrt{n}(g(W_n) - g(\mu_n)) \dto N(0, [g'(\sigma^2)]^2)$
+
+
+$W_n = \frac{1}{n}\sum x_i^2$. Let $Y_i = X_i^2 \implies$ ... $\EX[X_i^2] = Var(X_i) + \EX[X_i]^2 = \theta + \theta^2$
+
+$Var(X_i^2) = \EX[X_i^4] - \EX[X_i^2]^2$. Looked online to find the 4th moment for the normal: $\EX[X_i^4] = \theta^4 + 6\theta^3 + 3\theta^2$
+
+$Var(X_i^2) = \theta^4 + 6\theta^3 + 3\theta^2 - (\theta + \theta^2)^2 = \theta^4 + 6\theta^3 + 3\theta^2 - \theta^4 - 2 \theta^3 - \theta^2 = 4\theta^3 + 2\theta^2$
+
+Thus, $\sqrt{n}(W_n - \mu) \dto N(0,  4\theta^3 + 2\theta^2)$
+
+$g(W_n) = \frac{1}{2} + \frac{1}{2}(1 + 4 W_n)^{1/2} \implies g'(W_n) = (1+4W_n)^{-1/2} \implies g'(\mu) = (1 + 4(\theta + \theta^2))^{-1/2} = (4\theta^2 + 4\theta + 1)^{-1/2} = (2\theta + 1)^{-1}$
+
+$\implies \sqrt{n}(\hat{\theta} - \theta) \dto N(0, [(1+4(4\theta^3 + 2\theta^2))^{-1/2}]^2) = N(0, (4\theta^3 + 2\theta^2)[(2\theta + 1)^{-1}]^2) = N(0, \frac{2\theta^2(2\theta+1)}{(2\theta+1)^2}) = N(0, \frac{2\theta^2}{2\theta+1})$
+
+$\underline{\sqrt{n}(\hat{\theta} - \theta) \dto N(0, \frac{2\theta^2}{2\theta+1})}$
+
+\end{document}

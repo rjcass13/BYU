@@ -1,0 +1,557 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000; min-height: 16.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">## ODC Open Database License (ODbL)</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### Preamble</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">The Open Database License (ODbL) is a license agreement intended to</span></p>
+<p class="p1"><span class="s1">allow users to freely share, modify, and use this Database while</span></p>
+<p class="p1"><span class="s1">maintaining this same freedom for others. Many databases are covered by</span></p>
+<p class="p1"><span class="s1">copyright, and therefore this document licenses these rights. Some</span></p>
+<p class="p1"><span class="s1">jurisdictions, mainly in the European Union, have specific rights that</span></p>
+<p class="p1"><span class="s1">cover databases, and so the ODbL addresses these rights, too. Finally,</span></p>
+<p class="p1"><span class="s1">the ODbL is also an agreement in contract for users of this Database to</span></p>
+<p class="p1"><span class="s1">act in certain ways in return for accessing this Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Databases can contain a wide variety of types of content (images,</span></p>
+<p class="p1"><span class="s1">audiovisual material, and sounds all in the same database, for example),</span></p>
+<p class="p1"><span class="s1">and so the ODbL only governs the rights over the Database, and not the</span></p>
+<p class="p1"><span class="s1">contents of the Database individually. Licensors should use the ODbL</span></p>
+<p class="p1"><span class="s1">together with another license for the contents, if the contents have a</span></p>
+<p class="p1"><span class="s1">single set of rights that uniformly covers all of the contents. If the</span></p>
+<p class="p1"><span class="s1">contents have multiple sets of different rights, Licensors should</span></p>
+<p class="p1"><span class="s1">describe what rights govern what contents together in the individual</span></p>
+<p class="p1"><span class="s1">record or in some other way that clarifies what rights apply.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Sometimes the contents of a database, or the database itself, can be</span></p>
+<p class="p1"><span class="s1">covered by other rights not addressed here (such as private contracts,</span></p>
+<p class="p1"><span class="s1">trade mark over the name, or privacy rights / data protection rights</span></p>
+<p class="p1"><span class="s1">over information in the contents), and so you are advised that you may</span></p>
+<p class="p1"><span class="s1">have to consult other documents or clear other rights before doing</span></p>
+<p class="p1"><span class="s1">activities not covered by this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">------</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">The Licensor (as defined below)<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">and<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">You (as defined below)<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">agree as follows:<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 1.0 Definitions of Capitalised Words</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Collective Database" - Means this Database in unmodified form as part</span></p>
+<p class="p1"><span class="s1">of a collection of independent databases in themselves that together are</span></p>
+<p class="p1"><span class="s1">assembled into a collective whole. A work that constitutes a Collective</span></p>
+<p class="p1"><span class="s1">Database will not be considered a Derivative Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Convey" - As a verb, means Using the Database, a Derivative Database,</span></p>
+<p class="p1"><span class="s1">or the Database as part of a Collective Database in any way that enables</span></p>
+<p class="p1"><span class="s1">a Person to make or receive copies of the Database or a Derivative</span></p>
+<p class="p1"><span class="s1">Database.<span class="Apple-converted-space">  </span>Conveying does not include interaction with a user through a</span></p>
+<p class="p1"><span class="s1">computer network, or creating and Using a Produced Work, where no</span></p>
+<p class="p1"><span class="s1">transfer of a copy of the Database or a Derivative Database occurs.</span></p>
+<p class="p1"><span class="s1">"Contents" - The contents of this Database, which includes the</span></p>
+<p class="p1"><span class="s1">information, independent works, or other material collected into the</span></p>
+<p class="p1"><span class="s1">Database. For example, the contents of the Database could be factual</span></p>
+<p class="p1"><span class="s1">data or works such as images, audiovisual material, text, or sounds.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Database" - A collection of material (the Contents) arranged in a</span></p>
+<p class="p1"><span class="s1">systematic or methodical way and individually accessible by electronic</span></p>
+<p class="p1"><span class="s1">or other means offered under the terms of this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Database Directive" - Means Directive 96/9/EC of the European</span></p>
+<p class="p1"><span class="s1">Parliament and of the Council of 11 March 1996 on the legal protection</span></p>
+<p class="p1"><span class="s1">of databases, as amended or succeeded.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Database Right" - Means rights resulting from the Chapter III ("sui</span></p>
+<p class="p1"><span class="s1">generis") rights in the Database Directive (as amended and as transposed</span></p>
+<p class="p1"><span class="s1">by member states), which includes the Extraction and Re-utilisation of</span></p>
+<p class="p1"><span class="s1">the whole or a Substantial part of the Contents, as well as any similar</span></p>
+<p class="p1"><span class="s1">rights available in the relevant jurisdiction under Section 10.4.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Derivative Database" - Means a database based upon the Database, and</span></p>
+<p class="p1"><span class="s1">includes any translation, adaptation, arrangement, modification, or any</span></p>
+<p class="p1"><span class="s1">other alteration of the Database or of a Substantial part of the</span></p>
+<p class="p1"><span class="s1">Contents. This includes, but is not limited to, Extracting or</span></p>
+<p class="p1"><span class="s1">Re-utilising the whole or a Substantial part of the Contents in a new</span></p>
+<p class="p1"><span class="s1">Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Extraction" - Means the permanent or temporary transfer of all or a</span></p>
+<p class="p1"><span class="s1">Substantial part of the Contents to another medium by any means or in</span></p>
+<p class="p1"><span class="s1">any form.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"License" - Means this license agreement and is both a license of rights</span></p>
+<p class="p1"><span class="s1">such as copyright and Database Rights and an agreement in contract.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Licensor" - Means the Person that offers the Database under the terms</span></p>
+<p class="p1"><span class="s1">of this License.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Person" - Means a natural or legal person or a body of persons</span></p>
+<p class="p1"><span class="s1">corporate or incorporate.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Produced Work" -<span class="Apple-converted-space">  </span>a work (such as an image, audiovisual material, text,</span></p>
+<p class="p1"><span class="s1">or sounds) resulting from using the whole or a Substantial part of the</span></p>
+<p class="p1"><span class="s1">Contents (via a search or other query) from this Database, a Derivative</span></p>
+<p class="p1"><span class="s1">Database, or this Database as part of a Collective Database. <span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Publicly" - means to Persons other than You or under Your control by</span></p>
+<p class="p1"><span class="s1">either more than 50% ownership or by the power to direct their</span></p>
+<p class="p1"><span class="s1">activities (such as contracting with an independent consultant).<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Re-utilisation" - means any form of making available to the public all</span></p>
+<p class="p1"><span class="s1">or a Substantial part of the Contents by the distribution of copies, by</span></p>
+<p class="p1"><span class="s1">renting, by online or other forms of transmission.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Substantial" - Means substantial in terms of quantity or quality or a</span></p>
+<p class="p1"><span class="s1">combination of both. The repeated and systematic Extraction or</span></p>
+<p class="p1"><span class="s1">Re-utilisation of insubstantial parts of the Contents may amount to the</span></p>
+<p class="p1"><span class="s1">Extraction or Re-utilisation of a Substantial part of the Contents.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"Use" - As a verb, means doing any act that is restricted by copyright</span></p>
+<p class="p1"><span class="s1">or Database Rights whether in the original medium or any other; and</span></p>
+<p class="p1"><span class="s1">includes without limitation distributing, copying, publicly performing,</span></p>
+<p class="p1"><span class="s1">publicly displaying, and preparing derivative works of the Database, as</span></p>
+<p class="p1"><span class="s1">well as modifying the Database as may be technically necessary to use it</span></p>
+<p class="p1"><span class="s1">in a different mode or format.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">"You" - Means a Person exercising rights under this License who has not</span></p>
+<p class="p1"><span class="s1">previously violated the terms of this License with respect to the</span></p>
+<p class="p1"><span class="s1">Database, or who has received express permission from the Licensor to</span></p>
+<p class="p1"><span class="s1">exercise rights under this License despite a previous violation.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Words in the singular include the plural and vice versa.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 2.0 What this License covers</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">2.1. Legal effect of this document. This License is:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. A license of applicable copyright and neighbouring rights;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. A license of the Database Right; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. An agreement in contract between You and the Licensor.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">2.2 Legal rights covered. This License covers the legal rights in the</span></p>
+<p class="p1"><span class="s1">Database, including:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Copyright. Any copyright or neighbouring rights in the Database.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>The copyright licensed includes any individual elements of the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database, but does not cover the copyright over the Contents</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>independent of this Database. See Section 2.4 for details. Copyright</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>law varies between jurisdictions, but is likely to cover: the Database</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>model or schema, which is the structure, arrangement, and organisation</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>of the Database, and can also include the Database tables and table</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>indexes; the data entry and output sheets; and the Field names of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Contents stored in the Database;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Database Rights. Database Rights only extend to the Extraction and</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Re-utilisation of the whole or a Substantial part of the Contents.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database Rights can apply even when there is no copyright over the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database. Database Rights can also apply when the Contents are removed</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>from the Database and are selected and arranged in a way that would</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>not infringe any applicable copyright; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Contract. This is an agreement between You and the Licensor for</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>access to the Database. In return you agree to certain conditions of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>use on this access as outlined in this License.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">2.3 Rights not covered.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. This License does not apply to computer programs used in the making</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>or operation of the Database;<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. This License does not cover any patents over the Contents or the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. This License does not cover any trademarks associated with the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">2.4 Relationship to Contents in the Database. The individual items of</span></p>
+<p class="p1"><span class="s1">the Contents contained in this Database may be covered by other rights,</span></p>
+<p class="p1"><span class="s1">including copyright, patent, data protection, privacy, or personality</span></p>
+<p class="p1"><span class="s1">rights, and this License does not cover any rights (other than Database</span></p>
+<p class="p1"><span class="s1">Rights or in contract) in individual Contents contained in the Database.</span></p>
+<p class="p1"><span class="s1">For example, if used on a Database of images (the Contents), this</span></p>
+<p class="p1"><span class="s1">License would not apply to copyright over individual images, which could</span></p>
+<p class="p1"><span class="s1">have their own separate licenses, or one single license covering all of</span></p>
+<p class="p1"><span class="s1">the rights over the images. <span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 3.0 Rights granted</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">3.1 Subject to the terms and conditions of this License, the Licensor</span></p>
+<p class="p1"><span class="s1">grants to You a worldwide, royalty-free, non-exclusive, terminable (but</span></p>
+<p class="p1"><span class="s1">only under Section 9) license to Use the Database for the duration of</span></p>
+<p class="p1"><span class="s1">any applicable copyright and Database Rights. These rights explicitly</span></p>
+<p class="p1"><span class="s1">include commercial use, and do not exclude any field of endeavour. To</span></p>
+<p class="p1"><span class="s1">the extent possible in the relevant jurisdiction, these rights may be</span></p>
+<p class="p1"><span class="s1">exercised in all media and formats whether now known or created in the</span></p>
+<p class="p1"><span class="s1">future.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">The rights granted cover, for example:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Extraction and Re-utilisation of the whole or a Substantial part of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the Contents;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Creation of Derivative Databases;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Creation of Collective Databases;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>d. Creation of temporary or permanent reproductions by any means and</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>in any form, in whole or in part, including of any Derivative</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Databases or as a part of Collective Databases; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>e. Distribution, communication, display, lending, making available, or</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>performance to the public by any means and in any form, in whole or in</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>part, including of any Derivative Database or as a part of Collective</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Databases.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">3.2 Compulsory license schemes. For the avoidance of doubt:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Non-waivable compulsory license schemes. In those jurisdictions in</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>which the right to collect royalties through any statutory or</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>compulsory licensing scheme cannot be waived, the Licensor reserves</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the exclusive right to collect such royalties for any exercise by You</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>of the rights granted under this License;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Waivable compulsory license schemes. In those jurisdictions in</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>which the right to collect royalties through any statutory or</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>compulsory licensing scheme can be waived, the Licensor waives the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>exclusive right to collect such royalties for any exercise by You of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the rights granted under this License; and,</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Voluntary license schemes. The Licensor waives the right to collect</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>royalties, whether individually or, in the event that the Licensor is</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a member of a collecting society that administers voluntary licensing</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>schemes, via that society, from any exercise by You of the rights</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>granted under this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">3.3 The right to release the Database under different terms, or to stop</span></p>
+<p class="p1"><span class="s1">distributing or making available the Database, is reserved. Note that</span></p>
+<p class="p1"><span class="s1">this Database may be multiple-licensed, and so You may have the choice</span></p>
+<p class="p1"><span class="s1">of using alternative licenses for this Database. Subject to Section</span></p>
+<p class="p1"><span class="s1">10.4, all other rights not expressly granted by Licensor are reserved.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 4.0 Conditions of Use</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.1 The rights granted in Section 3 above are expressly made subject to</span></p>
+<p class="p1"><span class="s1">Your complying with the following conditions of use. These are important</span></p>
+<p class="p1"><span class="s1">conditions of this License, and if You fail to follow them, You will be</span></p>
+<p class="p1"><span class="s1">in material breach of its terms.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.2 Notices. If You Publicly Convey this Database, any Derivative</span></p>
+<p class="p1"><span class="s1">Database, or the Database as part of a Collective Database, then You</span></p>
+<p class="p1"><span class="s1">must:<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Do so only under the terms of this License or another license</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>permitted under Section 4.4;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Include a copy of this License (or, as applicable, a license</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>permitted under Section 4.4) or its Uniform Resource Identifier (URI)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>with the Database or Derivative Database, including both in the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database or Derivative Database and in any relevant documentation; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Keep intact any copyright or Database Right notices and notices</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>that refer to this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>d. If it is not possible to put the required notices in a particular</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>file due to its structure, then You must include the notices in a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>location (such as a relevant directory) where users would be likely to</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>look for it.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.3 Notice for using output (Contents). Creating and Using a Produced</span></p>
+<p class="p1"><span class="s1">Work does not require the notice in Section 4.2. However, if you</span></p>
+<p class="p1"><span class="s1">Publicly Use a Produced Work, You must include a notice associated with</span></p>
+<p class="p1"><span class="s1">the Produced Work reasonably calculated to make any Person that uses,</span></p>
+<p class="p1"><span class="s1">views, accesses, interacts with, or is otherwise exposed to the Produced</span></p>
+<p class="p1"><span class="s1">Work aware that Content was obtained from the Database, Derivative</span></p>
+<p class="p1"><span class="s1">Database, or the Database as part of a Collective Database, and that it</span></p>
+<p class="p1"><span class="s1">is available under this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Example notice. The following text will satisfy notice under</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Section 4.3:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>Contains information from DATABASE NAME, which is made available</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>here under the Open Database License (ODbL).</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">DATABASE NAME should be replaced with the name of the Database and a</span></p>
+<p class="p1"><span class="s1">hyperlink to the URI of the Database. "Open Database License" should</span></p>
+<p class="p1"><span class="s1">contain a hyperlink to the URI of the text of this License. If</span></p>
+<p class="p1"><span class="s1">hyperlinks are not possible, You should include the plain text of the</span></p>
+<p class="p1"><span class="s1">required URI's with the above notice.</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1">4.4 Share alike.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Any Derivative Database that You Publicly Use must be only under</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the terms of:<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>i. This License;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>ii. A later version of this License similar in spirit to this</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>License; or</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>iii. A compatible license.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>If You license the Derivative Database under one of the licenses</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>mentioned in (iii), You must comply with the terms of that license.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. For the avoidance of doubt, Extraction or Re-utilisation of the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>whole or a Substantial part of the Contents into a new database is a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Derivative Database and must comply with Section 4.4.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Derivative Databases and Produced Works.<span class="Apple-converted-space">  </span>A Derivative Database is</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Publicly Used and so must comply with Section 4.4. if a Produced Work</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>created from the Derivative Database is Publicly Used.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>d. Share Alike and additional Contents. For the avoidance of doubt,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>You must not add Contents to Derivative Databases under Section 4.4 a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>that are incompatible with the rights granted under this License.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>e. Compatible licenses. Licensors may authorise a proxy to determine</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>compatible licenses under Section 4.4 a iii. If they do so, the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>authorised proxy's public statement of acceptance of a compatible</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>license grants You permission to use the compatible license.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.5 Limits of Share Alike.<span class="Apple-converted-space">  </span>The requirements of Section 4.4 do not apply</span></p>
+<p class="p1"><span class="s1">in the following:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. For the avoidance of doubt, You are not required to license</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Collective Databases under this License if You incorporate this</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database or a Derivative Database in the collection, but this License</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>still applies to this Database or a Derivative Database as a part of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the Collective Database;<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Using this Database, a Derivative Database, or this Database as</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>part of a Collective Database to create a Produced Work does not</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>create a Derivative Database for purposes of<span class="Apple-converted-space">  </span>Section 4.4; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. Use of a Derivative Database internally within an organisation is</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>not to the public and therefore does not fall under the requirements</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>of Section 4.4.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.6 Access to Derivative Databases. If You Publicly Use a Derivative</span></p>
+<p class="p1"><span class="s1">Database or a Produced Work from a Derivative Database, You must also</span></p>
+<p class="p1"><span class="s1">offer to recipients of the Derivative Database or Produced Work a copy</span></p>
+<p class="p1"><span class="s1">in a machine readable form of:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. The entire Derivative Database; or</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. A file containing all of the alterations made to the Database or</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the method of making the alterations to the Database (such as an</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>algorithm), including any additional Contents, that make up all the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>differences between the Database and the Derivative Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">The Derivative Database (under a.) or alteration file (under b.) must be</span></p>
+<p class="p1"><span class="s1">available at no more than a reasonable production cost for physical</span></p>
+<p class="p1"><span class="s1">distributions and free of charge if distributed over the internet.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.7 Technological measures and additional terms</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. This License does not allow You to impose (except subject to</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Section 4.7 b.)<span class="Apple-converted-space">  </span>any terms or any technological measures on the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database, a Derivative Database, or the whole or a Substantial part of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the Contents that alter or restrict the terms of this License, or any</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>rights granted under it, or have the effect or intent of restricting</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>the ability of any person to exercise those rights.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Parallel distribution. You may impose terms or technological</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>measures on the Database, a Derivative Database, or the whole or a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Substantial part of the Contents (a "Restricted Database") in</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>contravention of Section 4.74 a. only if You also make a copy of the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Database or a Derivative Database available to the recipient of the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Restricted Database:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>i. That is available without additional fee;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>ii. That is available in a medium that does not alter or restrict</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>the terms of this License, or any rights granted under it, or have</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>the effect or intent of restricting the ability of any person to</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>exercise those rights (an "Unrestricted Database"); and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>iii. The Unrestricted Database is at least as accessible to the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>recipient as a practical matter as the Restricted Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. For the avoidance of doubt, You may place this Database or a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Derivative Database in an authenticated environment, behind a</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>password, or within a similar access control scheme provided that You</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>do not alter or restrict the terms of this License or any rights</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>granted under it or have the effect or intent of restricting the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>ability of any person to exercise those rights.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">4.8 Licensing of others. You may not sublicense the Database. Each time</span></p>
+<p class="p1"><span class="s1">You communicate the Database, the whole or Substantial part of the</span></p>
+<p class="p1"><span class="s1">Contents, or any Derivative Database to anyone else in any way, the</span></p>
+<p class="p1"><span class="s1">Licensor offers to the recipient a license to the Database on the same</span></p>
+<p class="p1"><span class="s1">terms and conditions as this License. You are not responsible for</span></p>
+<p class="p1"><span class="s1">enforcing compliance by third parties with this License, but You may</span></p>
+<p class="p1"><span class="s1">enforce any rights that You have over a Derivative Database. You are</span></p>
+<p class="p1"><span class="s1">solely responsible for any modifications of a Derivative Database made</span></p>
+<p class="p1"><span class="s1">by You or another Person at Your direction. You may not impose any</span></p>
+<p class="p1"><span class="s1">further restrictions on the exercise of the rights granted or affirmed</span></p>
+<p class="p1"><span class="s1">under this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 5.0 Moral rights</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">5.1 Moral rights. This section covers moral rights, including any rights</span></p>
+<p class="p1"><span class="s1">to be identified as the author of the Database or to object to treatment</span></p>
+<p class="p1"><span class="s1">that would otherwise prejudice the author's honour and reputation, or</span></p>
+<p class="p1"><span class="s1">any other derogatory treatment:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. For jurisdictions allowing waiver of moral rights, Licensor waives</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>all moral rights that Licensor may have in the Database to the fullest</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>extent possible by the law of the relevant jurisdiction under Section</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>10.4;<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. If waiver of moral rights under Section 5.1 a in the relevant</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>jurisdiction is not possible, Licensor agrees not to assert any moral</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>rights over the Database and waives all claims in moral rights to the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>fullest extent possible by the law of the relevant jurisdiction under</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Section 10.4; and</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c. For jurisdictions not allowing waiver or an agreement not to assert</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>moral rights under Section 5.1 a and b, the author may retain their</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>moral rights over certain aspects of the Database.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Please note that some jurisdictions do not allow for the waiver of moral</span></p>
+<p class="p1"><span class="s1">rights, and so moral rights may still subsist over the Database in some</span></p>
+<p class="p1"><span class="s1">jurisdictions.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 6.0 Fair dealing, Database exceptions, and other rights not affected<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">6.1 This License does not affect any rights that You or anyone else may</span></p>
+<p class="p1"><span class="s1">independently have under any applicable law to make any use of this</span></p>
+<p class="p1"><span class="s1">Database, including without limitation:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Exceptions to the Database Right including: Extraction of Contents</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>from non-electronic Databases for private purposes, Extraction for</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>purposes of illustration for teaching or scientific research, and</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Extraction or Re-utilisation for public security or an administrative</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>or judicial procedure.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Fair dealing, fair use, or any other legally recognised limitation</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>or exception to infringement of copyright or other applicable laws.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">6.2 This License does not affect any rights of lawful users to Extract</span></p>
+<p class="p1"><span class="s1">and Re-utilise insubstantial parts of the Contents, evaluated</span></p>
+<p class="p1"><span class="s1">quantitatively or qualitatively, for any purposes whatsoever, including</span></p>
+<p class="p1"><span class="s1">creating a Derivative Database (subject to other rights over the</span></p>
+<p class="p1"><span class="s1">Contents, see Section 2.4). The repeated and systematic Extraction or</span></p>
+<p class="p1"><span class="s1">Re-utilisation of insubstantial parts of the Contents may however amount</span></p>
+<p class="p1"><span class="s1">to the Extraction or Re-utilisation of a Substantial part of the</span></p>
+<p class="p1"><span class="s1">Contents.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 7.0 Warranties and Disclaimer</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">7.1 The Database is licensed by the Licensor "as is" and without any</span></p>
+<p class="p1"><span class="s1">warranty of any kind, either express, implied, or arising by statute,</span></p>
+<p class="p1"><span class="s1">custom, course of dealing, or trade usage. Licensor specifically</span></p>
+<p class="p1"><span class="s1">disclaims any and all implied warranties or conditions of title,</span></p>
+<p class="p1"><span class="s1">non-infringement, accuracy or completeness, the presence or absence of</span></p>
+<p class="p1"><span class="s1">errors, fitness for a particular purpose, merchantability, or otherwise.</span></p>
+<p class="p1"><span class="s1">Some jurisdictions do not allow the exclusion of implied warranties, so</span></p>
+<p class="p1"><span class="s1">this exclusion may not apply to You.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 8.0 Limitation of liability</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">8.1 Subject to any liability that may not be excluded or limited by law,</span></p>
+<p class="p1"><span class="s1">the Licensor is not liable for, and expressly excludes, all liability</span></p>
+<p class="p1"><span class="s1">for loss or damage however and whenever caused to anyone by any use</span></p>
+<p class="p1"><span class="s1">under this License, whether by You or by anyone else, and whether caused</span></p>
+<p class="p1"><span class="s1">by any fault on the part of the Licensor or not. This exclusion of</span></p>
+<p class="p1"><span class="s1">liability includes, but is not limited to, any special, incidental,</span></p>
+<p class="p1"><span class="s1">consequential, punitive, or exemplary damages such as loss of revenue,</span></p>
+<p class="p1"><span class="s1">data, anticipated profits, and lost business. This exclusion applies</span></p>
+<p class="p1"><span class="s1">even if the Licensor has been advised of the possibility of such</span></p>
+<p class="p1"><span class="s1">damages.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">8.2 If liability may not be excluded by law, it is limited to actual and</span></p>
+<p class="p1"><span class="s1">direct financial loss to the extent it is caused by proved negligence on</span></p>
+<p class="p1"><span class="s1">the part of the Licensor.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 9.0 Termination of Your rights under this License</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">9.1 Any breach by You of the terms and conditions of this License</span></p>
+<p class="p1"><span class="s1">automatically terminates this License with immediate effect and without</span></p>
+<p class="p1"><span class="s1">notice to You. For the avoidance of doubt, Persons who have received the</span></p>
+<p class="p1"><span class="s1">Database, the whole or a Substantial part of the Contents, Derivative</span></p>
+<p class="p1"><span class="s1">Databases, or the Database as part of a Collective Database from You</span></p>
+<p class="p1"><span class="s1">under this License will not have their licenses terminated provided</span></p>
+<p class="p1"><span class="s1">their use is in full compliance with this License or a license granted</span></p>
+<p class="p1"><span class="s1">under Section 4.8 of this License.<span class="Apple-converted-space">  </span>Sections 1, 2, 7, 8, 9 and 10 will</span></p>
+<p class="p1"><span class="s1">survive any termination of this License.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">9.2 If You are not in breach of the terms of this License, the Licensor</span></p>
+<p class="p1"><span class="s1">will not terminate Your rights under it.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">9.3 Unless terminated under Section 9.1, this License is granted to You</span></p>
+<p class="p1"><span class="s1">for the duration of applicable rights in the Database.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">9.4 Reinstatement of rights. If you cease any breach of the terms and</span></p>
+<p class="p1"><span class="s1">conditions of this License, then your full rights under this License</span></p>
+<p class="p1"><span class="s1">will be reinstated:</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>a. Provisionally and subject to permanent termination until the 60th</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>day after cessation of breach;<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>b. Permanently on the 60th day after cessation of breach unless</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>otherwise reasonably notified by the Licensor; or</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>c.<span class="Apple-converted-space">  </span>Permanently if reasonably notified by the Licensor of the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>violation, this is the first time You have received notice of</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>violation of this License from<span class="Apple-converted-space">  </span>the Licensor, and You cure the</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>violation prior to 30 days after your receipt of the notice.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Persons subject to permanent termination of rights are not eligible to</span></p>
+<p class="p1"><span class="s1">be a recipient and receive a license under Section 4.8.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">9.5 Notwithstanding the above, Licensor reserves the right to release</span></p>
+<p class="p1"><span class="s1">the Database under different license terms or to stop distributing or</span></p>
+<p class="p1"><span class="s1">making available the Database. Releasing the Database under different</span></p>
+<p class="p1"><span class="s1">license terms or stopping the distribution of the Database will not</span></p>
+<p class="p1"><span class="s1">withdraw this License (or any other license that has been, or is</span></p>
+<p class="p1"><span class="s1">required to be, granted under the terms of this License), and this</span></p>
+<p class="p1"><span class="s1">License will continue in full force and effect unless terminated as</span></p>
+<p class="p1"><span class="s1">stated above.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">### 10.0 General</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">10.1 If any provision of this License is held to be invalid or</span></p>
+<p class="p1"><span class="s1">unenforceable, that must not affect the validity or enforceability of</span></p>
+<p class="p1"><span class="s1">the remainder of the terms and conditions of this License and each</span></p>
+<p class="p1"><span class="s1">remaining provision of this License shall be valid and enforced to the</span></p>
+<p class="p1"><span class="s1">fullest extent permitted by law.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">10.2 This License is the entire agreement between the parties with</span></p>
+<p class="p1"><span class="s1">respect to the rights granted here over the Database. It replaces any</span></p>
+<p class="p1"><span class="s1">earlier understandings, agreements or representations with respect to</span></p>
+<p class="p1"><span class="s1">the Database.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">10.3 If You are in breach of the terms of this License, You will not be</span></p>
+<p class="p1"><span class="s1">entitled to rely on the terms of this License or to complain of any</span></p>
+<p class="p1"><span class="s1">breach by the Licensor.<span class="Apple-converted-space"> </span></span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">10.4 Choice of law. This License takes effect in and will be governed by</span></p>
+<p class="p1"><span class="s1">the laws of the relevant jurisdiction in which the License terms are</span></p>
+<p class="p1"><span class="s1">sought to be enforced. If the standard suite of rights granted under</span></p>
+<p class="p1"><span class="s1">applicable copyright law and Database Rights in the relevant</span></p>
+<p class="p1"><span class="s1">jurisdiction includes additional rights not granted under this License,</span></p>
+<p class="p1"><span class="s1">these additional rights are granted in this License in order to meet the</span></p>
+<p class="p1"><span class="s1">terms of this License.</span></p>
+</body>
+</html>

@@ -1,0 +1,199 @@
+%\documentclass[twocolumn]{article}\
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+\section{1}
+
+$X \iiddist N(\mu, \sigma^2), S^2 = \frac{\sum (x_i - \bar{x})^2}{n-1}$
+
+a)
+
+Show that $MSE_{\sigma^2}(aS^2) = \frac{2a^2 \sigma^4}{n-1} + (a-1)^2\sigma^4$
+
+$$
+\begin{aligned}
+MSE_{\sigma^2}(aS^2) 
+&= Var(aS^2) + (\EX[aS^2] - \sigma^2)^2 \text{ by (7.3.1) } \\
+&= a^2Var(S^2) + (a\EX[S^2] - \sigma^2)^2 \\
+&\text{As shown in class: } Var(S^2) = \frac{2\sigma^4}{n-1} \\
+&= a^2\frac{2\sigma^4}{n-1} + (a\sigma^2 - \sigma^2)^2 \\
+&= \frac{2a^2\sigma^4}{n-1} + (a-1)^2\sigma^4
+\end{aligned}
+$$
+
+b)
+
+Show that $\tilde{S}^2 = \frac{\sum (x_i - \bar{x})^2}{n}$ satisfies $MSE_{\sigma^2}(\tilde{S}^2) \le MSE_{\sigma^2}(S^2) \forall \sigma^2 > 0$
+
+Note: $MSE_{\sigma^2}(S^2) = \frac{2\sigma^4}{n-1}$, $\tilde{S}^2 = \frac{n-1}{n}S^2$
+
+$$
+\begin{aligned}
+MSE_{\sigma^2}(\tilde{S}^2) 
+&= Var_{\sigma^2}(\tilde{S}^2) + (\EX_{\sigma^2}[\tilde{S}^2] - \sigma^2)^2 \\
+&= Var_{\sigma^2}(\frac{n-1}{n}S^2) + (\EX_{\sigma^2}[\frac{n-1}{n}S^2] - \sigma^2)^2 \\
+&= (\frac{n-1}{n})^2Var_{\sigma^2}(S^2) + (\frac{n-1}{n}\EX_{\sigma^2}[S^2] - \sigma^2)^2 \\
+&= (\frac{n-1}{n})^2 \frac{2\sigma^4}{n-1} + (\frac{n-1}{n}\sigma^2 - \sigma^2)^2 \\
+&= \frac{2(n-1)\sigma^4}{n^2} + \sigma^4(\frac{n-1}{n} - 1)^2 \\
+&= \frac{2(n-1)\sigma^4}{n^2} + \sigma^4(\frac{-1}{n})^2 \\ 
+&= \frac{2n\sigma^4-2\sigma^4}{n^2} + \frac{\sigma^4}{n^2} \\
+&= \frac{2\sigma^4(n-1/2)}{n^2} \\
+&= MSE_{\sigma^2}(S^2)\frac{(n-1)(n-1/2)}{n^2} \\
+&= MSE_{\sigma^2}(S^2)\frac{n^2 - 3/2n + 3/2}{n^2} \\
+\end{aligned}
+$$
+
+For any $n>1$, $\frac{n^2 - 3/2n + 3/2}{n^2} < 1$ thus: $MSE_{\sigma^2}(\tilde{S}^2) \le MSE_{\sigma^2}(S^2)$
+
+c) 
+
+Find value of $a$ that minimizes the MSE from $aS^2$
+
+We need to minimize: $\frac{2a^2\sigma^4}{n-1} + (a-1)^2\sigma^4 = \frac{2a^2\sigma^4 + (a-1)^2(n-1)\sigma^4}{n-1} = \frac{\sigma^4}{n-1}(2a^2 + (a^2 - 2a + 1)(n-1)) \propto a^2(n+1) - 2a(n-1) + n - 1$
+
+$\frac{d}{da} a^2(n+1) - 2a(n-1) + n - 1 = 2a(n+1) - 2(n-1) = 0 \implies \underline{a = \frac{n-1}{n+1}}$
+
+d)
+
+$I_n(\mu, \sigma^2) = \EX_{(\mu, \sigma^2)}[\psi(x;\mu, \sigma^2)\psi(x;\mu, \sigma^2)^{\top}]$
+
+$\psi(x;\mu, \sigma^2) = [\frac{\partial}{\partial \mu}ln(f(x|\mu, \sigma^2)), \frac{\partial}{\partial \sigma^2}ln(f(x|\mu, \sigma^2))]$
+
+$\frac{\partial}{\partial \mu}ln(f(x|\mu, \sigma^2)) = \frac{\sum 2(x-\mu)}{\sigma^2}$
+
+$\frac{\partial}{\partial \sigma^2}ln(f(x|\mu, \sigma^2)) = \frac{\sum (x-\mu)^2}{(\sigma^2)^2}$
+
+$\psi(x;\mu, \sigma^2) = \begin{pmatrix}\frac{2x-2\mu}{\sigma^2} \\  \frac{x^2 - 2x\mu + \mu^2}{\sigma^4} \end{pmatrix}$
+
+Taking the expected value of this, the $(x-\mu)$ terms disappear (leaving a factor of $n$) $\implies I_n  = \begin{pmatrix} \frac{n}{\sigma^2} & 0 \\ 0 & \frac{n}{2\sigma^4} \end{pmatrix}$
+
+e) 
+
+$\tau_a(\sigma^2) = a\sigma^2$. Find the Cramer-Rao Lower Bound. Any values of a for which it obtains the lower bound?
+
+$Var_a(\sigma^2) \ge \frac{(\tau'(\sigma^2))^2}{I_n(\sigma^2)} = \frac{a}{\frac{n}{2\sigma^4}} = \frac{2a\sigma^4}{n}$
+
+No, there are no values where the estimator reaches the Cramer-Rao lower bound, because the estimator has an $(n-1)$ in the denominator, so the closest it can get is $a = 1; \frac{2\sigma^4}{n-1}$ while the lower bound would be $\frac{2\sigma^4}{n-1}$
+
+
+\section{2}
+
+$Y_i = \beta x_i + \epsilon_i, \epsilon \sim N(0, \sigma^2), x_i$ is known constants.
+
+a) CB2 7.20
+
+i) Show that $\sum Y_i / \sum x_i$ is an unbiased estimator for $\beta$
+
+$\EX[\sum Y_i / \sum x_i] = \frac{\EX[\sum \beta x_i + \epsilon_i]}{\sum x_i} = \frac{\sum \EX[\beta x_i + \epsilon_i]}{\sum x_i} = \frac{\sum \beta x_i}{\sum x_i} = \frac{\beta \sum x_i}{\sum x_i} = \beta$ 
+
+ii) Calculate the variance of $\sum Y_i / \sum x_i$ and compare to the variance of the MLE
+
+$Var(\sum Y_i / \sum x_i) = \frac{Var(\sum Y_i)}{(\sum x_i)^2} = \frac{\sum Var(Y_i)}{(\sum x_i)^2} = \frac{\sum \sigma^2}{(\sum x_i)^2} = \frac{n\sigma^2}{(\sum x_i)^2}$ 
+
+$Var(\hat{\beta}) = \frac{\sigma^2}{\sum (x_i^2)}; \sum (x_i^2) < (\sum x_i)^2/n \implies \frac{\sigma^2}{\sum (x_i^2)} \le \frac{n\sigma^2}{(\sum x_i)^2} \implies \underline{Var(\hat{\beta}) \le Var(\sum Y_i / \sum x_i)}$
+
+b) CB2 7.21 
+
+i) Show that $\sum [Y_i / x_i] / n$ is also an unbiased estimator of $\beta$
+
+$\EX[ \sum [Y_i / x_i] / n] = \frac{1}{n} \sum \EX[(\beta x_i + \epsilon_i)/x_i] = \frac{1}{n}\sum \EX[\beta] = \frac{n\beta}{n} = \beta$
+
+ii) Calculate the variance of $\sum [Y_i / x_i] / n$ and compare to the previous variances
+
+$Var(\sum [Y_i / x_i] / n) = \frac{1}{n^2}Var(\sum [Y_i / x_i]) = \frac{1}{n^2}\sum \frac{Var Y_i}{x_i^2} = \frac{\sigma^2}{n^2}\sum \frac{1}{x_i^2}$
+
+By Jensen's inequality: $\frac{1}{n^2 (\sum x_i)^2} \le \frac{1}{n} \sum \frac{1}{x_i^2} \implies \underline{Var(\sum [Y_i / x_i] / n) \ge Var(\sum Y_i / \sum x_i) \ge Var(\hat{\beta})}$
+
+
+c) Compute the CR Lower Bound for estimating $\beta$. Is the MLE the MVUE for this model?
+
+$I_n(\beta) = \EX_{\beta}[\psi^2(x;\beta)] = \EX_{\beta}[\frac{\partial}{\partial \beta} ln(x_i \beta + \epsilon)] = \EX_{\beta}[\frac{x_i}{x_i \beta + \epsilon}] = \frac{1}{\beta}$
+
+$Var_{\beta}(W) \ge \frac{(\tau'(\beta)^2)}{I_n(\beta)} = \frac{1}{1/\beta} = \beta$
+
+Yes, the MLE is the MVUE for this case
+
+\section{3} CB2 7.38
+
+Is there a $g(\theta)$ forr which there exists an unbiased estimator whose variance attains the CRLB?
+
+a) $f(x|\theta) = \theta x^{\theta-1}$
+
+$\frac{\partial}{\partial \theta}\sum ln(\theta x^{\theta-1}) = \frac{\partial}{\partial \theta}\sum ln(\theta) + (\theta - 1)ln(x_i) = \sum \frac{1}{\theta} + ln(x_i) = \frac{n}{\theta} + \sum ln(x_i) = -n[-\frac{1}{\theta} - \sum \frac{ln(x_i)}{n}]$
+
+By 7.3.15, this means $-\sum \frac{ln(x_i)}{n}$ is the MVUE of $1/\theta$
+
+b) $f(x|\theta) = \frac{ln(\theta)}{\theta - 1}\theta^x$
+
+$\frac{\partial}{\partial \theta}ln(L(x|\theta)) = \frac{\partial}{\partial \theta} \sum ln(ln(\theta)) - ln(\theta - 1) + x_i ln(\theta) = \sum \frac{1}{\theta ln(\theta)} - \frac{1}{\theta - 1} + \frac{x_i}{\theta} = \frac{n}{\theta ln(\theta)} - \frac{n}{\theta - 1} + \frac{\sum x_i}{\theta} = -\frac{n}{\theta}[\frac{\theta}{\theta - 1} - \frac{1}{ln(\theta)} - \frac{\sum x_i}{n\theta}]$
+
+Thus, $\frac{\sum x_i}{n}$ is the MVUE for $\frac{\theta}{\theta - 1} - \frac{1}{ln(\theta)}$
+
+
+\section{4} CB2 7.40
+
+$X \sim Bern(p)$, show that $\bar{X}$ attains the CRLB.
+
+
+$$
+\begin{aligned}
+    -n \EX_p[\frac{\partial^2}{\partial p^2} ln(f(x|p))] 
+    &= -n \EX_p [\frac{\partial^2}{\partial p^2} ln(p^x(1-p)^{1-x})] \\
+    &= -n \EX_p [\frac{\partial^2}{\partial p^2} xln(p) + (1-x)ln(1-p)] \\
+    &= -n \EX_p[\frac{\partial}{\partial p} \frac{x}{p} - \frac{1-x}{1-p}] \\
+    &= -n \EX_p[-\frac{x}{p^2} - \frac{1-x}{(1-p)^2}] \\ 
+    &= -n [-\frac{p}{p^2} - \frac{1-p}{(1-p)^2}] \\
+    &= -n [-\frac{1}{p} - \frac{1}{(1-p)}] \\
+    &= -n [-\frac{1-p}{p(1-p)} - \frac{p}{p(1-p)}] \\
+    &= -n [\frac{-1}{p(1-p)}] \\
+    &= \frac{n}{p(1-p)}
+\end{aligned}
+$$
+
+$\tau(p) = p, \tau'(p) = 1 \implies CRLB = \frac{1}{\frac{n}{p(1-p)}} = \frac{p(1-p)}{n}$
+
+This is the variance of $\bar{X}$, indicating that $\bar{X}$ attains the CRLB and thus is the MVUE.
+
+
+\section{5} 
+
+$X_i \iiddist N(0, \sigma^2)$. Find CRLB for $\tau(\sigma^2) = \sigma^2$, and confirm that $W = \frac{1}{n}\sum X_i^2$ is the MVUE
+
+As shown in Problem 1(d), the information matrix element for $\sigma^2$ is $\frac{n}{2\sigma^4}$, when $\mu$ is unknown: with $\mu$ known the 2 disappears.
+
+$\tau'(\sigma^2) = \frac{d}{d \sigma^2} \sigma^2 = 1 \implies CRLB = \frac{1}{\frac{n}{2\sigma^4}} = \frac{(\sigma^2)^2}{n}$. This is the same format as $W = \frac{\sum X_i^2}{n}$ meaning that $W$ is the MVUE.
+
+
+\end{document}

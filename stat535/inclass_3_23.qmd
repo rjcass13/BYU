@@ -1,0 +1,25 @@
+---
+title: "In Class - Mar 23"
+author: "RJ Cass"
+execute:
+  echo: false
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption}
+        \captionsetup{textfont={it}, font=small} 
+        \usepackage{amsmath}
+geometry: "margin=1in"
+---
+
+
+$$
+\begin{aligned}
+\bar{\mu}. 
+& = \frac{1}{3}[E(Y_{Yellow}) + E(Y_{Black}) + E(Y_{Red})] \\
+& = \frac{1}{3}[\beta_0 + (\beta_{Black} + \beta_0) + (\beta_{Red} + \beta_0)] \\
+& = \beta_0 + \frac{1}{3}\beta_{Black} + \frac{1}{3}\beta_{Red} \\ 
+& = \begin{bmatrix} 1 & 1/3 & 1/3 \end{bmatrix} \begin{bmatrix} \beta_0 \\ \beta_{Black} \\ \beta_{Red} \end{bmatrix}
+\end{aligned}
+$$

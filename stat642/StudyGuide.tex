@@ -1,0 +1,122 @@
+%\documentclass[twocolumn]{article}\
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\DeclareMathOperator{\ext}{\EX_{\theta}} % Expected Value symbol
+\DeclareMathOperator{\vart}{Var_{\theta}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\underline{Throughout everything, justify my steps!}
+
+\section{Method of Moments}
+
+Dth Population Mean: $E(X^d) = \mu_d(\theta)$
+
+Dth Sample Moment: $\bar{\mu}_d = \frac{1}{n}\sum x_i^d$
+
+Set them equal to eachother, and solve the system of equations: $\begin{matrix} \bar{\mu}_1 = \mu_1(\theta) \\ \bar{\mu}_2 = \mu_2(\theta) \\ \vdots \end{matrix}$
+
+\section{MLE}
+
+Find the derivative, set equal to 0. \underline{Include the 2nd derivative!} (make sure it's negative)
+
+Hessian: Determinants should alternate negative and positive
+
+$\hat{\theta}$ is MLE of $\theta$: $\tau(\hat{\theta})$ is MLE for $\tau(\theta)$
+
+\section{Loss}: $L(\theta, T)$
+
+Squared Error: $(T-\theta)^2$  - Bayes Rule: Posterior Mean
+
+Absolute Error: $|T - \theta|$ - Bayes Rule: Posterior Median
+
+Zero-One: $\begin{cases} 0 & T = \theta \\ 1 & T \neq \theta \end{cases}$ - Bayes Rule: Posterior Mode
+
+Risk: $\EX[L(\theta, T)]$
+
+Bayes Rule: $\EX[L(\theta, T)|x] = \int_{\mathbb{X}} L(\theta, T)\pi(\theta|x)d\theta$
+
+Goal in the process: get the Error into one of the above forms, then absorb the rest into the posterior in the integral.
+
+"Better" Risk: $R_{T_1}(\theta) \le R_{T_2}(\theta) \ \forall \theta, R_{T_1}(\theta) < R_{T_2}(\theta) \ \exists \theta$
+
+\section{CRLB}
+
+$CRLB_{\theta} = \frac{(\tau'(\theta))^2}{I_n(\theta)}$. Conditions: Bounds for $f(x|\theta)$ not dependent on $\theta$. The Fisher information needs to exist and be finite.
+
+If the CRLB is reached by an estimator, it is the MVUE.
+
+$I_n(\theta) = -\EX[\frac{d^2}{d\theta^2}ln(f(x|\theta))]$
+
+Sam's Corrolary: Iff $\frac{\partial}{\partial \theta} ln(L(\theta|x)) = a(\theta)[W(x) - \tau(\theta)]$, then $W(x)$, estimating $\tau(\theta)$, attains the CRLB (and thus is the MVUE).
+
+\section{Sufficiency}
+
+$(x_1, ..., x_n|S)$ does not depend on $\theta$ (ie. $\frac{P(x_1, ..., x_n)}{P(S)} = ...$ which does not depend on $\theta$)
+
+Factorization: $f(x|\theta) = g(S, \theta)h(x)$. Any 1:1 function of S is also sufficient.
+
+Rao-Blackwell: $T$ is unbiased for $\tau(\theta)$, $S$ is sufficient: $\tau^* = \EX[T|S], Var(T^*) \le Var(T)$
+
+Ancillary: Statistic whose distribution does not depend on $\theta$
+
+\section{Completeness}
+
+$T$ is complete if, for $g(T)$, $\EX[g(T)] = 0 \ \forall \theta \in \Theta \implies P(g(T) = 0) = 1 \ \forall \theta \in \Theta$
+
+Basically, $g(T)$ is the only part that could be 0
+
+Exponential Family: $f(x|\theta) = h(x)c(\theta)e^{\sum+{j=1}^k w_j(\theta)t_j(x)}: \ T(X) = (t_1(x), ..., t_2(x))$ is complete as long as $\Theta$ contains an open set in $\real^k$.
+
+Basu's: S is complete and sufficient, T is ancillary, S and T are independent
+
+\section{Lehman-Scheffe}
+
+S is complete and sufficient. If $T = g(S)$ is unbiased for $\tau(\theta), T$ is the MVUE 
+
+Steps: 
+
+1. Find complete and sufficient Statistic
+
+2. Check bias, adjust Statistic
+
+\section{Other}
+
+$\frac{d}{dx} \int_{g(x)}^{h(x)} f(t)dt = f(h(x))h'(x) - f(g(x))g'(x)$
+
+$MSE = Var + Bias^2$
+
+\end{document}

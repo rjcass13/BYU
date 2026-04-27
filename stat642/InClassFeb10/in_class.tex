@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+In Class: Feb 10
+
+RJ Cass
+
+$X_i \iiddist Pareto(\theta_1, \theta_2): f(x|\theta) = \frac{\theta_1 \theta_2^{\theta_1 - 1}}{x^{\theta_1 + 1}}; x > \theta_2;  \theta_1, \theta_2 > 0$
+
+Find the sufficient statistic for $\theta = (\theta_1, \theta_2)$.
+
+$$
+\begin{aligned}
+L(\theta|x) 
+&= \prod_{i=1}^n \frac{\theta_1 \theta_2^{\theta_1 - 1}}{x_i^{\theta_1 + 1}}I(x > \theta_2) \\
+&= \theta_1^n \theta_2^{n(\theta_1 - 1)}\prod \frac{1}{x_i^{\theta_1 + 1}}I(x > \theta_2)  \\ 
+&= \theta_1^n \theta_2^{n(\theta_1 - 1)}e^{ln(\sum x_i^{-(\theta_1 + 1)}I(x > \theta_2))} \\
+&= \theta_1^n \theta_2^{n(\theta_1 - 1)}e^{-(\theta_1 + 1)\sum ln(x_i) + I(x > \theta_2)} \\
+\end{aligned}
+$$
+
+Using what we talked about in class of the $T(x)$ being in the exponent, we have the two pieces: $\sum ln(x_i)$ and $x > \theta_2$. The second term can be simplifed to just needing the minimum of $x$ to be greater than $\theta_2$:
+
+$\therefore T(\theta) = (\sum ln(x_i), x_{(1)})$
+
+\end{document}

@@ -1,0 +1,151 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+\newcommand{\ext}{\EX_{\theta}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+\section{}
+
+$X_i \iiddist Gamma(\theta, k), k$ is known
+
+I'm assuming this is for an $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$ test. 
+
+(a) Find asymptotic level $1-\alpha$ confidence inerval for $\theta$ by inverting acceptance region of an asymptotic size $\alpha$ LRT
+
+$L(\theta|x,k) = \prod \frac{k^\theta}{\Gamma(\theta)}x^{\theta - 1}e^{-kx} = \frac{k^{n\theta}}{\Gamma(\theta)^n}x^{n\theta - n}e^{-k \sum x}$
+
+Under null, $\hat{\theta}_R = \theta_0$
+
+LRT: $\lambda(x) = \frac{L(\hat{\theta}_R|x,k)}{L(\hat{\theta|x,k})} = $
+
+What is $\hat{\theta}$??? No closed form for the MLE for $\theta$.
+
+\boldred{On this part we can develop an acceptance region and inverted test by just assuming we know the MLE of $\theta$. However, to actually find an interval we would need to examine the LRT to see how it behaves}
+
+(b)
+
+$\EX[X] = \alpha \theta$. $M_1 = \bar{X}$
+
+$\theta_{MoM}: \alpha \theta = \bar{X} \implies \theta_{MoM} = \frac{\bar{x}}{k}$
+
+According to CLT, $\sqrt{n}(\bar{X} - k\theta) \sim N(0, \theta k^2)$. 
+
+$\implies$ by Cont. Map. Theorem: $\sqrt{n}(\hat{\theta} - \theta) \dto N(0, \theta)$
+
+Variance is $\theta$
+
+(c)
+
+We need $g'(\theta)^2 = \frac{1}{\theta} \implies g'(\theta) = \sqrt{\frac{1}{\theta}}$. Thus, $g(\theta) = 2\sqrt{\theta}$
+
+(d)
+
+$[g^{-1}(g(\hat{\theta}) - \frac{1}{\sqrt{n}}Z_{1-\alpha/2}), g^{-1}(g(\hat{\theta}) + \frac{1}{\sqrt{n}}Z_{1-\alpha/2})]$
+
+$P(-Z_{\alpha/2} < \sqrt{n}(2\sqrt{\hat{\theta}} - 2\sqrt{\theta}) < Z_{\alpha/2}) \approx 1-\alpha$
+
+$P(\frac{-Z_{\alpha/2}}{2\sqrt{n}} \le \sqrt{\hat{\theta}} - \sqrt{\theta} \le \frac{Z_{\alpha/2}}{2\sqrt{n}})$
+
+$(\sqrt{\hat{\theta}} - \frac{Z_{\alpha/2}}{2\sqrt{n}})^2 \le \theta \le (\sqrt{\hat{\theta}} + \frac{Z_{\alpha/2}}{2\sqrt{n}})^2$
+
+\section{}
+
+$f(x|k,\theta) = \frac{\theta k^{\theta}}{x^{\theta+1}} = \theta (\frac{k}{x})^{\theta}\frac{1}{x}$
+
+$L(k,\theta|x) = \prod \frac{\theta k^{\theta}}{x^{\theta+1}} = \frac{\theta^n k^{n\theta}}{\prod x^{\theta + 1}}$
+
+(a) $\theta$ is known, $H_0: k = 1, H_1: k = 2$. Find most powerful size $\alpha$ test.
+
+We can ignore the case when $x<1$ because under both hypothesis this is not possible. 
+
+LRT: $\frac{L(k=1|x,\theta)}{L(k=2|x,\theta)} = \frac{\frac{\theta^n 1^{n\theta}}{\prod x^{\theta + 1}} I(x > 2)}{\frac{\theta^n 2^{n\theta}}{\prod x^{\theta + 1}}I(x>1)} = (\frac{1}{2})^{n\theta}I(X_{(1)} \ge 2)$
+
+$\lambda(x) = \begin{cases} 0, & X_{(1)} \le 2 \\ (\frac{1}{2})^{n\theta}, & X_{(1)} > 2 \end{cases}$
+
+$\phi(x) = \begin{cases} 1, & \lambda(x) > k \\ \gamma, &\lambda(x) = k \\ 0, & \lambda(x) < k \end{cases}$
+
+$\alpha = P(\lambda(x) > k) + \gamma P(\lambda(x) = k)$
+
+$P(\lambda(x) > k) = P(X_{(1)} > 2)$. We go from the test function to the LRT. LRT can only be greater than some k when the LRT provides a value, which only happens when the min is greater than 2. 
+
+If we pick k = 0, the second term is also active. If $k = 2^{n\theta}$ then only the second term is active.
+
+$P(X_{(1)} > 2) = P(x_1 > 2)^n = [\int_2^{\infty} \theta x^{-\theta - 1} dx]^n = [-x^{-\theta}|_2^{\infty}]^n = 2^{-n\theta}$
+
+We cannot get a set $\alpha$ test using this specific test, so we will need the $\gamma$ term meaning we must let k be one of the boundary values. 
+
+(b) k is known. $H_0: \theta \le \theta_0, H_1: \theta > \theta_0$
+
+Need UMP size $\alpha$ test. 
+
+Check for MLR: $T = \sum ln(\frac{X_i}{k})$
+
+$\theta_2 > \theta_1: \frac{L(\theta_2)}{L(\theta_1)} = (\frac{\theta_2}{\theta_1})^n e^{-T(\theta_2 - \theta_1)}$. This is monotonically decreasing in $\theta_2$.
+
+Karlin-Rubin: $\phi(x) = \begin{cases} 1, & T < c \\ 0, & T > c \end{cases}$. Choose c such that $P_{\theta_0}(T < c) = \alpha$.
+
+\section{}
+
+$f(x|\lambda) = \frac{2x}{\lambda^2}e^{-\frac{x^2}{\lambda^2}}; x,\lambda >0$
+
+$L(\lambda|x) = \prod 2x \frac{1}{\lambda^{2n}} e^{-\frac{1}{\lambda^2} \sum x^2}$
+
+(a) T = $\sum X_i^2$. Show it's complete and sufficient. 
+
+$f(x|\lambda) = [\prod 2x] [\frac{1}{\lambda^{2n}}e^{-\frac{1}{\lambda^2}T}] = h(x)g(T, \lambda)$ thus by factorization theorem this is sufficient. Because k is known, this is actually part of the exponential family (also can be shown by writing it as $h(x)c(\lambda)e^{w(\lambda)t(x)})$. Because this is part of the exponential family, and the support contains an open set, this is a complete statistic as well. 
+
+Still not too sure how to do pivots. This is a scale family, so the pivot would be something like $\lambda x$, but I'm not sure if that's correct or how to proceed. 
+
+$T(X) =\sum x^2: Y = X^2 \implies Y \sim Exp(\lambda^2) \implies \sum x^2 \sim Gamma(n 1/\lambda^2)$
+
+Scale family, need to adjust by a multiple of $\lambda^2$.
+
+$Q = \frac{\sum X^2}{\lambda^2} \sim Gamma(n, 1)$
+
+$P(a \le Q \le b) = 1-\alpha$
+
+$P(\sqrt{\frac{\sum X^2}{b}} \le \lambda \le \sqrt{\frac{\sum X^2}{a}})$
+
+Those two equations give us our system to solve and allow us to find the minimum width (Lagrangians)
+
+(b) $H_0: \lambda = \lambda_0, H_1: \lambda \neq \lambda_0$
+
+$l(\lambda|x) = \sum ln(2x) - 2n ln(\lambda) - \frac{\sum x^2}{\lambda^2}$
+
+$\frac{\partial l}{\partial \lambda} = -\frac{2n}{\lambda} + \frac{2\sum x^2}{\lambda^3} = 0 \implies 2n\lambda^2 = 2\sum x^2 \implies \hat{\lambda} = \sqrt{\frac{\sum x^2}{n}} = \sqrt{\frac{T}{n}}$
+
+LRT: $\frac{L(\lambda_0|x)}{L(\hat{\lambda|x})} = \frac{\prod 2x \frac{1}{\lambda_0^{2n}} e^{-\frac{1}{\lambda_0^2} \sum x^2}}{\prod 2x \frac{1}{\sqrt{T/n}^{2n}} e^{-\frac{1}{\sqrt{T/n}^2} \sum x^2}} = (\frac{\sqrt{T/n}}{\lambda_0})^{2n} e^{\sum x^2 (\frac{n}{T} - \frac{1}{\lambda_0^2})}$
+
+This is monotonically increasing in $T$, thus the rejection region of $a \le \lambda(x) \le b$ is equivalent to saying $a^* \le T(x) \le b^*$
+
+\end{document}

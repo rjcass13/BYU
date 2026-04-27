@@ -1,0 +1,458 @@
+---
+title: "HW7"
+subtitle: "STAT 651"
+author: "RJ Cass"
+date: "18 Mar. 2026"
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption, bm, amsmath, xcolor}
+        \setlength{\parindent}{0pt}
+        \captionsetup{textfont={it}, font=small} 
+        \newcommand{\statvec}[1]{\underset{\sim}{#1}}
+geometry: "margin=1in"
+---
+
+
+# 1 BDA3: 5.5
+
+Suppose $\theta = (\theta_1, .., \theta_J)$ can be written as $p(\theta) = \int \prod_{j=1}^J p(\theta_j|\phi)p(\phi)d\phi$
+
+Prove that the covariances $Cov(\theta_i, \theta_j)$ are all nonnegative.
+
+Because they are independent, $Cov(\theta_i,\theta_j|\phi) = 0$
+
+Becaue they are identically distributed, if we let $X = E(\theta_i|\phi)$, then $E(\theta_i|\phi) = E(\theta_j|\phi) = X$
+
+Also, the covariance of anything with itself is just the variance of that thing. 
+
+Use the marginal covariance: 
+
+$$
+\begin{aligned}
+Cov(\theta_i, \theta_j) 
+& = E[Cov(\theta_i,\theta_j|\phi)] + Cov(E[\theta_i|\phi], E[\theta_j|\phi]) \\
+& = E[0] + Cov(X, X) \\
+& = Var(X)
+\end{aligned}
+$$
+
+Because Variances are always positive, this shows that $Cov(\theta_i, \theta_j)$ is always nonnegative.
+
+
+# 2 Hoff: 8.3
+
+Fit a hierarchical model, as given on page 132, full conditionals given in the book:
+
+$p(y|\theta_j, \sigma^2) \sim N(\theta_j, \sigma^2)$ (data for a school, each school has its own mean, variance is same across all)
+
+$p(\theta_j|y_{i,j}, ..., y_{n_j, j}, \sigma^2) \sim N(\frac{\frac{n_j \bar{y}_j}{\sigma^2} + \frac{1}{\tau^2}}{\frac{n_j}{\sigma^2} + \frac{1}{\tau^2}}, [\frac{n_j}{\sigma^2} + \frac{1}{\tau^2}]^{-1})$ (distribution of the thetas across all the schools)
+
+$\frac{1}{\sigma^2} \sim Gamma(\frac{1}{2}[\nu_0 + \sum n_j], \frac{1}{2}[\nu_0 \sigma_0^2 + \sum_{j=1}^J\sum_{i=1}^{n_j} (y_{i,j} - \theta_j)^2])$
+
+$\frac{1}{\tau^2} \sim Gamma(\frac{\eta_0 + J}{2}, \frac{\eta_0 \tau^2_0 + \sum(\theta_j - \mu)^2}{2})$
+
+$p(\mu|\theta_1, ...\theta_j, \tau^2) \sim Normal(\frac{\frac{m\bar{\theta}}{\tau^2} + \frac{\mu_0}{\gamma_0^2}}{\frac{J}{\tau^2} + \frac{1}{\gamma_0^2}}, [\frac{m}{\tau^2} + \frac{1}{\gamma_0^2}]^{-1})$
+
+Priors: $\mu_0 = 7, \gamma_0^2 = 5, \tau_0^2 = 10, \eta_0 = 2, \sigma^2_0 = 15, \nu_0 = 2$
+
+### a)
+
+Run a Gibbs sampler to approximate the posterior distributions of {$\underset{\sim}{\theta}, \sigma^2, \mu, \tau$}. Assess convergence of Markov chain, find ESS for {$\sigma^2, \mu, \tau^2$}. Run chain until ESS for all are over 1000.
+
+Below, I show the trace plots for the first 2 thetas, as well as the variables of interest. After that I provide the effective sample sizes, showing they are all over 1000.
+
+
+I started by trying to implement Gibbs, but there's some bug in there (I only noticed once I plotted the posterio means vs. the sample means and noticed no borrowing of strength). So I switched to STAN. 
+
+```{r gibbs}
+# suppressPackageStartupMessages(library("coda"))
+# suppressPackageStartupMessages(library("dplyr"))
+# suppressPackageStartupMessages(library("invgamma"))
+# set.seed(1337)
+# dt <- read.csv('schools651.csv', header = TRUE)
+# dt <- dt[, -1] # Remove the rownames
+# mu_0 <- 7
+# gamma2_0 <- 5
+# tau2_0 <- 10
+# eta_0 <- 2
+# sigma2_0 <- 15
+# nu_0 <- 2
+# N <- 8 # Number of schools
+# # Get average time per school
+# y_bar_vec <- dt %>% group_by(school) %>% summarise(mean = mean(times, na.rm = TRUE)) 
+# y_bar_vec <- y_bar_vec$mean
+# # Get total students per school
+# n_vec <- dt %>% group_by(school) %>% summarise(count = n())
+# n_vec <- n_vec$count
+
+# fc_theta <- function(n_vec, y_bar_vec, sigma2, tau2) {
+#     mean <- ((n_vec * y_bar_vec/sigma2) + 1/tau2)/(n_vec/sigma2 + 1/tau2)
+#     var <- 1/(n_vec/sigma2 + 1/tau2)
+#     rnorm(N, mean, sqrt(var))
+# }
+
+# fc_sigma2 <- function(nu_0, sigma2_0, n_vec, theta_vec, dt) {
+#     sum_sum_sqr_resid <- 0
+#     for (i in 1:N) {
+#         sum_sum_sqr_resid <- sum_sum_sqr_resid + sum((dt$times[dt$school == i] - theta_vec[i])^2)
+#     }
+#     shape <- 1/2*(nu_0 + sum(n_vec))
+#     rate <- 1/2*(nu_0*sigma2_0 + sum_sum_sqr_resid)
+#     rinvgamma(1, shape = shape, rate = rate)
+# }
+
+# fc_mu <- function(N, theta_vec, mu_0, tau2, gamma2_0) {
+#     mean <- ((N*mean(theta_vec)/tau2) + (mu_0/gamma2_0))/(N/tau2 + 1/gamma2_0)
+#     var <- 1/(N/tau2 + 1/gamma2_0)
+#     rnorm(1, mean, sqrt(var))
+# }
+
+# fc_tau2 <- function(eta_0, tau2_0, theta_vec, mu) {
+#     shape <- (eta_0 + N)/2
+#     rate <- (eta_0*tau2_0 + sum((theta_vec - mu)^2))/2
+#     rinvgamma(1, shape = shape, rate = rate)
+# }
+
+# n_iter <- 2000
+# state <- list(theta = rnorm(N, mu_0, sqrt(sigma2_0)), sigma2 = sigma2_0, mu = mu_0, tau2 = tau2_0)
+# sims <- matrix(NA, ncol = N + 3, nrow = n_iter)
+# colnames(sims) <- c(paste0("theta", 1:N), "sigma2", "mu", "tau2")
+# burn_in <- 100
+
+# for (i in 1:n_iter) {
+#   state$theta <- fc_theta(n_vec, y_bar_vec, state$sigma2, state$tau2)
+#   state$sigma2 <- fc_sigma2(nu_0, sigma2_0, n_vec, state$theta, dt)
+#   state$mu <- fc_mu(N, state$theta, mu_0, state$tau2, gamma2_0)
+#   state$tau2 <- fc_tau2(eta_0, tau2_0, state$theta, state$mu)
+  
+#   sims[i, 1:N] <- state$theta
+#   sims[i, "sigma2"] <- state$sigma2
+#   sims[i, "mu"] <- state$mu
+#   sims[i, "tau2"] <- state$tau2
+# }
+
+# sims <- sims[-c(1:burn_in), ]
+
+# plot(sims[, "theta1"], type = 'l')
+# plot(sims[, "theta2"], type = 'l')
+# plot(sims[, "sigma2"], type = 'l')
+# plot(sims[, "mu"], type = 'l')
+# plot(sims[, "tau2"], type = 'l')
+
+
+# print(paste0("sigma2 Effective Sample Size: ", coda::effectiveSize(sims[, "sigma2"])))
+# print(paste0("mu Effective Sample Size: ", coda::effectiveSize(sims[, "mu"])))
+# print(paste0("tau2 Effective Sample Size: ", coda::effectiveSize(sims[, "tau2"])))
+```
+
+
+```{r stan}
+suppressPackageStartupMessages(library("rstan"))
+suppressPackageStartupMessages(library("coda"))
+suppressPackageStartupMessages(library("invgamma"))
+suppressPackageStartupMessages(library("knitr"))
+dt <- read.csv('schools651.csv', header = TRUE)
+dt <- dt[, -1] # Remove the rownames
+mu_0 <- 7
+gamma2_0 <- 5
+tau2_0 <- 10
+eta_0 <- 2
+sigma2_0 <- 15
+nu_0 <- 2
+N <- 8 # Number of schools
+n <- length(dt$school)
+
+data_stan <- list(N = N, n = n, y = dt$times, grp = dt$school, nu_0 = nu_0, sigma2_0 = sigma2_0, eta_0 = eta_0, tau2_0= tau2_0, mu_0 = mu_0, gamma2_0 = gamma2_0)
+
+params <- c("theta", "mu", "sigma2", "tau2")
+
+n_cores <- parallel::detectCores()   # Count how many cores are available
+options(mc.cores = n_cores)          
+
+fit_stan <- stan(model_code = readLines("q2.stan"),
+                 data = data_stan, pars = params,
+                 iter = 5000, warmup = 500, thin = 5, chains = n_cores)
+
+
+sim_stan <- extract(fit_stan) # collect samples from all chains
+
+eff <- summary(fit_stan)$summary[, 9]
+
+theta1 <- sim_stan$theta[, 1]
+theta2 <- sim_stan$theta[, 2]
+theta3 <- sim_stan$theta[, 3]
+theta4 <- sim_stan$theta[, 4]
+theta5 <- sim_stan$theta[, 5]
+theta6 <- sim_stan$theta[, 6]
+theta7 <- sim_stan$theta[, 7]
+theta8 <- sim_stan$theta[, 8]
+mu <- sim_stan$mu
+sigma2 <- sim_stan$sigma2
+tau2 <- sim_stan$tau2
+
+plot(mu)
+plot(sigma2)
+plot(tau2)
+kable(eff)
+```
+
+The series appears to converge nicely (as shown in the trace plots), and quickly. I did a bunch of samples beacuse STAN, so as shown the Effective Sample Size for all are above the target 1000. 
+
+### b) 
+
+Compute posterior means and 95% confidence regions for {$\sigma^2, \mu, \tau^2$}. Also, compare the posterior densities to the prior densities, and discuss what was learned from the data.
+
+```{r}
+post_mean_sigma2 <- round(mean(sigma2), 3)
+post_ci_sigma2 <- round(quantile(sigma2, probs = c(0.025, 0.975)), 3)
+post_mean_mu <- round(mean(mu), 3)
+post_ci_mu <- round(quantile(mu, probs = c(0.025, 0.975)), 3)
+post_mean_tau2 <- round(mean(tau2), 3)
+post_ci_tau2 <- round(quantile(tau2, probs = c(0.025, 0.975)), 3)
+```
+
+
+|Variable|Post. Mean|Lower|Upper|
+|:----:|:----:|:----:|:----:|
+|$\sigma^2$|`r post_mean_sigma2`| `r post_ci_sigma2[1]`| `r post_ci_sigma2[2]`|
+|$\mu$|`r post_mean_mu`| `r post_ci_mu[1]`| `r post_ci_mu[2]`|
+|$\tau^2$|`r post_mean_tau2`| `r post_ci_tau2[1]`| `r post_ci_tau2[2]`|
+
+```{r}
+hist(sigma2, freq = FALSE, xlim = c(0, 25))
+curve(dinvgamma(x, nu_0/2, rate = nu_0*sigma2_0/2), col = 'red', add = TRUE)
+hist(mu, freq = FALSE, xlim = c(0, 15))
+curve(dnorm(x, mu_0, gamma2_0), col = 'red', add = TRUE)
+hist(tau2, freq = FALSE)
+curve(dinvgamma(x, eta_0/2, rate = eta_0*tau2_0/2), col = 'red', add = TRUE)
+```
+
+The posterior density for mu is much tigher than the prior (much lower variance). The opposite is true for tau2 where the posterior has a wider spread. The posterior for sigma2 has a completely shifted distribution compared to the prior but has a very long tail.
+
+
+### c)
+
+Plot posterior density of $R = \frac{\tau^2}{\sigma^2 + \tau^2}$ and compare it to a plot of the prior density of R. Describe the evidence for between-school variation.
+
+```{r}
+hist(tau2/(sigma2+tau2), freq = FALSE, xlim = c(0, 4))
+curve(dinvgamma(x, eta_0/2, rate = eta_0*tau2_0/2)/(dinvgamma(x, nu_0/2, rate = nu_0*sigma2_0/2)+dinvgamma(x, eta_0/2, rate = eta_0*tau2_0/2)), col = 'red', add = TRUE)
+```
+
+The prior distribution for R is basically a uniform besides the blip at the start. The posterior shows a heavy concentration, meaning that there does appear to be a difference between the in-school variance and the between-school variances (where as the prior assumes they are basically the same). 
+
+### d)
+
+Obtain the posterior probability that $\theta_7$ is smaller than $\theta_6$, as well as the posterior probability that $\theta_7$ is the smallest of all the $\theta$’s.
+
+```{r}
+less_than_6 <- round(mean(theta7 < theta6), 4)
+smallest <- round(mean(theta7 < min(sim_stan$theta[, c(1:6, 8)])), 6)
+```
+
+Probability $\theta_7 < \theta_6$ = `r less_than_6`
+Probability $\theta_7$ is the smallest = `r smallest`
+
+### e)
+
+Plot the sample averages $\bar{y}_1, ..., \bar{y}_8$ against the posterior expectations of $\theta_1, ..., \theta_8$, and describe the relationship. Also compute the sample mean of all observations and compare it to the posterior mean of $\mu$.
+
+```{r}
+samp_means <- sapply(1:8, \(x) mean(dt$times[dt$school == x]))
+post_means <- sapply(1:8, \(x) mean(sim_stan$theta[, x]))
+
+
+overall_samp_mean <- round(mean(dt$times), 4)
+mu_mean <- round(mean(mu), 4)
+
+min <- min(min(samp_means), min(post_means))
+max <- max(max(samp_means), max(post_means))
+plot(1:8, samp_means, col = 'red', ylim = c(min - .5, max + .5), xlab = 'School', ylab = 'Mean', main = 'Sample vs. Posterior Means')
+points(1:8, post_means, col = 'blue')
+legend(x = 'topright', legend = c('Sample', 'Posterior'), col = c('red', 'blue'), pch = 1)
+```
+
+The posterior thetas are all more 'interior' (ie. closer to the population $\mu$) than their sample values, indicating borrowing of strength due to a shared population mean. 
+
+The posterior mean is `r mu_mean`, which is remarkably close to the sample mean of `r overall_samp_mean`. I suppose this makes sense since we assume they all come from a population mean, and only the schools should be what are significantly changing from the smaple to posterios. 
+
+
+# 3
+Fit the change-point model for coal mining disasters reported in the slides. The data can be obtained either directly from the Carlin et al. (1992) paper, or processed from the boot R package, using code from the slides.
+
+$y_t | \theta, Z \sim Pois(\theta)$
+
+$y_t | \lambda, Z \sim Pois(\lambda)$
+
+$\theta | a_{\theta}, \gamma_{\theta} \sim Gamma(a_{\theta}, rate = \gamma_{\theta})$
+
+$\lambda | a_{\lambda}, \gamma_{\lambda} \sim Gamma(a_{\lambda}, rate = \gamma_{\lambda})$
+
+$Z \sim Unif(0, T)$
+
+Use $a_{\theta} = a_{\lambda} = 0.5, \gamma_{\theta} \sim Gamma(2, 1), \gamma_{\lambda} \sim Gamma(1, 1)$
+
+$L(\theta, \lambda, Z | y) = \prod_{t=1}^Z [Pois(y_i|\theta)]\prod_{t=z+1}^T[Pois(y_i|\lambda)]$
+
+$f(everything) \propto \prod_{t=1}^Z [Pois(y_i|\theta)]\prod_{t=z+1}^T[Pois(y_i|\lambda)] \frac{\gamma_{\theta}^{a_{\theta}}}{\Gamma(a_{\theta})}\theta^{a_{\theta}-1}e^{-\gamma_{\theta} \theta} \frac{\gamma_{\lambda}^{a_{\lambda}}}{\Gamma(a_{\lambda})}\lambda^{a_{\lambda}-1}e^{-\gamma_{\lambda} \lambda}\frac{1}{T+1}$
+
+$$
+\begin{aligned}
+p(Z) 
+& \propto L(\theta, \lambda, Z | y)\frac{1}{T+1} \\
+& = \frac{1}{\prod_{t=1}^Z y_i!} \frac{1}{\prod_{t=z+1}^T y_i!} \theta^{\sum y_i} e^{-n_{\theta}\theta} \lambda^{\sum y_i} e^{-n_{\lambda}\lambda}\frac{1}{T+1}
+\end{aligned}
+$$
+
+
+$$
+\begin{aligned}
+p(\theta|everything) 
+&= \prod_{t=1}^Z [Pois(y_i|\theta)]\frac{\gamma_{\theta}^{a_{\theta}}}{\Gamma(a_{\theta})}\theta^{a_{\theta}-1}e^{-\gamma_{\theta} \theta} \\
+& \propto \theta^{\sum y_i} e^{-n_{\theta}\theta}\theta^{a_{\theta}-1}e^{-\gamma_{\theta} \theta} \\
+& \sim Gamma(\sum_{i=1}^Z y_i + a_{\theta}, n_{\theta} + \gamma_{\theta}) \\
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+p(\lambda|everything) 
+& = \prod_{t=z+1}^T[Pois(y_i|\lambda)] \frac{\gamma_{\lambda}^{a_{\lambda}}}{\Gamma(a_{\lambda})}\lambda^{a_{\lambda}-1}e^{-\gamma_{\lambda} \lambda} \\
+& \propto \lambda^{\sum y_i} e^{-n_{\lambda}\lambda}\lambda^{a_{\lambda}-1}e^{-\gamma_{\lambda} \lambda} \\
+& \sim Gamma(\sum_{i=z+1}^T y_i + a_{\lambda}, n_{\lambda} + \gamma_{\lambda})
+\end{aligned}
+$$
+
+### a)
+
+```{r}
+suppressPackageStartupMessages(library('boot'))
+data("coal") # from the boot package on CRAN
+yrs <- floor(coal$date)
+year_seq <- min(yrs):max(yrs)
+dat <- data.frame(year = year_seq, 
+                  count = as.numeric(table(factor(yrs, levels = year_seq))))
+y <- dat$count
+
+a_theta <- .5
+a_lambda <- .5
+T <- length(y)
+
+theta_fc <- function(y, Z, gamma_theta) {
+    shape <- sum(y[1:Z]) + a_theta
+    rate <- Z + gamma_theta
+    rgamma(1, shape = shape, rate = rate)
+}
+
+lambda_fc <- function(y, Z, gamma_lambda) {
+    shape <- sum(y[(Z+1):T]) + a_lambda
+    rate <- T-Z + gamma_lambda
+    rgamma(1, shape = shape, rate = rate)
+}
+
+log_f_z <- function(y, Z, theta, lambda) {
+    sum_theta <- sum(y[1:Z])
+    n_theta <- Z
+    sum_lambda <- sum(y[(Z+1):T])
+    n_lambda <- T-Z
+
+    fact_theta <- 1
+    fact_lambda <- 1
+    for (i in 1:length(y)){
+        fact <- factorial(y[i])
+        if (i <= Z) {
+            fact_theta <- fact_theta * fact
+        } else {
+            fact_lambda <- fact_lambda * fact
+        }
+    }
+
+    log(1/fact_theta * 1/fact_lambda * 1/(T+1) * theta^sum_theta * exp(-n_theta * theta) * lambda^sum_lambda * exp(-n_lambda * lambda))
+}
+
+mh_z <- function(y, Z, theta, lambda) {
+    # Process for getting a good candidate Z to explore full space
+    prob_above <- (T-Z)/T
+    above_or_not <- rbinom(1, 1, prob_above)
+    if (above_or_not == 1) {
+        prop <- rpois(1, (T-Z)/4)
+    } else {
+        prop <- Z - rpois(1, Z/4)
+    }
+    prop <- round(rnorm(1, Z, sd = 5))
+    if (prop > 111 | prop < 2) {return(Z)}
+    ratio <- log_f_z(y, prop, theta, lambda) - log_f_z(y, Z, theta, lambda)
+    ifelse(log(runif(1)) < ratio, return(prop), return(Z))
+}
+
+n_iter <- 5000
+state <- list(theta = .5, lambda = .5, gamma_theta = 1, gamma_lambda = 1, Z = 50)
+sims <- matrix(NA, ncol = length(state), nrow = n_iter)
+colnames(sims) <- c("theta", "lambda", "gamma_theta", "gamma_lambda", "Z")
+burn_in <- 100
+
+for (i in 1:n_iter) {
+  state$gamma_theta <- rgamma(1, 2, 1)
+  state$gamma_lambda <- rgamma(1, 1, 1)
+  state$theta <- theta_fc(y, state$Z, state$gamma_theta)
+  state$lambda <- lambda_fc(y, state$Z, state$gamma_lambda)
+  state$Z <- mh_z(y, state$Z, state$theta, state$lambda)
+  
+  sims[i, 'theta'] <- state$theta
+  sims[i, "lambda"] <- state$lambda
+  sims[i, "gamma_theta"] <- state$gamma_theta
+  sims[i, "gamma_lambda"] <- state$gamma_lambda
+  sims[i, "Z"] <- state$Z
+}
+```
+
+### b
+
+##### (i)
+
+```{r}
+post_z <- sims[, "Z"]
+hist(post_z, freq = FALSE)
+
+u <- unique(post_z)
+tab <- tabulate(match(post_z, u))
+post_z_mode_ind <- u[tab == max(tab)]
+change_year <- dat$year[post_z_mode_ind]
+```
+
+The posterior mode for Z is `r post_z_mode_ind`, which corresponds to a year of `r change_year`.
+
+##### (ii)
+
+```{r}
+R <- sims[, "theta"] / sims[, "lambda"]
+hist(R, freq = FALSE)
+```
+
+This plot represents the distribution of the ratio of the means prior to the change point and afterwards (ie. prior to the change point the mean was somewhere in the 3-4 range, and after it appears to be in the 0-1 range), giving ratios somewhere in the 3.5/1 ish range.
+
+##### (iii)
+
+```{r}
+# Lambda is parameter for second region
+lams <- sims[, "lambda"]
+
+# For all simulated lambda values, draw a corresponding prediction for a year
+post_preds <- rpois(length(lams), lams)
+
+hist(post_preds, freq = FALSE)
+```
+
+The histogram shows the posterior predictive distribution for 1963 (or really any year after the change point). Note that the first bar is the y = 0
+
+# Acknolwedgements
+
+#### Estimated time
+
+I estimate this assignment took me in total around 10 hours to complete (mostly because I spent so long troubleshooting my Gibbs sampler on Q2 before switching to STAN).
+
+#### Resources Used
+
+I actually didn't really use any resources for this, besides just reminind me what the distirbution PDFs are, and previous HWs to cannibalize the code. 

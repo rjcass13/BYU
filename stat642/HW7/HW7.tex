@@ -1,0 +1,261 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+\newcommand{\ext}{\EX_{\theta}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+
+
+\begin{document}
+
+\section{}
+
+$X_i \iiddist Bin(10, \theta), \theta \in \Theta = \{1/4,1/2\}, H_0:\theta = 1/4, H_1: \theta = 1/2$, compute the power function of $\phi(x) = I(x \le 3)$
+
+$\beta{\phi}(\theta) = P(x \le 3) = \sum_{k=0}^3 \binom{10}{k}\theta^k (1-\theta)^{10-k} = (1-\theta)^{10} + 10\theta(1-\theta)^9 + 45\theta^2(1-\theta)^8 + 120 \theta^3(1-\theta)^7$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+Box contains 4 marbles, $\theta$ are red, and $4-\theta$ are blue. Test: $H_0: \theta = 3, H_1: \theta \neq 3$. Two marbles will be drawn simultaneously and $H_0$ will be rejected if the two marbles are the same color. If they are different, $H_0$ will not be rejected.
+
+(a)
+
+Define the test function $\phi$ corresponding to the above testing procedure
+
+$\phi(x) = \begin{cases} 1, & \text{Marbles same color} \\ 0, & \text{Marbles different colors} \end{cases}$
+
+(b)
+
+Find the power function of the test
+
+Probability of getting two marbles of same color: 
+
+- Two Red: $\frac{\theta}{4}\frac{\theta-1}{3} = \frac{\theta^2}{12} - \frac{\theta}{12}$
+
+- Two Blue: $\frac{4-\theta}{4}\frac{3-\theta}{3} = 1 - \frac{7\theta}{12} + \frac{\theta^2}{12}$
+
+- Sum them: $\frac{\theta^2}{12} - \frac{\theta}{12} + 1 - \frac{7\theta}{12} + \frac{\theta^2}{12} = \frac{2\theta^2}{12}-\frac{8\theta}{12} + 1 = \frac{\theta^2}{6} - \frac{2\theta}{3} + 1$
+
+$\beta_{\phi}(\theta) = \frac{\theta^2}{6} - \frac{2\theta}{3} + 1$
+
+(c)
+
+Compute the size of the test. Explain why this is the same as the probability of a Type I error for this problem
+
+Size: $\beta_{\phi}(3) = \frac{3^2}{6}-\frac{2(3)}{3} + 1 = \frac{3}{2} - 1 = \frac{1}{2}$
+
+Size = $\frac{1}{2}$
+
+Size is the maximum probability of committing a Type I Error. Because we only have two possible outcomes for the experiment, and each outcome is directly tied to rejection decision, there is only 1 value for Type I Error (ie. there is no range of Type I Error amounts), thus it must be the max value. 
+
+(d)
+
+Referring to (a)-(c), explain how they would change if the two marbles were drawn with replacement (ie. replace the first after drawing it). Don't need to actually do it, just describe in some detail.
+
+If the draws were done with replacement, then we would adjust the calculations in part (b), where the probability of drawing 2 marbles of the same color changes (instead of the probability being different on the second draw, the second draw has the same prob. as the first draw, so the probaility of getting 2 marbles is just $\frac{\theta^2}{16}$ for red, and $\frac{(4-\theta)^2}{16}$). This would then change the expectation in part (b), and adjust the size in part (c). 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CB2 8.19}
+
+$X: f(x) = e^{-x}, x > 0$. One obs. obtained on R.V. $Y = X^{\theta}$, a test $H_0: \theta = 1, H_1: \theta = 2$ needs to be constructed. Find the UMP level $\alpha = .1$ and compute the Type II Error prob. 
+
+$Y = X^{\theta} \implies X = Y^{1/\theta}, \frac{d}{dy}Y^{1/\theta} = \frac{1}{\theta}Y^{1/\theta -1} \implies f(y|\theta) = e^{-y^{1/\theta}}\frac{1}{\theta}Y^{1/\theta - 1}$
+
+Neyman Pearson Test says we reject when $\frac{f(x|\theta_1)}{f(x|\theta_0)} > k \implies \frac{f(y|2)}{f(y|1)} > k \implies \frac{1 e^{y^1}y^{1/2-1}}{2 e^{y^1/2} y^{1-1}} = \frac{1}{2}e^{y-y^{1/2}}y^{-1/2} = \frac{1}{2} e^{y^{1/2}} y^{-1/2} > k$
+
+To see how this behaves, I plotted it.
+
+\begin{center}
+    \includegraphics[width=.45\textwidth]{q3.png}
+\end{center}
+
+The turning point is at y = 1, so for $y \le 1$, it is decreasing, and for $y \ge 1$ it is increasing. Thus, rejecting for $\frac{1}{2} e^{y^{1/2}} y^{-1/2} > k$ is the same as rejecting for $y \le c_0$ or $y \ge c_1$ (some upper and lower bounds). 
+
+We know that $\alpha = P(Y \le c_0 | \theta = 1) + P(Y \ge c_1 | \theta_1) = 1 - e^{-c_0} + e^{-c_1}$. We also know that the acceptance ratios must be equal: $\frac{f(c_0|2)}{f(c_0|1)} = \frac{f(c_1|2)}{f(c_1|1)} \implies \frac{1}{2} e^{c_0^{1/2}} c_0^{-1/2} = \frac{1}{2} e^{c_1^{1/2}} c_1^{-1/2}$
+
+Solving numerically, we get $c_0 = .0765, c_1 = 3.638 \implies \phi(y) = \begin{cases} 1, & 0.0765 < y < 3.638 \\ 0, & \text{otherwise} \end{cases}$
+
+The Type II Error probability is $P(Accept|H_a \text{ is true}) = P(c_0 < y < c_1 | \theta = 2) = \int_{c_0}^{c_1} \frac{1}{2} e^{y^{1/2}} y^{-1/2}dy = -e^{-y^{1/2}}|_{c_0}^{c_1} \approx .6098$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CB2 8.20}
+
+\begin{center}
+\begin{tabular}{c c c c c c c c} 
+ x & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ [0.5ex] 
+ \hline
+ $f(x|H_0)$ & .01 & .01 & .01 & .01 & .01 & .01 & .94 \\ 
+ $f(x|H_1)$ & .06 & .05 & .04 & .03 & .02 & .01 & .79 \\
+\end{tabular}
+\end{center}
+
+Use Neyman-Pearson to find the most powerful test fort $H_0, H_1$ with size $\alpha = 0.04$. Compute that probability of Type II Error for this test.
+
+
+For the Neyman-Pearson test, we just need to ratio: $\frac{f(x|\theta_1)}{f(x|\theta_0)}$, which is given in the below table:
+
+\begin{center}
+\begin{tabular}{c c c c c c c c} 
+ x & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ [0.5ex] 
+ \hline
+ $\frac{f(x|H_1)}{f(x|H_0)}$ & 6 & 5 & 4 & 3 & 2 & 1 & .84 \\ 
+\end{tabular}
+\end{center}
+
+As x increases, that ratio decreases. We need $P(X \le c|H_0) = \alpha$. Using the first table, we can see that if we let $c=4, P(X \le 4|H_0) = .01+.01+.01+.01 = 0.04$. Thus we will pick $c=4$.
+
+This then gives a Type II Error of $P(X \ge 5 | H_1) = .02 + .01 + .79 = .82$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CB2 8.23}
+
+$X_1 \sim Beta(\theta, 1)$
+
+(a)
+
+$H_0: \theta \le 1, H_1: \theta > 1$, find size and sketch the power function of test that rejects $H_0$ if $X > 1/2$. 
+
+$\phi(x) = \begin{cases} 1, & X > 1/2 \\ 0, & \text{ otherwise} \end{cases}$
+
+$\beta_{\phi}(\theta) = P(X > 1/2|\theta) = \int_{1/2}^1 \frac{\Gamma(\theta + 1)}{\Gamma(\theta)\Gamma(1)} x^{\theta-1}(1-x)^{1-1}dx = \int_{1/2}^1 \frac{\theta\Gamma(\theta)}{\Gamma(\theta)} x^{\theta-1} dx \int_{1/2}^1 \theta x^{\theta-1}dx = x^{\theta}|_{1/2}^1 = 1 - (\frac{1}{2})^{\theta}$
+
+Plot of power function:
+
+\begin{center}
+    \includegraphics[width=.45\textwidth]{q5_a.png}
+\end{center}
+
+Size: $\underset{\theta \in H_0}{sup}\beta_{\phi}(\theta) = \underset{\theta \le 1}{sup} 1 - (\frac{1}{2})^{\theta} = 1 - \frac{1}{2} = \frac{1}{2}$
+
+(b)
+
+Find the MP test of $H_0: \theta = 1, H_1: \theta = 2$
+
+MP test given by $\frac{f(x|\theta=2)}{f(x|\theta=1)} > k \implies \frac{f(x|2)}{f(x|1)} = \frac{\frac{\Gamma(3)}{\Gamma(2)\Gamma(1)} x^{2-1}(1-x)^{1-1}}{\frac{\Gamma(2)}{\Gamma(1)\Gamma(1)}x^{1-1}(1-x)^{1-1}} = \frac{\Gamma(3)x}{\Gamma(2)\Gamma(1)} = \frac{2}{1}x \implies 2x > k \implies \text{Reject when } x > \frac{k}{2}$
+
+Going back to the size: $\alpha = \underset{\theta=1}{sup} \beta_{\phi}(\theta) = \beta(1) = \int_{k/2}^1 \frac{\Gamma(2)}{\Gamma(1)\Gamma(1)}x^{1-1}(1-x)^{1-1}dx = \int_{k/2}^1 dx = 1 - \frac{k}{2} \implies \alpha = 1 - \frac{k}{2} \implies \frac{k}{2} = 1 - \alpha$
+
+We know we reject when $X > \frac{k}{2} \implies$ we reject when $X > 1 - \alpha$ is the MP test.
+
+(c)
+
+Is there a UMP test for $H_0: \theta \le 1, H_1: \theta > 1$? Is so, find it. If not, prove so. 
+
+The ratio of $\frac{f(x|\theta_2)}{f(x|\theta_1)} = \frac{\frac{\Gamma(\theta_2 + 1)}{\Gamma(\theta_2)\Gamma(1)}x^{\theta_1 - 1}(1-x)^{1-1}}{\frac{\Gamma(\theta_1 + 1)}{\Gamma(\theta_1)\Gamma(1)}x^{\theta_1 - 1}(1-x)^{1-1}} = \frac{\theta_2}{\theta_1}\frac{x^{\theta_2}}{x^{\theta_1}} = \frac{\theta_2}{\theta_1}x^{\theta_2 - \theta_1}$. We know that $\theta_2 > \theta_1$, which means that that ratio is always increasing, so we have MLR.  
+
+By Karlin-Rubin we know that we reject when $X \ge t_0$. We can then use the same process used in (b) to find $\alpha$ given a certain $\theta$. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+Compare CB2 8.13. $X_1, X_2 \iiddist Unif(\theta, \theta+1), 0 \le \theta < 1$. Let $0 < c < 1, \alpha < (1-c)^2, H_0: \theta = 0, H_1: 0 < \theta \le c$
+
+(a)
+
+Review the derviation of the MP test done in class for $H'_0: \theta = 0, H'_1: \theta = \theta_1$ for fixed $\theta_1 \in (,c]$, which gave the following test:
+
+$\phi(x) = \begin{cases} 1, & X_{(2)} > 1 \\ \alpha(1-\theta_1)^{-2}, & \theta_1 < X_{(1)} < X_{(2)} < 1 \\ 0, & X_{(1)} < \theta_1 \end{cases}$
+
+(b)
+
+Compute the power of the test from (a) if the true value of the parameter is indeed $\theta_1$
+
+When k = 0: $\beta_{\phi}(\theta_1) = P(0 < X_{(1)} < \theta_1) + \gamma P(\theta_1 < X_{(1)} < X_{(2)} < 1) = (1-\theta_1)^2 + \gamma(1 - (1-\theta_1)^2)$
+
+When k = 1: $\beta_{\phi}(\theta_1) = \gamma P(0 < X_{(1)} < \theta_1) = \gamma(1-\theta_1)^2$
+
+(c)
+
+Because the test function from (a) depends on $\theta_1$, it cannot be UMP for that comparison. Use parts (a) and (b) to show that $\phi^*(x) = I(X_{(1)} > 1 - \sqrt{\alpha} \text{ or } X_{(2)} > 1)$ is the UMP. 
+
+(Hint: First, show that it has the correct size. Then, show its power matches that of the test in part (a) for any $\theta_1 \in (0,c]$. Explain why this shows it is UMP)
+
+$\phi^*(x) = \begin{cases} 1, & X_{(1)} > 1-\sqrt{\alpha} \text{ or } X_{(2)} > 1 \\ 0, &\text{ otherwise} \end{cases}$
+
+$\beta_{\phi^*}(\theta) = P(X_{(1)} > 1 - \sqrt{\alpha}) + P(X_{(2)} > 1) = P(X_1, X_2 > 1) + (1 - P(X_1, X_2 < 1)) = (\theta_1 - (1-\sqrt{\alpha}))^2  + (1-(1-\theta_1)^2) = \theta_1^2 - \theta_1 + \theta_1\sqrt{\alpha} - \theta_1 + 1 - \sqrt{\alpha} + \theta_1\sqrt{\alpha} - \sqrt{\alpha} + \alpha + (1 - (1 - 2\theta_1 + \theta_1^2)) = \theta_1^2 - 2\theta_1 + 2\theta_1 \sqrt{\alpha} - 2\sqrt{\alpha} + \alpha + 2 - 1 + 2\theta_1 - \theta_1^2 = 2\theta_1\sqrt{\alpha} - 2\sqrt{\alpha} + \alpha + 1 = 2\sqrt{\alpha}(1-\theta_1) + \alpha$
+
+Which is the same poewr function from (b)
+
+If we then assume $\theta = \theta_0$, we get $\beta_{\phi^*} = 2\sqrt{\alpha}(1-1) + \alpha = \alpha$ so it has the correct size. 
+
+Because we know the test has the correct size, and has the power of the test which is also a most powerful test, it must be the UMP. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+Compare CB2 8.15. $X_i \iiddist N(0, \theta), \theta > 0$. Find the UMP test of size $\alpha$ for $H_0: \theta \le 1, H_1: \theta > 1$
+
+We reject if $\frac{f(x|\theta_1)}{f(x|\theta_0)} = \frac{(2\pi\theta_1)^{-n/2}e^{-\sum x_i^2/(2\theta_1^2)}}{(2\pi\theta_0)^{-n/2}e^{-\sum x_i^2/(2\theta_0^2)}} = (\frac{\theta_0}{\theta_1})^{n/2}e^{\frac{1}{2}\sum x_i^2 (\frac{1}{\theta_0} - \frac{1}{\theta_1})} > k$
+
+For a given value of $\theta_0 \le 1, \theta_1 > 1$, the fraction outfront is constant, so we just have the difference: $\frac{1}{\theta_0} - \frac{1}{\theta_1}$ which is positive, thus that ratio is an increasing function. So, we know that we will reject if $\sum x_i^2 > c$
+
+$\implies \phi(x) = \begin{cases} 1, & \sum x_i^2 > c \\ 0, & \text{ otherwise} \end{cases}$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{CB2 8.28}
+
+$f(x|\theta) = \frac{e^{(x-\theta)}}{(1+e^{(x-\theta)})^2}, x \in \real, \theta \in \real$
+
+(a)
+
+Show this family has an MLR
+
+For $\theta_1 > \theta_0$:
+
+$\frac{f(x|\theta_1)}{f(x|\theta_0)} = \frac{e^{(x-\theta_1)}}{e^{(x-\theta_)}}\frac{(1+e^{(x-\theta_0)})^2}{(1+e^{(x-\theta_1)})^2} = e^{\theta_0 - \theta_1}(\frac{1+e^{x-\theta_0}}{1+e^{x-\theta_1}})^2$
+
+$\frac{d}{dx} = e^{\theta_0 - \theta_1}\frac{e^{x-\theta_0} - e^{x-\theta_1}}{(1+e^{x-\theta_1})^2}$. $\theta_1 > \theta_0 \implies e^{x-\theta_0} > e^{x-\theta_1}$ thus this is an increasing function, showing that this family has an MLR. 
+
+(b)
+
+Based on one observation, $X$, find MP test of size $\alpha$ for $H_0: \theta = 0, H_1: \theta = 1$. For $\alpha = .2$, find the Type II Error
+
+We reject when $\frac{f(x|1)}{f(x|0)} > k$. Because this is increasing, this is the same as rejecting when $x > c$. The Logistic CDF is $F(x|\theta) = \frac{e^{x-\theta}}{1+e^{x-\theta}}$, so:
+
+$\alpha = P(x > c) = 1 - F(c|0) = \frac{1}{1+e^c}$
+
+$\beta_{\phi} = F(c|1) = \frac{e^{c-1}}{1+e^{c-1}}$
+
+Given a specific $\alpha$: $.2 = \frac{1}{1+e^c} \implies 1+e^c = 5 \implies e^c = 4 \implies c = ln(4) \implies \beta = \frac{e^{ln(4)-1}}{1 + e^{ln(4)-1}} \approx .595$
+
+(c)
+
+Show that the test in (b) is UMP for $\alpha$ for $H_0: \theta \le 0, h_1: \theta > 0$ What can be said about UMP tests in general for the logistic location family?
+
+The Karlin-Rubin requires a family with a univariate sufficient statistic, with MLR. We already showed this family has MLR. The sufficient statistic for the Logistic family is the ordered y vector, which is univariate. Thus, Karlin-Rubin is met, and we can conclude that the above test (which matches the format of K-R) is the UMP. 
+
+\end{document}

@@ -1,0 +1,265 @@
+---
+title: "Analysis from Your Undergraduate Intern"
+author: RJ Cass
+format: 
+  html: 
+    embed-resources: true
+editor: visual
+---
+
+This project studies an automatic car refueling system. The objective of the robotic system is to consistently insert the nozzle at the end of a telescoping arm into a gas inlet pipe.
+
+The vision-based targeting component is mounted directly above the end of the telescoping arm. This component consists of a CCD camera mounted next to a halogen lamp. The target image is a retro-reflective ring around the outside perimeter of the gas cap. With the halogen lamp enhancement, the gas cap location is characterized by a black circle centered in a reflective ring.
+
+After the camera has taken an image of the gas cap area, imaging software recursively steps down through a range of lighting threshold values on the image. At each threshold level, all potential targets (areas of black pixels surrounded by white pixels) are identified and potential targets that don't meet the criteria of a black circle in the middle of a reflective ring are filtered out. Once the correct target has been identified, the size of the major axis of the target is used to calculate the target distance.
+
+While operating the refueling system, the graduate students noticed there was a large amount of variation in the target distance provided by the vision-based targeting component. The estimated target distance changed even in grabbing two successive images of the target taken a few seconds apart under nearly identical conditions. In order to dock the refueling arm with the gas cap consistently and reliably, there must be consistency in the vision-based targeting component. Otherwise, the risk of missing the target is unacceptably high.
+
+After brain-storming and consulting with their graduate adviser, the students selected three factors they believed had a measurable effect on the variation in target distance. The factor `Distance` reflects car position. The "Target Illumination" factors are `Lighting` (Flood or Room Lights) and `LightAngle` (50 and 90 degrees). The factor levels were chosen to reflect worst case scenarios for the target illumination and car position factors.
+
+The response variable is related to the variation of the major diameter of the target selected by the software for calculating the target distance. Bigger is better.
+
+The results of a 20--run Plackett--Burman Design on the 3 factors is in the code to create `data`.
+
+**Import:**
+
+```{r}
+data <- read.csv(text = "
+Lighting, LightAngle, Distance, Response 
+Flood, 50, 48, 15 
+Flood, 90, 48,  8 
+Room,  90, 18,  0 
+Flood, 50, 18, 13 
+Flood, 90, 48, 19 
+Room,  90, 48,  0 
+Room,  50, 18,  9 
+Room,  50, 48, 17 
+Room,  50, 48,  0 
+Flood, 50, 18,  5 
+Room,  90, 18, 20 
+Flood, 50, 18, 14 
+Room,  90, 18, 21 
+Flood, 50, 48, 17 
+Flood, 90, 18, 16 
+Flood, 90, 48, 12 
+Flood, 90, 18, 21 
+Room,  90, 48,  0 
+Room,  50, 48, 10 
+Room,  50, 18, 10 
+")
+```
+
+**Visualize:**
+
+```{r}
+#| echo: false
+#| warning: false
+library(tidyverse)
+ggplot(data,
+       aes(x = Lighting,
+           y = Response)) +
+  geom_boxplot() +
+  labs(
+    main = "Auto Refueling",
+    x = "Target Illumination: Lighting Type",
+    y = "Response (bigger is better)"
+    ) 
+
+ggplot(data,
+       aes(x = LightAngle,
+           y = Response)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') + 
+  labs(
+    main = "Auto Refueling",
+    x = "Target Illumincation: Light Angle (degrees)",
+    y = "Response (bigger is better)"
+    ) 
+
+ggplot(data,
+       aes(x = Distance,
+           y = Response)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = 'y ~ x') + 
+  labs(
+    main = "Auto Refueling",
+    x = "Distance between Car and Pump (in)",
+    y = "Response (bigger is better)"
+    ) 
+```
+
+Two of these effects has the expected direction. Flood lights are better than dimmer room lights, and the further the car is from the pump the worse the performance. There doesn't appear to be a lighting angle effect, which is surprising since tilting the light toward the car was expected to be better.
+
+**Analysis:**
+
+Intern Note: The model includes the main effects. I was confident about that until Question 4 asked about interactions. If the model needs to be changed, do that only in Questions 4 & 5. That is, Questions 1-3 use the following code chunk that creates the `out` object.
+
+```{r}
+out <- lm(Response ~ Lighting + LightAngle + Distance, data = data)
+summary(out)
+```
+
+## 1. Construct a 99% CI on the mean difference in response between distance 48 and 18 in
+
+```{r}
+confint(out, level = 0.99)
+```
+
+Intern Note: This CI (-0.414, 0.207) seems to small! What am I doing wrong?
+
+***Correct Code*** (full points require using a ${\bf C}$ vector or matrix):
+
+```{r}
+suppressPackageStartupMessages(library(multcomp))
+# write the correct code
+data$Lighting <- as.factor(data$Lighting)
+data$Distance <- as.factor(data$Distance)
+data$LightAngle <- as.factor(data$LightAngle)
+out_1 <- lm(Response ~ Lighting + LightAngle + Distance, data = data, x = TRUE, y = TRUE)
+X <- out_1$x
+Y <- out_1$y
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% Y
+s2 <- as.numeric(( 1 / (dim(X)[1] - dim(X)[2])) * t(Y - X %*% beta_hat) %*% (Y - X %*% beta_hat))
+C = matrix(c(0, 0, 0, 1), ncol = 4)
+
+L <- C %*% beta_hat - qt(0.995, dim(X)[1] - dim(X)[2]) * sqrt( s2 * C %*% solve(t(X) %*% X) %*% t(C))
+U <- C %*% beta_hat + qt(0.995, dim(X)[1] - dim(X)[2]) * sqrt( s2 * C %*% solve(t(X) %*% X) %*% t(C))
+c(L, U)
+
+# checked via GLHT as well to ensure I did it right
+est <- glht(out_1, C)
+confint(est, level = 0.99)
+```
+
+## 2. Test Ho: no "Target Illumination" effect
+
+(that is, neither `Lighting` or `LightAngle` are statistically significant)
+
+```{r}
+summary(out)
+```
+
+Conclude there is no light effect since both the `Lighting` and `LightAngle` p-values are \> 0.05 in the table
+
+***2(a) Prompt:*** Explain why this isn't correct practice. Your answer should address P(Type I Error) and Power.
+
+This is not the correct method because that summary table examines the effect of one variable once accounting for all the other variables above it. What we should actually do is fit a model with that variable, and without that variable, to determine if it is significant. While this method does have very smaller P(Type I Error) (you are not very likely to accidentally accept not-significant results), the Power is also too small (you are unlikely to correctly reject an incorrect Null hypothesis). 
+
+***2(b) Provide the Correct Code*** (full points require using a full and reduced model ANOVA test):
+
+```{r}
+full_mod <- lm(Response ~ Lighting + LightAngle + Distance, data = data)
+# write the correct code 
+red_mod <- lm(Response ~ Distance, data = data)
+# See if Lighting is significant
+anova(red_mod, full_mod)
+```
+
+## 3. Test Ho: no gas bay effect
+
+(that is, none of the factors are statistically significant)
+
+Intern Note: I'm not sure how to do this :(
+
+***Provide the Correct Code*** (full points require using a ${\bf C}$ vector or matrix):
+
+```{r}
+# write the correct code 
+C <- matrix(c(1, 0, 0, 0), ncol = 4, byrow = TRUE) # The reduced model will only have an intercept, no other variables
+est <- glht(full_mod, linfct = C)
+summary(est, test = Ftest())
+```
+
+Given that p-value we will include that there is at least one variable which is significant. 
+
+## 4. Test Ho: No interactions
+
+(that is, none of the three 2 factor interactions or the 3 factor interaction are statistically significant)
+
+Intern Note: I'm not sure how to do this, so I found the best BIC model and if it has interactions then "reject Ho"
+
+```{r}
+min_model <- lm(Response ~ +1, data = data)
+biggest <- formula( lm(Response ~ Lighting * LightAngle * Distance, data = data) )
+out <- step(min_model, direction = "both", scope = biggest, k = log(dim(data)[1]),
+            trace = 0)
+summary(out)
+```
+
+Conclude there are no interactions since none of the interactions are in the best BIC model.
+
+***4(a) Prompt:*** Explain why this isn't correct practice. Your answer should address the validity of inference on effects not in the model.
+
+This is not correct practice because they are just examining whether the top BIC model has any interactions, which is not a measure of whether or not the interactions are actually significant. Due to the penalty term of BIC, it may actually exclude significant terms if the effect is not as strong as others. 
+
+***4(b) Provide the Correct Code*** (full points require using a full and reduced model ANOVA test):
+
+```{r}
+# write the correct code 
+no_int <- lm(Response ~ Lighting + LightAngle + Distance, data = data)
+
+# Model to include main effects and interactions
+full_mod <- lm(Response ~ Lighting*LightAngle*Distance, data = data)
+
+# Ho: no interactions
+anova(no_int, full_mod)
+```
+
+Given that this p-value is $>0.05$ we would then conclude that the interaction terms do not have a significant effect.
+
+## 5. Given the revised "include interactions" model, write the code to:
+
+***5(a) Test Ho: no gas bay effect***
+
+```{r}
+# FullMod: Intercept, LR, LA, D, LR:LA, LR:D, LA:D, LR:LA:D
+red_mod <- lm(Response ~ 1, data = data)
+anova(red_mod, full_mod)
+```
+
+This p-value implies that after including the interactions, none of the variables actually provide any significant effect. 
+
+***5(b) interpret the effect of `Distance` and `LightAngle`***
+
+```{r}
+library(sjPlot)
+plot_model(full_mod, type = "int")
+```
+
+If we use the no-effects model, then we would say that Distance and LightAngle have no effect on the response. However, if we use the Full-interaction model, we would say that Distance and LightAngle have their own individual effects, but also have effects due to their interactions (both their 2-ways and the three-way) which get difficult to interpret. These effects are demonstrated in the provided plots, with the first 3 being the 2-way interactions, and the last being the 3-way interaction (each panel is a different 'Distance' value, and the plot in each panel shows the interaction of LightAngle and Lighting).
+
+***5(c) Test Ho: no "Target Illumination" effect***
+
+```{r}
+red_mod <- lm(Response ~ Distance, data = data)
+anova(red_mod, full_mod)
+```
+
+We would conclude that the 'Target Illumination' factors have no effect. 
+
+***5(d) Identify the "best choices" for factors to produce the best response variable. Provide a 90% Prediction Interval for that gas bay setting.***
+
+Given the plots provided in part 5(b), we can see that the best combination of factors is: Distance - 18, Lighting - Flood, LightAngle - 90
+
+```{r}
+best_x <- as.data.frame(matrix(c('Flood', '90', '18'), ncol = 3))
+colnames(best_x) <- c('Lighting', 'LightAngle', 'Distance')
+pred <- predict(full_mod, newdata = best_x, interval = "prediction", level = 0.90)
+est <- pred[,1]
+lower <- pred[,2]
+upper <- pred[,3]
+```
+
+The combination described above provides an estimate of `r est` with a 90% Prediction interval of `r lower` to `r upper`.
+
+**Communicate:**
+
+Intern Note: Please review what I've written. I'm worried about anything that isn't technically correct or better communicates the results.
+
+We weren't expecting to find statistical significance with such a few number of experiments and so many factors. Instead we were trying to find the factors that merit further experimentation and which will be held constant.
+
+Distance should be investigated to have a curved effect. Flood lights are better than room lighting but they are expensive and we need the technology to be effective with room lighting so plan on holding it constant. Lighting angle should be held constant.
+
+## 6. Prompt: Revise / Add any parts of the Communicate section.
+
+I'd argue that the most important thing we can do at this point is actually gather more data. This experiment appear to be a fairly straightforward process, and assuming the collection process is relatively easy, gathering more data would be the most important thing to target. Given the data, we cannot say with certainty which of the variables would be most impactful to study/hold constant. 

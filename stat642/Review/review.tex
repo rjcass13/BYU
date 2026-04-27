@@ -1,0 +1,320 @@
+%\documentclass[twocolumn]{article}\
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+\newcommand{\statvec}[1]{\underset{\sim}{\bm{#1}}} % Vector symbol (tilde under vector)
+\DeclareMathOperator{\EX}{\mathbb{E}} % Expected Value symbol
+\DeclareMathOperator{\ext}{\EX_{\theta}} % Expected Value symbol
+\DeclareMathOperator{\vart}{Var_{\theta}} % Expected Value symbol
+\newcommand{\indep}{\perp\!\!\!\!\perp} % Independence symbol
+\newcommand{\real}{\mathbb{R}} % Simplified 'Reals' indicator
+\newcommand{\pto}{\overset{P}{\to}}
+\newcommand{\asto}{\overset{a.s.}{\to}}
+\newcommand{\rthto}{\overset{L^r}{\to}}
+\newcommand{\dto}{\overset{D}{\to}}
+% Force all aggregate symbols to always put values above/below
+\let\Oldint=\int
+\let\Oldsum=\sum
+\let\Oldprod=\prod
+\let\Oldbigcup=\bigcup
+\let\Oldbigcap=\bigcap
+\let\Oldlim=\lim
+\renewcommand{\int}{\Oldint\limits} 
+\renewcommand{\sum}{\Oldsum\limits} 
+\renewcommand{\prod}{\Oldprod\limits} 
+\renewcommand{\bigcup}{\Oldbigcup\limits} 
+\renewcommand{\bigcap}{\Oldbigcap\limits} 
+\renewcommand{\lim}{\Oldlim\limits} 
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+\newcommand{\iiddist}{\overset{\mathrm{iid}}{\sim}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\boldred}[1]{\textbf{\textcolor{red}{#1}}}
+\usepackage[linktoc=all]{hyperref}
+
+
+\begin{document}
+
+Fisher Information: $I_n(\theta) = -\ext[\frac{\partial^2}{\partial \theta^2} ln(f(x|\theta))]$ 
+
+Delta Method: $\sqrt{n}(g(\bar{x}) - g(\theta)) \dto N(0, \sigma^2[g'(\theta)]^2)$
+
+Score: $\psi(x;\theta) = \frac{\partial}{\partial \theta} ln(f(x|\theta))$
+
+Slutsky's Theorem: $\begin{cases} X_n + Y_n \dto X + a \\ X_nY_n \dto aX \\ \frac{X_n}{Y_n} \dto SOMETHING \end{cases}$
+
+CRLB: $\frac{(\tau'(\theta))^2}{I_n(\theta)}$
+
+Regularity Conditions: 
+
+- Data are iid, parameter is identifiable, parameter is not used as a boundary of support
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+
+\section{Asymptotic Evaluation of Estimators}
+
+\subsection{Consistency}
+
+\underline{Defintion}: Let $W_n$ be an estimator based on sample of size n of $\tau(\theta)$. $W_n$ is said to be consistent for $\tau(\theta)$ if $W_n \overset{P_{\theta}}{\to} \tau(\theta) \ \forall \theta$
+
+- ie. Bias goes to 0, variance goes to 0
+
+- $P_{\theta}(|W_n - \tau(\theta)| > \epsilon) \underset{n \to \infty}{\to} 0, \ \forall \ \theta$ for any $\epsilon > 0$
+
+\underline{Methods}:
+
+1. Tail/Concentration Bounds to control the probabilities: Markov's Inequality, Chebychev, Chernoff
+
+2. If $W_n = g(\bar{x})$, we can apply LLN ($\bar{x} \pto \mu$) then CMT (Continous Mapping Theorem) ($g(\bar{x}) \pto g(\mu)$) if g is continous.
+
+3. M-estimation (Maiximizer/Minimizer of some function, ie. MLE): $\frac{1}{n}l(\theta|x) \overset{P_{\theta_0}}{\to} E_{\theta_0}[ln(f(x_1|\theta))]$
+
+- Basically, we know the right side is min/max at $\theta_0$, so we need to show that the left side approcahes that same min/max as the overeall distirbutions converge
+
+\subsection{Asymptotic Variance}
+
+\underline{Definition}: If $\lim_{n\to\infty} b_n Var(W_n) \to \gamma^2$, then $\gamma^2$ is called the limiting variance of $W_n$
+
+\underline{Definition}: If $\sqrt{n}(W_n - \tau(\theta)) \dto Y_{\theta}, \forall \theta$, where $\ext[Y_{\theta}] = 0$, then $\vart(Y_{\theta})$ is called the asymptotic variance of $W_n$.
+
+- $\vart(W_n) = \frac{1}{n}\vart(\sqrt{n}(W_n - \tau(\theta))) \approx \frac{\vart(Y_{\theta})}{n}$
+
+- "1-2" punch for MVUEs: Law of Large numbers, continous mapping theorem
+
+- "1-2" punch for Asymptotics: Central Limit Theorem, Delta Method
+
+\underline{Define}: An estimator $W_n$ is said to be:
+
+i) Asymptotically unbiased if $\sqrt{n}(W_n - \tau(\theta)) \dto Y_{\theta}, \ext[Y_{\theta}] = 0$
+
+ii) Asymptotically efficient if its asymptotic variance is $\frac{[\tau'(\theta)]^2}{I_1(\theta)}$ (the CRLB, Fischer information calculated for 1 sample)
+
+\underline{Theorem}: Under regularity conditions, if $X \iiddist f(x|\theta)$, then:
+
+i) the MLE $(\hat{\theta}_n)$ will exist and be unique with probability converging to 1
+
+ii) $\sqrt{n}(\hat{\theta}_n - \theta_0) \dto N(0, I_1^{-1}(\theta_0))$
+
+\subsection{Relative Efficiency}
+
+Suppose $W_n$ and $V_n$ are both asymptocially unbiased and have asymptotic variances $\sigma^2_W, \sigma^2_V$
+
+\underline{Definition}: The relative asymptotic efficiency  of $V_n$ compared to $W_n$ is $ARE(V_n, W_n) = \frac{\sigma^2_W}{\sigma^2_V}$ (an estimator is better when it's asymptotic variance is smaller, so this says that relative efficiency increases as the target estimator's variance decreases comapred to another's).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Hypothesis Testing}
+
+\underline{Definition}: Let $\mathbb{X}$ be the sample space. A test function is a statistic $\phi(x) \in [0, 1]$ such that if $x \in \mathbb{X}$, we reject $H_0$ with probability $\phi(x)$.
+
+\underline{Definition}: A simple test function satisfies $\phi(x) \in \{0, 1\} \forall x \in \mathbb{X}$
+
+\underline{Rejection Region}: $R_{\phi} = \{x \in \mathbb{X}: \phi(x) = 1\}$ 
+
+\underline{Acceptance Region}: $A_{\phi} = \{x \in \mathbb{X}: \phi(x) = 0\}$ 
+
+Type I Error: $P_{\theta}(\text{Reject } H_0), \theta \in \Theta_0$ (Reject when we shouldn't)
+
+Type II Error: $1 - P_{\theta}(\text{Reject } H_0), \theta \in \Theta_1$ (Accept when we shouldn't)
+
+\underline{Power}: $P_{\theta}(\text{Reject } H_0) = \EX[\phi(X)] =: \beta_{\phi}(\theta)$
+
+- Under Null, that's Type I Error Rate
+
+- Under Alternate, that's just the power
+
+\underline{Size}: The size of $\phi$ is $\underset{\theta \in \Theta_0}{sup}\beta_{\phi}(\theta)$
+
+\underline{Level}: $\phi$ is a level $\alpha$ test if its size is no more than $\alpha$
+
+\subsection{Most Powerful Tests}
+
+\underline{Define}: A test $\phi^* \in \Phi_{\alpha}$ is said to be MP (Simple $H_0$) or UMP (Composite $H_0$) for $H_0: \theta \in \Theta_0$ vs. $H_1: \theta \in \Theta_1$ if $\beta_{\phi^*}(\theta) \ge \beta_{\phi}(\theta) \ \forall \phi \in \Phi_{\alpha}$ and all $\theta \in \Theta_1$.
+
+\subsection{Neyman-Pearson Lemma}
+
+Consider testing $H_0:\theta = \theta_0$ vs. $H_1: \theta = \theta_1$ (both are simple). Then any test of the form (with $k > 0, \gamma \in [0,1]$):
+
+$\phi(x) = \begin{cases} 1, & f(x|\theta_1) > kf(x|\theta_0) \\ \gamma, & f(x|\theta_1) = kf(x|\theta_0) \\ 0, & f(x|\theta_1) < kf(x|\theta_0) \end{cases}$
+
+is an MP test of a level equal to its size. 
+
+\subsection{MLR}
+
+Let $T$ be any univariate statistic and $g(t|\theta)$ be its PDF/PMF. We say $g(t|\theta)$ has the monotone likelihood ratio (MLR) property if: $\frac{g(t|\theta_2)}{g(t|\theta_1)}$ is non-decreasing in $t$ whenever $\theta_2 > \theta_1$.
+
+\subsection{Karlin-Rubin}
+
+Let $f(x|\theta)$ be a family with univariate sufficient statistic T that has MLR. Then any test function of the form $\phi(x) = \begin{cases} 1, & T(X) > t_0 \\ \gamma, & T(X) = t_0 \\ 0, & T(X) < t_0 \end{cases}$ is the UMP test of level $\gamma = P_{\theta_0}(T > t_0)$ for $H_0: \theta \le \theta_0, H_1: \theta > \theta_0$.
+
+\begin{center}
+\begin{tabular}{ c c c }
+ $H_0$/MLR & Non-Dec & Non-Inc \\ 
+ $\theta \le \theta_0$ & $T > t_0$ & $T < t_0$ \\  
+ $\theta \ge \theta_0$ & $T < t_0$ & $T > t_0$    
+\end{tabular}
+\end{center}
+
+\subsection{Likelihood Ratio Tests}
+
+\underline{Definte}: The (generalized) Likelihood ratio is $\lambda(x) = \frac{\underset{\theta \in \Theta_0}{sup} L(\theta|x)}{\underset{\theta \in \Theta}{sup} L(\theta|x)}$
+
+Define $\hat{\theta}$ to be the ordinary MLE and $\hat{\theta_0} = \underset{\theta \in \Theta_0}{argmax}L(\theta|x)$. Then $\lambda(x) = \frac{L(\hat{\theta}_0|x)}{L(\hat{\theta}|x)}$
+
+We reject when $\lambda(x)$ is small (ie. the likelihood of the estimator being in the null space is small compared to main).
+
+- $P_{\theta_0}(T(X) \le k_1) + P_{\theta_0}(T(X) \le k_2) = \alpha$, $\lambda(k_1) = \lambda(k_2)$
+
+\subsection{Wilks' Theorem}
+
+Under regularity assumptions, if $H_0: \theta = \theta_0$ is true, $\Theta \in \real^k: -2ln(\lambda(x)) \dto \chi^2_k$
+
+- Part 2: $X_i \iiddist f(x|\theta), H_0: \theta \in \Theta_0, H_1: \theta \notin \Theta_0, \Theta_0 = \{\theta \in \real^k: \theta_j = \theta_{0,j}, j = 1, ..., r\}$. Then, under $H_0: -2ln(\lambda(x)) \dto \chi^2_r$
+
+\subsection{Wald Tests}
+
+\underline{Wald Statistic}: $Z_w = (\hat{\theta} - \theta_0)\sqrt{n I_1(\hat{\theta})} \sim N(0,1)$
+
+\underline{Wald Test}: Rejects when $|Z_w| > Z_{1-\alpha/2}$
+
+\subsection{Score Tests}
+
+Remember: $\sqrt{n} \psi(x;\theta_0) \dto N(0, I_1(\theta_0))$
+
+\underline{Score Statistic}: $Z_s = \frac{\psi(x;\theta_0)}{\sqrt{n I_1(\theta_0)}}$
+
+\underline{Score Test}: Rejects when $|Z_s| > Z_{1-\alpha/2}$
+
+\subsection{Hypothesis Testing Summary}
+
+1) Definitions: 
+
+2) UMP: 
+
+- Neyman-Pearson (simple $H_0, H_1$)
+
+- Karlin-Rubin (one-sided w/ MLR)
+
+- Beyond that, no guarantee for UMP
+
+3) LRT
+
+- Reframe the test: $\phi(x) = I(\lambda(x) < c)$ as $\phi(x) = I(T(X) < b_1) + I(T(X) > b_2)$
+
+4) Asymptotic Tests
+
+- Wilks' theorem
+
+- Wald/Score tests
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Confidence Intervals}
+
+\underline{Coverage Probability}: The Coverage Probability of an interval estimate $(L(X), U(X))$ at $\theta \in \Theta$ is $P_{\theta}(L(X) \le \theta \le U(X))$
+
+\underline{Confidence Coefficient}: The Confidence Coefficient of an interval estimate $(L(X), U(X))$ is $\underset{\theta}{inf} P_{\theta}(L(X) \le \theta \le U(X))$ (the min).
+
+- Similar to Level vs. Size, an inteval estimate is level $100(1-\alpha)\%$ if its confidence coefficient is atleast $1-\alpha$.
+
+\subsection{Pivots}
+
+\underline{Definition}: A random ariable $Q(x, \theta)$ is said to be pivotal if its distribution does not depend on $\theta$
+
+\underline{Location}: $f(x|\theta) = g(x - \theta)$
+
+- Pivots: $X_i - \theta$, and any function of that value (ie. $\bar{X} - \theta, \tilde{X} - \theta$ (median), any $h(X_1-\theta, ..., X_n - \theta)$)
+
+\underline{Scale}: $f(x|\theta) = \frac{1}{\theta}g(\frac{x}{\theta})$
+
+- Pivots: $\frac{X_i}{\theta}$, and any function of that (ie. $\bar{X}\theta, \frac{X_{(1)}}{\theta}$, and $h(\frac{X_1}{\theta}, ..., \frac{X_n}{\theta})$)
+
+If both, do the location centering first, then the scale: $\frac{X_1 - \theta}{\sigma}$
+
+\underline{Confidence Set}: A confidence set $C(x) \subset \real$ has level $1-\alpha$ if $P(\theta \in C(x)) \ge 1-\alpha$
+
+- If $Q(X,\theta)$ is a pivot, then $C(x) = \{\theta: a \le Q(X, \theta) \le b\}; a<b$ forms a confidence set
+
+- Let $D$ be CDF of $Q$. Then $P_{\theta}(\theta \in C(x)) = P_{\theta}(a \le Q(X,\theta) \le b) = D(b) - D(a)$. To ensure $C(x)$ has level $1-\alpha$, choose $\alpha_1, \alpha_2$ such that $\alpha_1 + \alpha_2 = \alpha; a = D^{-1}(\alpha_1), b = D^{-1}(1-\alpha_2)$
+
+- Typically, $Q(X,\theta)$ is decreasing in $\theta$, so for $a \le Q(X) \le b$ there are corresponding values for $\theta: L(X), U(X)$ (think of the graphs of a decreasing function, where a maps to $U(X)$, etc.)
+
+\underline{Uniform Transformation}: Remember that if $T$ is some statistic with continuous CDF $F_T(t|\theta)$, then $U = F_T(t|\theta) \sim U(0,1)$ (ie. $F^{-1}(U) = T$)
+
+- Choose $Q(X.\theta) = F_T(T|\theta)$ as a pivot: $C(x) = \{\theta: a \le Q(X,\theta) \le b\}$ is a confidence set with coefficient $b-a$ for $0 \le a < b \le 1$
+
+\subsection{Inverting Tests}
+
+Given a confidence set $C(x)$ for $H_0: \theta = \theta_0$, with test function $\phi(x) = \begin{cases}1, & \theta_0 \notin C(X) \\ 0, & \theta_0 \in C(x) \end{cases}$, the size is $P_{\theta_0}(\theta_0 \not C(x))  = 1 - P_{\theta_0}(\theta_0 \in C(x))$
+
+We can operate in reverse order: 
+
+\underline{Theorem}: For each $\theta_0 \in \theta$, let $A(\theta_0) $ be the acceptance region os a size $\alpha$ test of $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$
+
+- Then, $C(x) = \{\theta_0: x \in A(\theta_0)\}$ is a level $100(1-\alpha)\%$ confidence set
+
+\subsection{Length Minimization}
+
+Assuming we have some confidence interval $(a \le F(\theta) \le b)$, subject to contstraint $F(b) - F(a) = 1-\alpha$ (ie. size $\alpha$). 
+
+Lagrangian: $h(a, b, \lambda) = b - a + \lambda[F(b) - F(a) - (1-\alpha)]$
+
+- It's composed of: 1) The part we want to minimize (the interval length) and b) $\lambda$ times our constraint (written as being equal to 0)
+
+Then take partials of everything: 
+
+- $\frac{\partial}{\partial a}$ (solve for $\lambda$, ie. $\lambda = \frac{1}{f(a)}$)
+
+- $\frac{\partial}{\partial b}$ (solve for $\lambda$, ie. $\lambda = \frac{1}{f(b)}$, and set the first two parts equal to eachother (ie. $\frac{1}{f(a)} = \frac{1}{f(b)}$))
+
+- $\frac{\partial}{\partial \lambda} = F(b) - F(a) - (1-\alpha)$ (returns our constraint)
+
+That gives 2 equations, 2 unknowns. Can use various root finding methods to solve. 
+
+\subsection{Large Sample Intervals}
+
+When n is large it can be beneficial to use 1) Asymptotic Pivots or 2) Invert large sample tests
+
+For $H_0: \theta = \theta_0, H_1: \theta \neq \theta_0$:
+
+\underline{Wald Intervals}
+
+- $Z_w  = \frac{\hat{\theta} - \theta_0}{Std.Error(\hat{\theta})} \underset{H_0}{\dto} N(0,1)$
+
+- $A(\theta_0) = \{x: |Z_w| \le Z_{1-\alpha/2}\}$
+
+- $C(x) = \{\theta_0: |Z_w| \le Z_{1-\alpha/2}\} = [\hat{\theta} - Z_{1-\alpha/2}SU(\hat{\theta}), \hat{\theta} + Z_{1-\alpha/2}SE(\hat{\theta})]$
+
+- This is asymptotic, so as n gets larger, test approaches the $N(0,1)$ and approaches the size $\alpha$ test
+
+- $Q(X,\theta) = \frac{\hat{\theta} - \theta}{SE(\hat{\theta})} \underset{\text{large n}}{\overset{D}{\approx}} N(0,1)$ leads to large sample pivotal interval: $[\hat{\theta} - SE(\hat{\theta})Z_{1-\alpha_2}, \hat{\theta} - SE(\hat{\theta})Z_{\alpha_1}]$
+
+\underline{Score Intervals}
+
+- $Z_s = \frac{\psi(x;\theta)}{\sqrt{n I_1(\theta_0)}} \underset{H_0}{\dto} N(0,1)$
+
+- Using this as an asymptotic pivot or inverting an asymptotic size $\alpha$ test (the score test) gives: $C(x) = \{\theta_0: |\frac{\psi(x;\theta_0)}{\sqrt{n I_1(\theta_0)}}| \le Z_{1-\alpha/2}\}$
+
+\underline{LR Intervals}
+
+- $-2ln(\lambda(x)) \underset{H_0}{\dto} \chi^2_1$ (for one parameter)
+
+- Test-based confidence set: $C(x) = \{\theta_0: -2ln(\lambda(x)) \le \chi^2_{1-\alpha}\}$ ($\theta_0$ is used int he numerator of $\lambda(x)$)
+
+- Pivot-based confidence set: $C(x) = \{\theta_0: \chi^2_{\alpha, \alpha_1} \le -2ln(\lambda(x)) \le \chi^2_{1,1-\alpha_2}\}$
+
+\underline{Transformation-based Interval}
+
+$\hat{\sigma}_{\hat{\theta}} = \sqrt{\frac{1}{s I_1(\hat{\theta})}}$
+
+- Start with $\sqrt{n}(W_n - \tau(\theta)) \dto N(0, \nu_{\theta}^2)$
+
+- Want $g'(\theta) = \frac{1}{\nu_{\theta}}$, then by Delta Method: 
+
+- $Q(X,\theta) = \sqrt{n}(g(W_n) - g(\theta)) \dto N(0,1)$
+
+\end{document}
