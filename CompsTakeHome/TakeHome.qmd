@@ -1,0 +1,66 @@
+---
+title: "Comps Take Home"
+author: "RJ Cass"
+date: "8 May 2026"
+execute:
+  echo: false
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{caption, bm, amsmath, xcolor}
+        \setlength{\parindent}{0pt}
+        \captionsetup{textfont={it}, font=small} 
+        \newcommand{\statvec}[1]{\underset{\sim}{#1}}
+geometry: "margin=1in"
+---
+
+
+```{r load_data}
+suppressPackageStartupMessages(library(tidyverse))
+
+ChildGrowth <- read_csv("https://grimshawville.byu.edu/ChildGrowth.csv")
+  ChildGrowth <- ChildGrowth %>%
+  mutate(Gender = factor(Gender),
+  Ethnicity = factor(Ethnicity))
+```
+
+There does not appear to be any interactions between Age vs. Gender/Ethnicity
+
+```{r EDA}
+table(ChildGrowth[, c(2,4)])
+
+plot(ChildGrowth$Height, ChildGrowth$Weight)
+plot(ChildGrowth$Age, ChildGrowth$Weight)
+
+
+```
+
+
+```{r age_gender_ethnicity_plot}
+levels_gender <- levels(ChildGrowth$Gender)
+levels_ethnicity <- levels(ChildGrowth$Ethnicity)
+par(mfrow = c(3, 2))
+for (gender in levels_gender) {
+  for (ethnicity in levels_ethnicity) {
+    rows <- ChildGrowth[(ChildGrowth$Gender == gender) & (ChildGrowth$Ethnicity == ethnicity), ]
+    plot(rows$Age, rows$Weight)
+  }
+}
+par(mfrow = c(1, 1))
+```
+
+```{r age_gender}
+levels_gender <- levels(ChildGrowth$Gender)
+par(mfrow = c(2, 1))
+for (gender in levels_gender) {
+  rows <- ChildGrowth[ChildGrowth$Gender == gender, ]
+  plot(rows$Age, rows$Weight)
+}
+par(mfrow = c(1, 1))
+```
+
+```{r model_a}
+mod_a <- lm(log(Weight) ~ log(Age) + Ethnicity + Gender, data = ChildGrowth)
+plot(mod_a)
+```
