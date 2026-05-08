@@ -1,6 +1,6 @@
 ---
 title: "Comps Take Home"
-author: "RJ Cass"
+author: "Dustin Henderson"
 date: "8 May 2026"
 execute:
   echo: false
@@ -16,8 +16,14 @@ geometry: "margin=1in"
 ---
 
 
-```{r load_data}
+```{r load_data, message = FALSE, include = FALSE}
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(emmeans))
+suppressPackageStartupMessages(library(nonnest2))
+suppressPackageStartupMessages(library(marginaleffects))
+suppressPackageStartupMessages(library(BART))
+suppressPackageStartupMessages(library(dbarts))
 
 ChildGrowth <- read_csv("https://grimshawville.byu.edu/ChildGrowth.csv")
   ChildGrowth <- ChildGrowth %>%
@@ -25,42 +31,167 @@ ChildGrowth <- read_csv("https://grimshawville.byu.edu/ChildGrowth.csv")
   Ethnicity = factor(Ethnicity))
 ```
 
-There does not appear to be any interactions between Age vs. Gender/Ethnicity
 
-```{r EDA}
-table(ChildGrowth[, c(2,4)])
+# Models
 
-plot(ChildGrowth$Height, ChildGrowth$Weight)
-plot(ChildGrowth$Age, ChildGrowth$Weight)
+## Model 1
 
+The first model we are fitting is a model that uses a log-transform on the response variable. We will also ignore Height as an eplanatory variable for this model. The relationship between Age and log(Weight) is shown in @fig-age_log_weight. This does not appear to be a linear relationship, so we will also apply a log-transform on the Age variable. We also want this model to explore possible interactions, so we are including all possible interactions between Age, Gender, and Ethnicity.
 
-```
+This model can be represented via the following Cell-means notation, where $Y_i$ is the Weight of the ith child, $\mu_{g,e}$ is the mean of the specific grouping of Gender $\times$ Ethnicity that child belongs to, $\beta_{g,e}$ is the corresponding Age slope for that group, $Age_i$ is that child's age, and $\epsilon_i$ is the error. 
+$$
+Y_i = \mu_{g,e} + \beta_{g,e}Age_i + \epsilon_i
+$$
 
-
-```{r age_gender_ethnicity_plot}
-levels_gender <- levels(ChildGrowth$Gender)
-levels_ethnicity <- levels(ChildGrowth$Ethnicity)
-par(mfrow = c(3, 2))
-for (gender in levels_gender) {
-  for (ethnicity in levels_ethnicity) {
-    rows <- ChildGrowth[(ChildGrowth$Gender == gender) & (ChildGrowth$Ethnicity == ethnicity), ]
-    plot(rows$Age, rows$Weight)
-  }
-}
-par(mfrow = c(1, 1))
-```
-
-```{r age_gender}
-levels_gender <- levels(ChildGrowth$Gender)
-par(mfrow = c(2, 1))
-for (gender in levels_gender) {
-  rows <- ChildGrowth[ChildGrowth$Gender == gender, ]
-  plot(rows$Age, rows$Weight)
-}
-par(mfrow = c(1, 1))
+```{r fig-age_log_weight}
+#| fig-cap: "Plot of the relationship between Age and log(Weight). Note it is somehwat non-linear with a curve towards the top, somewhat matching a log function."
+plot(ChildGrowth$Age, log(ChildGrowth$Weight), xlab = 'Age', ylab = 'log(Weight)', main = 'Age vs. log(Weight)')
 ```
 
 ```{r model_a}
-mod_a <- lm(log(Weight) ~ log(Age) + Ethnicity + Gender, data = ChildGrowth)
-plot(mod_a)
+mod_a <- lm(log(Weight) ~ log(Age)*Ethnicity*Gender, data = ChildGrowth)
+```
+
+We want to use this model to explore the effects of each of the variables. The hypothesis of each test, with a brief description of the process, is provided below. 
+
+##### No Gender AND no Ethnicity Effect
+
+```{r hyp_1}
+mod_a_red <- lm(log(Weight) ~ log(Age), data = ChildGrowth)
+anova_out <- anova(mod_a_red, mod_a)
+anova_f <- round(anova_out$F[2], 3)
+```
+
+For this test we want to examine if Gender and Ethnicity have any effect. We fit our full model (including both effects and interactions), and a reduced model (excluding both effects and interactions) and used an ANOVA test to determine if they are statistically different. We found, with an F-statistic of `r anova_f` and a p-value of <0.0001, that there is a significant difference between the models, implying that yes, at least one of Gender or Ethnicity have a significant effect. However, this does not indicate which specifically of Gender or Ethnicity creates a significant difference, meaning we will need to dive deeper to fully explain this effect (covered in a later test). 
+
+##### Parallel Growth Curves for all Gender and Ethnicity
+
+For this test, we want to examine if the interaction between Age and the Gender/Ethnicity factors is significant (ie. should each Gender/Ethnicity group have different slopes, or the same slope). To test this we generated a C matrix to test whether giving each group the same slope results in a significantly different model than one where each group has different slopes. In our model, the columns for our C matrix represent the slopes of each group, being Ethnicity1:Gender1, Ethnicity1:Gender2, Ethnicity2:Gender1, etc.
+
+```{r hyp_2}
+# My slopes are E1G1, E1G2, E2G1, E2G2, E3G1, E3G2
+slopes <- emtrends(mod_a, ~ Gender * Ethnicity, var = "Age")
+
+C <- list(
+  "Gender Diff in Eth1" = c(1, -1, 0, 0, 0, 0) 
+)
+contr <- as.data.frame(contrast(slopes, method = C, level = .99))
+hyp_2_p <- round(contr$p.value, 3)
+hyp_2_t <- round(contr$t.ratio, 3)
+```
+
+So, our C matrix for this test is $C = (1, -1, 0, 0, 0, 0)$. With a T-statistic of `r hyp_2_t` and a p-value of `r hyp_2_p` we found that the effect of different slopes for each group is not significant. This means that Gender and Age due not have a significant impact on how Age affects Weight, and when examining growth curves, the slope (or rate of growth) is ok to be the same across all groups. 
+
+##### No Difference between female and male growth curves (holding Ethnicity constant)
+
+```{r hyp_3_4}
+tests <- as.data.frame(joint_tests(slopes, level = .99))
+hyp_3_p <- round(tests$p.value[1], 4)
+hyp_3_f <- round(tests$F.ratio[1], 3)
+hyp_4_p <- round(tests$p.value[2], 4)
+hyp_4_f <- round(tests$F.ratio[2], 3)
+```
+
+We want to see if there is a significant difference in Gender, holding Ethnicity constant. To test this we will use the emmeans package 'joint_slopes' function which tests the effect of the different factors. Performing the test we got an F-statistic of `hyp_3_f` and a p-value of `r hyp_3_p` indicating that there is no significant difference between Gender growth curves. This means that clinicians and healthcare providers would not need different growth curves based on Gender. 
+
+##### No Difference between Ethnicity growth curves (holding Growth constant)
+
+We want to see if there is a significant difference in Ethnicity, holding Gender constant. We will use the same method as the previous hypothesis. Performing the test we got an F-statistic of `r hyp_4_f` and a p-value of `r hyp_4_p` indicating that there is a significant difference between Ethnicity growth curves. This implies that those using growth curves should have different curves for different ethnicites. As shown previously, the slopes are fine to be the same across the groups, but the intercept (baseline value) would likely be different between certain groups. 
+
+##### Growth Curves are Linear
+
+```{r hyp_5, include = FALSE}
+mod_a_lin <- lm(log(Weight) ~ Age*Gender*Ethnicity, data = ChildGrowth)
+
+val <- vuongtest(mod_a, mod_a_lin)
+hyp_5_p <- round(val$p_LRT[2]$B, 3)
+hyp_5_z <- round(val$LRTstat, 3)
+```
+
+In this test we want to see if making the growth curves linear creates a significant difference in the model. To do this we will fit a model without using the log-transform on 'Age' and will see how the models compare in predictive power. We will then use a Vuong test (similar to the ANOVA test which compares 2 models, however, the Vuong test compares 2 non-nested models). Performing this test, we got a Z-statistic of `r hyp_5_z` and a p-value of `r hyp_5_p` indicating there is no significant difference between fitting a linear or non-linear effect for Age. However, intuitively it makes sense to assume that growth is not linear, and it would likely make more sense to frontline clinicians etc. to make this a non-linear relationship.  
+
+##### Plotted effect of Age vs. log(Weight)
+
+We want to examine the growth curve for a specific example child, with Gender 1 and Ethnicity 3. This curve is provided in @fig-pred_age_weight and represents the average predicted curve for a child in that category. This is a curve a clinician could use to compare a real child's weight to the predicted weight for their age and see where they lie compared to their predicted value. 
+
+```{r fig-pred_age_weight}
+#| fig-cap: "Predicted log(Weight) by Age for a child with Gender = 1, Ethnicity = 3. Includes the 99% prediction interval"
+gender = "1"
+ethnicity = "3"
+age <- 2:18
+new_vals <- as.data.frame(expand.grid(age, gender, ethnicity))
+colnames(new_vals) <- c('Age', 'Gender', 'Ethnicity')
+
+preds <- predict(mod_a, newdata = new_vals, interval = "prediction", level = 0.99)
+preds <- as.data.frame(cbind(age, preds))
+
+ggplot(preds, aes(x = age, y = fit)) +
+  geom_point() +
+  # Adds the regression line
+  geom_line(aes(y = fit), color = "blue", lwd = 1) +
+  # Adds the shaded prediction interval
+  geom_ribbon(aes(ymin = lwr, ymax = upr), alpha = 0.2, fill = "red") +
+  theme_minimal() +
+  labs(title = "Age curve for Gender = 1, Ethnicity = 3 with 99% Prediction Interval", x = 'Age', y = 'Predicted log(Weight)')
+```
+
+##### Estimate of the Difference between Female and Male
+
+```{r hyp_7}
+points <- data.frame(
+  Age = c(10, 10), 
+  Gender = factor(c("1", "2")), 
+  Ethnicity = factor(c("2", "2"))
+)
+
+preds <- predictions(mod_a, newdata = points, type = 'response')
+hyp_7 <- hypotheses(preds, "b1 - b2 = 0", conf_level = 0.99)
+hyp_7_est <- round(hyp_7$estimate, 4)
+hyp_7_lwr <- round(hyp_7$conf.low, 4)
+hyp_7_high <- round(hyp_7$conf.high, 4)
+```
+
+We want to see what the difference in predicted Weight is for a Male vs. Female child who is 10, and of Ethnicty 2. We calculated the predicted values for each child and found that the predicted weight difference is `r hyp_7_est` kg with a 99% interval from `r hyp_7_lwr` kg to `r hyp_7_high` kg. Because this interval includes 0, we conclude that there is no significant difference between a Male and Female, both aged 10 in Ethnic group 3. 
+
+
+## Model 2
+
+For the second model, we want to fit a model that provides highly accurate predictions, but that still includes some level of interpretability to enable non-technical people (ie. patients, clinicians) to understand what factors are contributing to the predictions. To this end we fit a Bayesian Additive Regression Tree (BART) model. In this context, a Tree is a simple model that uses binary decision making to fit the model (ie. 'is Age > 10', or 'does Gender = 1'). A forest is a collection of separately-fitted trees, where each tree will make a prediction, and the results of each tree is aggregated (ie. the result of the forest is the aggregated result of all trees within that forest). The BART model starts by fitting a simple tree model, then fits another tree to the residuals of the first model, and another tree to the residual of the two combined, etc, creating the BART forest.
+
+```{r mod_b}
+bart = gbart(x.train = data$x, y.train = data$y, x.test = oos.seq)
+
+
+bart = lbart(x.train = ad[,c(5,1)], y.train = Y.train
+              , x.test = X.test.df
+              # , ntree = 30
+              # , nskip = 1000
+              # , ndpost=1000
+              # , keepevery = 1
+)
+dim(bart$yhat.test)
+
+
+# Aside: See Jensen's inequality:
+hist(plogis(bart$yhat.test))
+a = apply(plogis(bart$yhat.test),2,mean)
+p = plogis(apply(bart$yhat.test,2,mean))
+plot(a,p)
+abline(0,1,col=2,lwd=4)
+
+
+# Plot: 
+plot.these = which(p<.55 & p>.45)
+plot(ad$GRE.Score,ad$CGPA, col = as.numeric(ad$Status), pch=16)
+points(x.test[plot.these],y.test[plot.these],col=5,pch=20)
+
+
+bart_machine = bartMachine(X,y, num_trees = 200, num_burn_in = 500,
+                           num_iterations_after_burn_in = 1000)
+#partial dependence plot  
+pd_plot(bart_machine, "CGPA")
+pd_plot(bart_machine, "SOP")
+
+
+pdb1 <- pdbart(x, y, xind = c(1, 2), keepevery = 10, ntree = 100)
 ```
