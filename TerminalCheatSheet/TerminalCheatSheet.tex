@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, cancel, mathtools, bm, xcolor, newverbs}
+\usepackage[left=.5in, right=.5in, top=1in, bottom=1in]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage[skip=1em,indent=0pt]{parskip}
+\setlength{\parindent}{0pt}
+
+% Define custom colors
+\definecolor{codebg}{HTML}{000000}    % Black background
+\definecolor{codefg}{HTML}{F58727}    % Orange text
+
+% 2. Adjust padding so it doesn't distort paragraph line spacing
+\setlength{\fboxsep}{2pt} 
+
+% 3. Clear old definition and re-route \verb properly
+\let\verb\relax
+\newcommand{\verb}{\collectverb{\color{codefg}\ttfamily\colorbox{codebg}}}
+
+\begin{document}
+
+\tableofcontents
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Aliases}
+
+\verb+alias+ - Can call at any point to see a list of available Aliases
+
+\verb+~/.zshrc+ - Location of aliases
+
+\section{Servers}
+
+\subsection{Connecting to Servers}
+
+\verb+ssh rjcass13@stat-g01.byu.edu+ - Full line for connecting to the server (just replace the number with the corresponding server number)
+
+\verb+server g0#+ - (Alias) Replace \# with any number 1-5 to join the corresponding server
+
+\subsection{Moving Files}
+
+Move file from local machine to server: \verb+scp FILE_PATH rjcass13@stat-g02.byu.edu:FILE_PATH+
+
+Move file from server to local machine: \verb+scp rjcass13@stat-g02.byu.edu:FILE_PATH FILE_PATH+
+
+To move a full directory, include the recursive \verb+-r+. Example: \verb+scp -r rjcass13@...+
+
+\subsection{Running processes in background}
+
+\subsubsection{Screens}
+
+Running a program in a screen allows it to run in the background even when you disconnect from the server
+
+\begin{enumerate}
+    \item Login to the server
+    \item Start a screen session: \verb+screen -S my_session_name+
+    \item Navigate to and run the desired program
+    \item Detach from the screen session: On a Mac: CTRL+A (nothing should change), then D (if it worked it will take you back to the original SSH session and say detached)
+    \item To rejoin the session, while logged in to the server, do: \verb+screen -r my_session_name+. If you forgot what the session is called, do \verb+screen -ls+ to see all session names. 
+    \item To end the screen session (completely kill it, no coming back), just enter \verb+exit+. If the session is frozen and the previous method doesn't work, you can use \verb+screen -d my_session_name+ in the main SSH session.
+\end{enumerate}
+
+
+\subsubsection{tmux}
+
+Very similar to screen, running a program in a tmux allows it to run in the background even when you disconnect from the server. May not be included on all servers. 
+
+\begin{enumerate}
+    \item Login to the server
+    \item Start a screen session: \verb+tmux new -s my_session_name+
+    \item Navigate to and run the desired program
+    \item Detach from the screen session: On a Mac: CTRL+B (nothing should change), then D (if it worked it will take you back to the original SSH session and say detached)
+    \item To rejoin the session, while logged in to the server, do: \verb+tmux attach -t my_session+. If you forgot what the session is called, do \verb+tmux ls+ to see all tmux sessions names. 
+    \item To end the screen session (completely kill it, no coming back), just enter \verb+exit+. If the session is frozen and the previous method doesn't work, you can use \verb+tmux kill-session -t session_name+ in the main SSH session.
+\end{enumerate}
+
+
+
+
+\end{document}
