@@ -22,27 +22,58 @@
 
 \newpage
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Aliases}
 
-\verb+alias+ - Can call at any point to see a list of available Aliases
+\subsection{Alias Commands}
 
-\verb+~/.zshrc+ - Location of aliases
+\begin{itemize}
+    \item \verb+alias+ - Can call at any point to see a list of available Aliases
+    \item \verb+~/.zshrc+ - Location of aliases
+\end{itemize}
+
+\subsection{Helpful Aliases}
+
+\subsubsection{Git}
+
+\begin{itemize}
+    \item \verb+alias gs='git status'+
+    \item \verb+alias ga='git add .'+
+    \item \verb+alias gc='git commit .'+
+    \item \verb+alias gp='git push'+
+    \item \verb+alias gr='git pull'+
+\end{itemize}
+
+\subsubsection{Server}
+
+Tip: anytime I need to run something on the server, I put the code/resources in a local folder called 'server\_package', always stored in the same spot. That way I can run the aliases below to easily load those files into the server, and easily pull them back locally afterwards.
+
+\begin{itemize}
+    \item \verb+server() {ssh USERNAME@stat-$1.byu.edu}+ - type \verb+server g02+ to join the g02 server
+    \item \verb+pull_server_package() {scp -r USERNAME@stat-$1.byu.edu:server_package FILE_PATH}+ 
+        \begin{itemize}
+            \item Type \verb+pull_server_package g02+ to retrieve the 'server\_package' folder from server g02
+        \end{itemize}
+    \item \verb+push_server_package() {scp -r FILE_PATH USERNAME@stat-$1.byu.edu:}+
+        \begin{itemize}
+            \item Type \verb+push_server_package g02+ to send the 'server\_package' folder to server g02
+        \end{itemize} 
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Servers}
 
 \subsection{Connecting to Servers}
 
-\verb+ssh rjcass13@stat-g01.byu.edu+ - Full line for connecting to the server (just replace the number with the corresponding server number)
-
-\verb+server g0#+ - (Alias) Replace \# with any number 1-5 to join the corresponding server
+\verb+ssh USERNAME@stat-g01.byu.edu+ - Full line for connecting to the server (just replace the number with the corresponding server number, and USERNAME with your username)
 
 \subsection{Moving Files}
 
-Move file from local machine to server: \verb+scp FILE_PATH rjcass13@stat-g02.byu.edu:FILE_PATH+
+Move file from local machine to server: \verb+scp FILE_PATH USERNAME@stat-g02.byu.edu:FILE_PATH+
 
-Move file from server to local machine: \verb+scp rjcass13@stat-g02.byu.edu:FILE_PATH FILE_PATH+
+Move file from server to local machine: \verb+scp USERNAME@stat-g02.byu.edu:FILE_PATH FILE_PATH+
 
 To move a full directory, include the recursive \verb+-r+. Example: \verb+scp -r rjcass13@...+
 
