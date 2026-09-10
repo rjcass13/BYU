@@ -69,6 +69,10 @@ Tip: anytime I need to run something on the server, I put the code/resources in 
 
 \verb+ssh USERNAME@stat-g01.byu.edu+ - Full line for connecting to the server (just replace the number with the corresponding server number, and USERNAME with your username)
 
+\subsubsection{SSH Key Expired}
+
+\verb+rm .ssh/known_hosts+ - If you try connecting and it says "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!", run this code to just reset all known hosts. Then try connecting again (you'll have to type 'yes' to save it as a known host again)
+
 \subsection{Moving Files}
 
 Move file from local machine to server: \verb+scp FILE_PATH USERNAME@stat-g02.byu.edu:FILE_PATH+
